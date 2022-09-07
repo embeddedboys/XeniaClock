@@ -90,6 +90,10 @@ void ui_ScreenEpinkHome_screen_init(void)
     lv_obj_set_style_text_align(ui_RollerHour, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_font(ui_RollerHour, &ui_font_NeverMindSemiSerifBold40, LV_PART_MAIN | LV_STATE_DEFAULT);
 
+    lv_obj_set_style_text_color(ui_RollerHour, lv_color_hex(0x000000), LV_PART_SELECTED | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_opa(ui_RollerHour, 255, LV_PART_SELECTED | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_align(ui_RollerHour, LV_TEXT_ALIGN_CENTER, LV_PART_SELECTED | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_font(ui_RollerHour, &ui_font_NeverMindSemiSerifBold40, LV_PART_SELECTED | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_color(ui_RollerHour, lv_color_hex(0xFFFFFF), LV_PART_SELECTED | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_opa(ui_RollerHour, 255, LV_PART_SELECTED | LV_STATE_DEFAULT);
 
@@ -105,6 +109,10 @@ void ui_ScreenEpinkHome_screen_init(void)
     lv_obj_set_style_text_align(ui_RollerMinute, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_font(ui_RollerMinute, &ui_font_NeverMindSemiSerifBold40, LV_PART_MAIN | LV_STATE_DEFAULT);
 
+    lv_obj_set_style_text_color(ui_RollerMinute, lv_color_hex(0x000000), LV_PART_SELECTED | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_opa(ui_RollerMinute, 255, LV_PART_SELECTED | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_align(ui_RollerMinute, LV_TEXT_ALIGN_CENTER, LV_PART_SELECTED | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_font(ui_RollerMinute, &ui_font_NeverMindSemiSerifBold40, LV_PART_SELECTED | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_color(ui_RollerMinute, lv_color_hex(0xFFFFFF), LV_PART_SELECTED | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_opa(ui_RollerMinute, 255, LV_PART_SELECTED | LV_STATE_DEFAULT);
 
@@ -122,6 +130,10 @@ void ui_ScreenEpinkHome_screen_init(void)
     lv_obj_set_style_text_align(ui_RollerSecond, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_font(ui_RollerSecond, &ui_font_NeverMindSemiSerifBold40, LV_PART_MAIN | LV_STATE_DEFAULT);
 
+    lv_obj_set_style_text_color(ui_RollerSecond, lv_color_hex(0x000000), LV_PART_SELECTED | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_opa(ui_RollerSecond, 255, LV_PART_SELECTED | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_align(ui_RollerSecond, LV_TEXT_ALIGN_CENTER, LV_PART_SELECTED | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_font(ui_RollerSecond, &ui_font_NeverMindSemiSerifBold40, LV_PART_SELECTED | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_color(ui_RollerSecond, lv_color_hex(0xFFFFFF), LV_PART_SELECTED | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_opa(ui_RollerSecond, 255, LV_PART_SELECTED | LV_STATE_DEFAULT);
 
