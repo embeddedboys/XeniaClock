@@ -105,10 +105,10 @@ static void native_rtc_init()
     datetime_t t;
     /* TODO: init rtc device */
 
-    /* TODO: init rtc host in mcu */
+    /* init rtc host in mcu */
     rtc_host_init();
 
-    /* TODO: read RTC time from mcu */
+    /* read RTC time from mcu */
     t = rtc_host_get_datetime();
 
     hour = t.hour;
