@@ -15,6 +15,7 @@ file(GLOB_RECURSE INCLUDES "include/*.h"
                             "ui/*.h"
                             "display/*.h"
                             "sensors/*.h"
+                            "i2c/*.h"
                             "rtc/*.h")
 
 file(GLOB_RECURSE SOURCES "lvgl/src/*.c"
@@ -23,13 +24,14 @@ file(GLOB_RECURSE SOURCES "lvgl/src/*.c"
                             "ui/*.c"
                             "display/*.c"
                             "sensors/*.c"
+                            "i2c/*.c"
                             "rtc/*.c")
 
 # rest of your project
 add_executable(epink main.c ${INCLUDES} ${SOURCES})
 
 target_include_directories(epink PUBLIC . "lvgl")
-target_link_libraries(epink pico_stdlib hardware_spi hardware_rtc)
+target_link_libraries(epink pico_stdlib hardware_spi hardware_rtc hardware_i2c)
 
 pico_enable_stdio_usb(epink 0)
 pico_enable_stdio_uart(epink 1)

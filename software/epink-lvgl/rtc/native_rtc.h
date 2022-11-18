@@ -30,15 +30,27 @@
 
 #pragma once
 
+#include "pico/types.h"
 #ifndef __NATIVE_RTC_H
 #define __NATIVE_RTC_H
 
-#include <stdio.h>
-#include "hardware/rtc.h"
 #include "pico/stdlib.h"
+#include <stdio.h>
+#include "hardware/i2c.h"
+#include "hardware/rtc.h"
 #include "pico/util/datetime.h"
+#include "lvgl/lvgl.h"
 
-datetime_t *(*rtc_device_get_time)();
+#define RTC_DEVICE_DS3231 0x00
+#define RTC_DEVICE_DS1307 0x01
+
+#ifndef DEFAULT_RTC_DEVICE
+    #define DEFAULT_RTC_DEVICE RTC_DEVICE_DS3231
+#endif
+
+void (*p_rtc_device_set_time)(datetime_t t);
+datetime_t (*p_rtc_device_get_time)();
+void rtc_device_init();
 
 void rtc_host_init();
 void rtc_host_set_datetime(datetime_t *time);

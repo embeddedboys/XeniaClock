@@ -7,20 +7,13 @@
  *
  * Hi, guys!
  *
- * This is a simple ALL-IN-ONE driver for the LuatOS epink-1.54 screen module.
- *
- * the device init function in this file was based on :
- * https://gitee.com/openLuat/LuatOS/blob/master/components/epaper/EPD_1in54.c
- *
- * More info about the epaper module can be found in :
- * https://wiki.luatos.com/peripherals/eink_1.54/index.html
- *
  * Special thanks to :
- *   LuatOS (https://gitee.com/openLuat/LuatOS)
+ *   Raspberry Pi () -- MCU
+ *   LuatOS (https://gitee.com/openLuat/LuatOS) -- Display module
+ *   Espressif (https://github.com/espressif) -- Net module
  *
  * MIT License
  *
- * Copyright (c) 2022 LuatOS
  * Copyright (c) 2022 IotaHydrae(writeforever@foxmail.com)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -42,10 +35,9 @@
  *
  */
 
-#include <stdio.h>
-#include <string.h>
-
 #include "pico/stdlib.h"
+#include <string.h>
+#include <stdio.h>
 #include "pico/binary_info.h"
 
 #include "display/epd.h"
@@ -62,8 +54,6 @@
  */
 static void hal_init(void)
 {
-    stdio_init_all();
-
 #if !defined(spi_default) || !defined(PICO_DEFAULT_SPI_SCK_PIN) || !defined(PICO_DEFAULT_SPI_TX_PIN) || !defined(PICO_DEFAULT_SPI_RX_PIN) || !defined(EPINK_CS_PIN)
 #warning spi/bme280_spi example requires a board with SPI pins
     puts( "Default SPI pins were not defined" );
@@ -89,6 +79,12 @@ static void hal_init(void)
     gpio_init( EPINK_BUSY_PIN );
     gpio_set_dir( EPINK_BUSY_PIN, GPIO_IN );
 #endif
+
+    i2c_init(i2c_default, 400 * 1000);
+    gpio_set_function(PICO_DEFAULT_I2C_SDA_PIN, GPIO_FUNC_I2C);
+    gpio_set_function(PICO_DEFAULT_I2C_SCL_PIN, GPIO_FUNC_I2C);
+    gpio_pull_up(PICO_DEFAULT_I2C_SDA_PIN);
+    gpio_pull_up(PICO_DEFAULT_I2C_SCL_PIN);
 }
 
 extern lv_obj_t *ui_RollerHour;
@@ -96,14 +92,17 @@ extern lv_obj_t *ui_RollerMinute;
 extern lv_obj_t *ui_RollerHour;
 extern lv_obj_t *ui_LabelTips;
 
-static uint8_t hour = 23;
-static uint8_t minute = 59;
+/* Whew, we are getting off work! */
+static uint8_t hour = 18;
+static uint8_t minute = 30;
 static uint8_t second = 0;
 
+/* initialize all stuff with RTC releated */
 static void native_rtc_init()
 {
     datetime_t t;
     /* TODO: init rtc device */
+    rtc_device_init();
 
     /* init rtc host in mcu */
     rtc_host_init();
@@ -121,6 +120,7 @@ static void native_rtc_init()
     lv_roller_set_selected(ui_RollerSecond, second, LV_ANIM_OFF);
 }
 
+/* This logic should never modified unless have a better idea */
 static void lv_timer_roller_time_cb()
 {
     lv_roller_set_selected(ui_RollerSecond, ++second, LV_ANIM_OFF);
@@ -143,13 +143,24 @@ static void lv_timer_roller_time_cb()
     }
 }
 
+/* TODO: These tips should get from network */
 static const char *g_tips[] = {
+    "Stay Hungry, Stay Foolish.",
     "Learn to pause.",
     "Don't Worry, Be Happy.",
+    "Do Androids Dream of Electric Sheep?",
     "Gah! YEEEEEEEE!",
     "Never laugh at live dragons.",
+    "What are the characteristics of a person?",
     "You are not dead yet.",
     "Cheers!",
+    "Sleep seven to eight hours per night.",
+    "Keep company with good people.",
+    "Avoid news overdose.",
+    "Get regular exercise.",
+    "Do something meaningful each day.",
+    "Think good thoughts for others.",
+    "Be humble and curious."
 };
 static uint8_t tips_index = 0;
 
@@ -158,6 +169,18 @@ static void lv_timer_label_tips_cb()
     lv_label_set_text(ui_LabelTips, g_tips[tips_index++]);
     if (tips_index > (sizeof(g_tips)/sizeof(g_tips[0]) - 1))
         tips_index = 0;
+}
+
+extern lv_obj_t *ui_LabelBattery;
+
+/* TODO: Real battery percent detect */
+static void lv_timer_battery_cb()
+{
+    static uint8_t battery_percent = 100;
+    lv_label_set_text_fmt(ui_LabelBattery, "%d%%", --battery_percent);
+
+    if (battery_percent == 0)
+        battery_percent = 100;
 }
 
 int main( void )
@@ -184,16 +207,18 @@ int main( void )
     timer_roller->timer_cb = lv_timer_roller_time_cb;
     timer_roller->period = 1000;
 
-    lv_label_set_long_mode(ui_LabelTips, LV_LABEL_LONG_WRAP);
-
     lv_timer_t *timer_tips = lv_timer_create_basic();
     timer_tips->timer_cb = lv_timer_label_tips_cb;
     timer_tips->period = 5000;
 
+    lv_timer_t *timer_battery = lv_timer_create_basic();
+    timer_battery->timer_cb = lv_timer_battery_cb;
+    timer_battery->period = 10000;
+
     while( 1 ) {
-        sleep_us(5*1000);
         lv_timer_handler();
         lv_tick_inc(5);
+        sleep_us(5*1000);
     }
 
     return 0;

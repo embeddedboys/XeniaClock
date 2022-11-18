@@ -5,6 +5,14 @@
  * @version 0.1
  * @date 2022-11-17
  * 
+ * This is a simple driver for the LuatOS epink-1.54 screen module.
+ *
+ * the device init function in this file was based on :
+ * https://gitee.com/openLuat/LuatOS/blob/master/components/epaper/EPD_1in54.c
+ *
+ * More info about the epaper module can be found in :
+ * https://wiki.luatos.com/peripherals/eink_1.54/index.html
+ *
  * MIT License
  * 
  * Copyright 2022 IotaHydrae(writeforever@foxmail.com)

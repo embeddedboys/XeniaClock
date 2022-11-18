@@ -1,9 +1,9 @@
 /**
- * @file rtc_host.c
+ * @file native_i2c.c
  * @author IotaHydrae (writeforever@foxmail.com)
  * @brief 
  * @version 0.1
- * @date 2022-11-17
+ * @date 2022-11-18
  * 
  * MIT License
  * 
@@ -28,49 +28,21 @@
  * 
  */
 
-#include "native_rtc.h"
-#include "pico/types.h"
+#include "native_i2c.h"
+#include "hardware/i2c.h"
 
-void rtc_host_set_datetime(datetime_t *time)
+// static inline void i2c_transfer()
+
+void i2c_write_reg(uint8_t addr, uint8_t reg, uint8_t val)
 {
-    rtc_set_datetime(time);
+    uint8_t buf[2] = {reg, val};
+    i2c_write_blocking(i2c_default, addr, buf, 2, false);
 }
 
-datetime_t rtc_host_get_datetime()
+uint8_t i2c_read_reg(uint8_t addr, uint8_t reg)
 {
-    datetime_t t;
-    rtc_get_datetime(&t);
-    return t;
-}
-
-void rtc_host_init()
-{
-    datetime_t *p_time;
-    rtc_init();
-
-    datetime_t default_t = {
-        .year = 2022,
-        .month = 11,
-        .day = 17,
-        .dotw = 4,
-        .hour = 17,
-        .min = 38,
-        .sec = 29,
-    };
-
-    p_time = &default_t;
-
-    if (p_rtc_device_get_time != NULL) {
-        *p_time = p_rtc_device_get_time();   /* trying to require rtc device */
-        rtc_host_set_datetime(p_time);
-    } else {
-        rtc_host_set_datetime(p_time);
-    }
-    
-    /* clk_sys is >2000x faster than clk_rtc, so datetime is not updated immediately when
-     * rtc_get_datetime() is called.
-     *
-     * tbe delay is up to 3 RTC clock cycles (which is 64us with the default clock settings)
-     */
-    sleep_us(64);
+    uint8_t wbuf[1] = {reg}, rbuf[1];
+    i2c_write_blocking(i2c_default, addr, wbuf, 1, true);
+    i2c_read_blocking(i2c_default, addr, rbuf, 1, false);
+    return rbuf[0];
 }
