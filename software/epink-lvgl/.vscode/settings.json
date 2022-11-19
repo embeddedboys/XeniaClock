@@ -1,2 +1,5 @@
 {
+    "files.associations": {
+        "esp01s.h": "c"
+    }
 }

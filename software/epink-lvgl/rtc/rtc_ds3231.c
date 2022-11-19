@@ -54,9 +54,53 @@ static void ds3231_init()
     // i2c_write_reg(DS3231_I2C_ADDR, DS1307_REG_HOURS, val | 0x40);
 }
 
+void __rtc_ds3231_set_time_hour(uint8_t hour)
+{
+    uint8_t val = 0, bit_ten = 0, bit_single = 0;
+    if (hour != 0 && hour < 24) {
+        bit_ten = hour / 10;
+        bit_single = hour % 10;
+        val |= (bit_ten << 4) & 0x3f | (bit_single & 0x0f);
+        i2c_write_reg(DS3231_I2C_ADDR, DS1307_REG_HOURS, val);
+    }
+    else {
+        i2c_write_reg(DS3231_I2C_ADDR, DS1307_REG_HOURS, val);
+    }
+}
+
+void __rtc_ds3231_set_time_min(uint8_t min)
+{
+    uint8_t val = 0, bit_ten = 0, bit_single = 0;
+    if (min != 0 && min < 60) {
+        bit_ten = min / 10;
+        bit_single = min % 10;
+        val |= ((bit_ten << 4) & 0x7f | (bit_single & 0x0f));
+        i2c_write_reg(DS3231_I2C_ADDR, DS1307_REG_MINUTES, val);
+    }
+    else {
+        i2c_write_reg(DS3231_I2C_ADDR, DS1307_REG_MINUTES, val);
+    }
+}
+
+void __rtc_ds3231_set_time_sec(uint8_t sec)
+{
+    uint8_t val = 0, bit_ten = 0, bit_single = 0;
+    if (sec != 0 && sec < 60) {
+        bit_ten = sec / 10;
+        bit_single = sec % 10;
+        val |= (bit_ten << 4) & 0x7f | (bit_single & 0x0f);
+        i2c_write_reg(DS3231_I2C_ADDR, DS1307_REG_SECONDS, val);
+    }
+    else {
+        i2c_write_reg(DS3231_I2C_ADDR, DS1307_REG_SECONDS, val);
+    }
+}
+
 void rtc_ds3231_set_time(datetime_t t)
 {
-
+    __rtc_ds3231_set_time_hour(t.hour);
+    __rtc_ds3231_set_time_min(t.min);
+    __rtc_ds3231_set_time_sec(t.sec);
 }
 
 /* TODO: The read ops from DS3231 should be brust
@@ -70,7 +114,7 @@ datetime_t rtc_ds3231_get_time()
     datetime_t ds3231_time;
 
     val = i2c_read_reg(DS3231_I2C_ADDR, DS1307_REG_HOURS);
-    ds3231_time.hour = val & 0x3f;
+    ds3231_time.hour = ((val & 0x3f) >> 4) * 10 + (val & 0x0f);
 
     val = i2c_read_reg(DS3231_I2C_ADDR, DS1307_REG_MINUTES);
     ds3231_time.min = ((val & 0x7f) >> 4) * 10 + (val & 0x0f);

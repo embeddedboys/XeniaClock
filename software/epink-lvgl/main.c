@@ -35,6 +35,7 @@
  *
  */
 
+#include "hardware/gpio.h"
 #include "pico/stdlib.h"
 #include <string.h>
 #include <stdio.h>
@@ -42,6 +43,7 @@
 
 #include "display/epd.h"
 #include "rtc/native_rtc.h"
+#include "net/esp01s.h"
 
 #include "port/lv_port_disp.h"
 #include "lvgl/lvgl.h"
@@ -85,6 +87,10 @@ static void hal_init(void)
     gpio_set_function(PICO_DEFAULT_I2C_SCL_PIN, GPIO_FUNC_I2C);
     gpio_pull_up(PICO_DEFAULT_I2C_SDA_PIN);
     gpio_pull_up(PICO_DEFAULT_I2C_SCL_PIN);
+
+    uart_init(uart1, 115200);
+    gpio_set_function(8, GPIO_FUNC_UART);
+    gpio_set_function(9, GPIO_FUNC_UART);
 }
 
 extern lv_obj_t *ui_RollerHour;
@@ -103,6 +109,12 @@ static void native_rtc_init()
     datetime_t t;
     /* TODO: init rtc device */
     rtc_device_init();
+
+    /* set a test time to device */
+    // t.hour = 0;
+    // t.min = 44;
+    // t.sec = 0;
+    // p_rtc_device_set_time(t);
 
     /* init rtc host in mcu */
     rtc_host_init();
@@ -188,7 +200,7 @@ int main( void )
     printf("%s\n", __func__);
 
     /* system up hardware init */
-    stdio_init_all();
+    stdio_uart_init_full(uart0, 115200, 0, 1);
     hal_init();
 
     /* lvgl init */
@@ -215,10 +227,12 @@ int main( void )
     timer_battery->timer_cb = lv_timer_battery_cb;
     timer_battery->period = 10000;
 
+    esp01s_test();
+
     while( 1 ) {
         lv_timer_handler();
-        lv_tick_inc(5);
-        sleep_us(5*1000);
+        lv_tick_inc(1);
+        sleep_us(1000);
     }
 
     return 0;

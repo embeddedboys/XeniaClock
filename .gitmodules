@@ -2,3 +2,6 @@
 	path = software/epink-lvgl/lvgl
 	url = https://github.com/lvgl/lvgl.git
 	branch = release/v8.2
+[submodule "software/pico-sdk"]
+	path = software/pico-sdk
+	url = https://github.com/raspberrypi/pico-sdk.git
