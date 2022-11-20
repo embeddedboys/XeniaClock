@@ -36,6 +36,7 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "common/tools.h"
 #include "pico/stdlib.h"
 #include "hardware/spi.h"
 
@@ -66,8 +67,6 @@
 
 #define EPINK_DISP_BUFFER_SIZE (EPINK_WIDTH*EPINK_HEIGHT/8)
 #define EPINK_DISP_BUFFER_OFFSET(p,x)(p*EPINK_WIDTH + x)
-
-#define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
 
 // #define EPINK_DEBUG_MODE
 #define EPINK_COORD_CHECK

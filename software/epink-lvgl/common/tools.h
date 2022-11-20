@@ -1,5 +1,5 @@
 /**
- * @file esp01s.c
+ * @file tools.h
  * @author IotaHydrae (writeforever@foxmail.com)
  * @brief 
  * @version 0.1
@@ -28,24 +28,22 @@
  * 
  */
 
-#include "esp01s.h"
-#include "hardware/uart.h"
+#ifndef __TOOLS_H
+#define __TOOLS_H
 
-#define ESP01S_CMD(cmd)     cmd "\r\n"
-#define ESP01S_CMD_AT       ESP01S_CMD("AT")
-#define ESP01S_CMD_INFO     ESP01S_CMD("AT+GMR")
-// AT+CWJAP="redmiax3000","h2231841."
-// AT+PING="192.168.31.57"
+#include <stdint.h>
+#include <stddef.h>
 
-void esp01s_test()
-{
-    uint8_t rbuf[128];
-    char command[64];
+#define DEBUG 1
 
-    sprintf(command, "AT+CWJAP=\"%s\",\"%s\"\r\n", DEFAULT_WIFI_SSID, DEFAULT_WIFI_PSK);
+#if DEBUG
+#define pr_debug(fmt, ...) printf("%s: "fmt, __func__, ##__VA_ARGS__);
+#else
+#define pr_debug
+#endif
 
-    uart_puts(uart1, "AT+CWMODE=1\r\n");
-    // uart_read_blocking(uart1, rbuf, 128);
-    uart_puts(uart1, "AT+CWJAP=\"redmiax3000\",\"h2231841.\"\r\n");
-    // uart_read_blocking(uart1, rbuf, 128);
-}
+#ifndef ARRAY_SIZE
+    #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
+#endif
+
+#endif

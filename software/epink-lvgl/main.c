@@ -35,13 +35,17 @@
  *
  */
 
-#include "hardware/gpio.h"
-#include "pico/stdlib.h"
-#include <string.h>
 #include <stdio.h>
+#include <string.h>
+#include "pico/platform.h"
+#include "pico/stdio.h"
+#include "pico/stdlib.h"
 #include "pico/binary_info.h"
+#include "hardware/gpio.h"
 
+#include "common/tools.h"
 #include "display/epd.h"
+#include "pico/time.h"
 #include "rtc/native_rtc.h"
 #include "net/esp01s.h"
 
@@ -93,6 +97,11 @@ static void hal_init(void)
     gpio_set_function(9, GPIO_FUNC_UART);
 }
 
+static void sys_clk_init()
+{
+
+}
+
 extern lv_obj_t *ui_RollerHour;
 extern lv_obj_t *ui_RollerMinute;
 extern lv_obj_t *ui_RollerHour;
@@ -133,7 +142,8 @@ static void native_rtc_init()
 }
 
 /* This logic should never modified unless have a better idea */
-static void lv_timer_roller_time_cb()
+/* This callback must be used a  high-res timer to handle */
+static bool lv_timer_roller_time_cb(struct repeating_timer *t)
 {
     lv_roller_set_selected(ui_RollerSecond, ++second, LV_ANIM_OFF);
 
@@ -153,6 +163,8 @@ static void lv_timer_roller_time_cb()
         hour=0;
         lv_roller_set_selected(ui_RollerHour, hour, LV_ANIM_OFF);
     }
+
+    return true;
 }
 
 /* TODO: These tips should get from network */
@@ -172,14 +184,15 @@ static const char *g_tips[] = {
     "Get regular exercise.",
     "Do something meaningful each day.",
     "Think good thoughts for others.",
-    "Be humble and curious."
+    "Be humble and curious.",
+    "I don't want to surive, I want to live!",
 };
 static uint8_t tips_index = 0;
 
 static void lv_timer_label_tips_cb()
 {
     lv_label_set_text(ui_LabelTips, g_tips[tips_index++]);
-    if (tips_index > (sizeof(g_tips)/sizeof(g_tips[0]) - 1))
+    if (tips_index > (ARRAY_SIZE(g_tips) - 1))
         tips_index = 0;
 }
 
@@ -195,29 +208,43 @@ static void lv_timer_battery_cb()
         battery_percent = 100;
 }
 
+static bool lvgl_clock_cb(struct repeating_timer *t)
+{
+    lv_timer_handler();
+    lv_tick_inc(5);
+    return true;
+}
+
 int main( void )
 {
+    stdio_init_all();
     printf("%s\n", __func__);
 
     /* system up hardware init */
-    stdio_uart_init_full(uart0, 115200, 0, 1);
     hal_init();
 
     /* lvgl init */
     lv_init();
     lv_port_disp_init();
 
+    /* start a timer for lvgl clock */
+    struct repeating_timer lvgl_clock_timer;
+    add_repeating_timer_ms(5, lvgl_clock_cb, NULL, &lvgl_clock_timer);
+
+    /* a global reflush for epd is required */
     epink_blank();
 
-    /* Load APP UI */
+    /* load UI widgets of APP */
     ui_init();
 
-    /* post hardware init */
+    /* some post hardware init */
     native_rtc_init();
 
-    lv_timer_t *timer_roller = lv_timer_create_basic();
-    timer_roller->timer_cb = lv_timer_roller_time_cb;
-    timer_roller->period = 1000;
+    // lv_timer_t *timer_roller = lv_timer_create_basic();
+    // timer_roller->timer_cb = lv_timer_roller_time_cb;
+    // timer_roller->period = 1000;
+    struct repeating_timer roller_timer;
+    add_repeating_timer_ms(1000, lv_timer_roller_time_cb, NULL, &roller_timer);
 
     lv_timer_t *timer_tips = lv_timer_create_basic();
     timer_tips->timer_cb = lv_timer_label_tips_cb;
@@ -230,11 +257,8 @@ int main( void )
     esp01s_test();
 
     while( 1 ) {
-        lv_timer_handler();
-        lv_tick_inc(1);
-        sleep_us(1000);
+        tight_loop_contents();
     }
 
     return 0;
-
 }
