@@ -39,13 +39,31 @@
 
 void esp01s_test()
 {
-    uint8_t rbuf[128];
-    char command[64];
-
-    sprintf(command, "AT+CWJAP=\"%s\",\"%s\"\r\n", DEFAULT_WIFI_SSID, DEFAULT_WIFI_PSK);
-
     uart_puts(uart1, "AT+CWMODE=1\r\n");
-    // uart_read_blocking(uart1, rbuf, 128);
     uart_puts(uart1, "AT+CWJAP=\"redmiax3000\",\"h2231841.\"\r\n");
-    // uart_read_blocking(uart1, rbuf, 128);
+}
+
+void esp01s_change_mode(uint8_t mode)
+{
+
+}
+
+void esp01s_connect_wifi()
+{
+    
+}
+
+void esp01s_disconnect_wifi()
+{
+
+}
+
+void esp01s_get_ip()
+{
+
+}
+
+void esp01s_ping(char *ip)
+{
+
 }

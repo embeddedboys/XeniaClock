@@ -35,6 +35,13 @@
 #include "pico/stdlib.h"
 #include "hardware/uart.h"
 
+struct esp01s_config {
+    uint8_t mode;
+    char *ssid;
+    char *psk;
+    char *ip;
+};
+
 void esp01s_test();
 
 #define DEFAULT_WIFI_SSID "redmiax3000"
