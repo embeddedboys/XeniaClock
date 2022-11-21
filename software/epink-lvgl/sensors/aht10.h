@@ -1,9 +1,9 @@
 /**
- * @file rtc.h
+ * @file aht10.h
  * @author IotaHydrae (writeforever@foxmail.com)
  * @brief 
  * @version 0.1
- * @date 2022-11-17
+ * @date 2022-07-31
  * 
  * MIT License
  * 
@@ -30,48 +30,30 @@
 
 #pragma once
 
-#include "pico/types.h"
-#ifndef __NATIVE_RTC_H
-#define __NATIVE_RTC_H
+#ifndef __AHT10_H
+#define __AHT10_H
 
-#include "pico/stdlib.h"
 #include <stdio.h>
+#include <stdint.h>
+#include "pico/stdlib.h"
 #include "hardware/i2c.h"
-#include "hardware/rtc.h"
-#include "pico/util/datetime.h"
-#include "lvgl/lvgl.h"
 
-struct native_rtc_data {
-    uint32_t year;
-    uint32_t mon;
-    uint32_t day;
-    uint32_t hour;
-    uint32_t min;
-    uint32_t sec;
+struct aht10_data {
+    uint32_t status;
+    uint32_t SRH;
+    uint32_t ST;
+
+    double real_humidity;
+    double real_temperture;
 };
 
-struct native_rtc_config {
-    uint8_t hour_mode;
-};
+#define AHT10_ADDRESS       0x38
+#define AHT10_CMD_RESET     0xe1
+#define AHT10_CMD_MEASURE   0xac
+#define AHT10_CMD_READ      0x33
+#define AHT10_CMD_DUMMY     0x00
 
-struct native_rtc_handle {
-    struct native_rtc_config cfg;
-    struct native_rtc_data data;
-};
+int __aht10_read_raw(uint8_t *rbuf, int len);
+struct aht10_data aht10_read_humidity_temperture();
 
-#define RTC_DEVICE_DS3231 0x00
-#define RTC_DEVICE_DS1307 0x01
-
-#ifndef DEFAULT_RTC_DEVICE
-    #define DEFAULT_RTC_DEVICE RTC_DEVICE_DS1307
-#endif
-
-void (*p_rtc_device_set_time)(datetime_t t);
-datetime_t (*p_rtc_device_get_time)();
-void rtc_device_init();
-
-void rtc_host_init();
-void rtc_host_set_datetime(datetime_t *time);
-datetime_t rtc_host_get_datetime();
-
-#endif /* __NATIVE_RTC_H */
+#endif /* __AHT10_H */

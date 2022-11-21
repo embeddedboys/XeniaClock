@@ -35,20 +35,26 @@
  *
  */
 
+
 #include <stdio.h>
 #include <string.h>
-#include "pico/platform.h"
 #include "pico/stdio.h"
 #include "pico/stdlib.h"
+#include "pico/time.h"
+#include "pico/types.h"
+#include "pico/platform.h"
 #include "pico/binary_info.h"
 #include "hardware/gpio.h"
 
+/* Header files we defined */
 #include "common/tools.h"
+#include "common/vals.h"
 #include "display/epd.h"
-#include "pico/time.h"
 #include "rtc/native_rtc.h"
+#include "sensors/aht10.h"
 #include "net/esp01s.h"
 
+/* Header files lvgl defined */
 #include "port/lv_port_disp.h"
 #include "lvgl/lvgl.h"
 #include "lvgl/demos/lv_demos.h"
@@ -62,37 +68,40 @@ static void hal_init(void)
 {
 #if !defined(spi_default) || !defined(PICO_DEFAULT_SPI_SCK_PIN) || !defined(PICO_DEFAULT_SPI_TX_PIN) || !defined(PICO_DEFAULT_SPI_RX_PIN) || !defined(EPINK_CS_PIN)
 #warning spi/bme280_spi example requires a board with SPI pins
-    puts( "Default SPI pins were not defined" );
+    puts("Default SPI pins were not defined");
 #else
     /* Useing default SPI0 at 50MHz */
-    spi_init( spi_default, 50 * 1000 * 1000 );
-    gpio_set_function( PICO_DEFAULT_SPI_SCK_PIN, GPIO_FUNC_SPI );
-    gpio_set_function( PICO_DEFAULT_SPI_TX_PIN, GPIO_FUNC_SPI );
-    bi_decl( bi_2pins_with_func( PICO_DEFAULT_SPI_TX_PIN, PICO_DEFAULT_SPI_SCK_PIN,
-                                 GPIO_FUNC_SPI ) );
+    spi_init(spi_default, DEFAULT_SPI_SPEED);
+    gpio_set_function(PICO_DEFAULT_SPI_SCK_PIN, GPIO_FUNC_SPI);
+    gpio_set_function(PICO_DEFAULT_SPI_TX_PIN, GPIO_FUNC_SPI);
+    /* could check this using `picotools` */
+    bi_decl(bi_2pins_with_func(PICO_DEFAULT_SPI_TX_PIN, PICO_DEFAULT_SPI_SCK_PIN,
+                               GPIO_FUNC_SPI));
 
-    gpio_init( EPINK_CS_PIN );
-    gpio_set_dir( EPINK_CS_PIN, GPIO_OUT );
-    gpio_put( EPINK_CS_PIN, 1 );
-    bi_decl( bi_1pin_with_name( EPINK_CS_PIN, "SPI CS" ) );
+    gpio_init(EPINK_CS_PIN);
+    gpio_set_dir(EPINK_CS_PIN, GPIO_OUT);
+    gpio_put(EPINK_CS_PIN, 1);
+    bi_decl(bi_1pin_with_name(EPINK_CS_PIN, "SPI CS"));
 
-    gpio_init( EPINK_RES_PIN );
-    gpio_set_dir( EPINK_RES_PIN, GPIO_OUT );
+    gpio_init(EPINK_RES_PIN);
+    gpio_set_dir(EPINK_RES_PIN, GPIO_OUT);
 
-    gpio_init( EPINK_DC_PIN );
-    gpio_set_dir( EPINK_DC_PIN, GPIO_OUT );
+    gpio_init(EPINK_DC_PIN);
+    gpio_set_dir(EPINK_DC_PIN, GPIO_OUT);
 
-    gpio_init( EPINK_BUSY_PIN );
-    gpio_set_dir( EPINK_BUSY_PIN, GPIO_IN );
+    gpio_init(EPINK_BUSY_PIN);
+    gpio_set_dir(EPINK_BUSY_PIN, GPIO_IN);
 #endif
 
-    i2c_init(i2c_default, 400 * 1000);
+    /* initialize i2c host */
+    i2c_init(i2c_default, DEFAULT_I2C_SPEED);
     gpio_set_function(PICO_DEFAULT_I2C_SDA_PIN, GPIO_FUNC_I2C);
     gpio_set_function(PICO_DEFAULT_I2C_SCL_PIN, GPIO_FUNC_I2C);
     gpio_pull_up(PICO_DEFAULT_I2C_SDA_PIN);
     gpio_pull_up(PICO_DEFAULT_I2C_SCL_PIN);
 
-    uart_init(uart1, 115200);
+    /* initialize uart */
+    uart_init(uart1, DEFAULT_UART_SPEED);
     gpio_set_function(8, GPIO_FUNC_UART);
     gpio_set_function(9, GPIO_FUNC_UART);
 }
@@ -120,9 +129,9 @@ static void native_rtc_init()
     rtc_device_init();
 
     /* set a test time to device */
-    // t.hour = 0;
-    // t.min = 44;
-    // t.sec = 0;
+    // t.hour = 16;
+    // t.min = 32;
+    // t.sec = 30;
     // p_rtc_device_set_time(t);
 
     /* init rtc host in mcu */
@@ -160,7 +169,7 @@ static bool lv_timer_roller_time_cb(struct repeating_timer *t)
     }
 
     if (hour == 24) {
-        hour=0;
+        hour = 0;
         lv_roller_set_selected(ui_RollerHour, hour, LV_ANIM_OFF);
     }
 
@@ -189,7 +198,7 @@ static const char *g_tips[] = {
 };
 static uint8_t tips_index = 0;
 
-static void lv_timer_label_tips_cb()
+static inline void lv_timer_label_tips_cb()
 {
     lv_label_set_text(ui_LabelTips, g_tips[tips_index++]);
     if (tips_index > (ARRAY_SIZE(g_tips) - 1))
@@ -199,7 +208,7 @@ static void lv_timer_label_tips_cb()
 extern lv_obj_t *ui_LabelBattery;
 
 /* TODO: Real battery percent detect */
-static void lv_timer_battery_cb()
+static inline void lv_timer_battery_cb()
 {
     static uint8_t battery_percent = 100;
     lv_label_set_text_fmt(ui_LabelBattery, "%d%%", --battery_percent);
@@ -208,56 +217,70 @@ static void lv_timer_battery_cb()
         battery_percent = 100;
 }
 
-static bool lvgl_clock_cb(struct repeating_timer *t)
+extern lv_obj_t *ui_LabelTemperture;
+extern lv_obj_t *ui_LabelHumidity;
+
+static inline void lv_timer_temp_humid_cb()
+{
+    struct aht10_data data = aht10_read_humidity_temperture();
+
+    lv_label_set_text_fmt(ui_LabelHumidity, "%d%%", (int)data.real_humidity);
+    lv_label_set_text_fmt(ui_LabelTemperture, "%d*C", (int)data.real_temperture);
+}
+
+static inline bool lvgl_clock_cb(struct repeating_timer *t)
 {
     lv_timer_handler();
     lv_tick_inc(5);
     return true;
 }
 
-int main( void )
+int main(void)
 {
     stdio_init_all();
-    printf("%s\n", __func__);
-
     /* system up hardware init */
     hal_init();
 
     /* lvgl init */
+    struct repeating_timer lvgl_clock_timer;
     lv_init();
     lv_port_disp_init();
-
     /* start a timer for lvgl clock */
-    struct repeating_timer lvgl_clock_timer;
-    add_repeating_timer_ms(5, lvgl_clock_cb, NULL, &lvgl_clock_timer);
+    add_repeating_timer_us(5000, lvgl_clock_cb, NULL, &lvgl_clock_timer);
 
-    /* a global reflush for epd is required */
-    epink_blank();
-
-    /* load UI widgets of APP */
-    ui_init();
-
-    /* some post hardware init */
-    native_rtc_init();
+    epink_blank();      /* a global reflush for epd is required */
+    ui_init();          /* load UI widgets of APP */
+    native_rtc_init();  /* some post hardware init */
 
     // lv_timer_t *timer_roller = lv_timer_create_basic();
     // timer_roller->timer_cb = lv_timer_roller_time_cb;
     // timer_roller->period = 1000;
+    // timer for updating seconds in clock, mcu handled
     struct repeating_timer roller_timer;
     add_repeating_timer_ms(1000, lv_timer_roller_time_cb, NULL, &roller_timer);
 
+    /* timer for updating daily tips, should requst tips from internet */
     lv_timer_t *timer_tips = lv_timer_create_basic();
     timer_tips->timer_cb = lv_timer_label_tips_cb;
-    timer_tips->period = 5000;
+    timer_tips->period = 10000;
 
+    /* timer for updating battery percent, just a demo for now */
     lv_timer_t *timer_battery = lv_timer_create_basic();
     timer_battery->timer_cb = lv_timer_battery_cb;
-    timer_battery->period = 10000;
+    timer_battery->period = 2000;
+
+    /* timer for updating temperture and humidity */
+    lv_timer_t *timer_temp_humid = lv_timer_create_basic();
+    timer_battery->timer_cb = lv_timer_temp_humid_cb;
+    timer_battery->period = 3000;
 
     esp01s_test();
 
-    while( 1 ) {
+    while (1) {
         tight_loop_contents();
+        // lv_timer_handler();
+        // lv_tick_inc(5);
+        // sleep_ms(5);
     }
 
     return 0;
