@@ -35,7 +35,7 @@ extern lv_obj_t * ui_LabelSplit2;
 extern lv_obj_t * ui_ImageLine;
 extern lv_obj_t * ui_ImageLine2;
 extern lv_obj_t * ui_LabelHumidity;
-extern lv_obj_t * ui_LabelTempture;
+extern lv_obj_t * ui_LabelTemperture;
 extern lv_obj_t * ui_Image4;
 extern lv_obj_t * ui_Image5;
 extern lv_obj_t * ui_LabelTips;
@@ -47,10 +47,13 @@ LV_IMG_DECLARE(ui_img_humidity_png);    // assets/humidity.png
 LV_IMG_DECLARE(ui_img_tempture_png);    // assets/tempture.png
 
 
+LV_FONT_DECLARE(ui_font_FiraCodeBold12);
+LV_FONT_DECLARE(ui_font_FiraCodeSemiBold12);
+LV_FONT_DECLARE(ui_font_FiraCodeSemiBold40);
+LV_FONT_DECLARE(ui_font_NeverMindHandBold14);
+LV_FONT_DECLARE(ui_font_NeverMindSemiSerifBold12);
 LV_FONT_DECLARE(ui_font_NeverMindSemiSerifBold20);
 LV_FONT_DECLARE(ui_font_NeverMindSemiSerifBold40);
-LV_FONT_DECLARE(ui_font_NeverMindSemiSerifBold12);
-LV_FONT_DECLARE(ui_font_NeverMindHandBold14);
 
 
 void ui_init(void);
