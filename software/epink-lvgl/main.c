@@ -58,7 +58,9 @@
 #include "port/lv_port_disp.h"
 #include "lvgl/lvgl.h"
 #include "lvgl/demos/lv_demos.h"
+#include "lvgl/src/extra/libs/qrcode/lv_qrcode.h"
 #include "ui/ui.h"
+#include "ui/ui_comp.h"
 
 /**
  * @brief hardware layer initialize
@@ -114,6 +116,7 @@ static void sys_clk_init()
 extern lv_obj_t *ui_RollerHour;
 extern lv_obj_t *ui_RollerMinute;
 extern lv_obj_t *ui_RollerHour;
+extern lv_obj_t *ui_LabelDate;
 extern lv_obj_t *ui_LabelTips;
 
 /* Whew, we are getting off work! */
@@ -150,25 +153,27 @@ static void native_rtc_init()
     lv_roller_set_selected(ui_RollerSecond, second, LV_ANIM_OFF);
 }
 
-/* This logic should never modified unless have a better idea */
-/* This callback must be used a  high-res timer to handle */
+/* This logic should never modified unless have a better idea
+/* This callback must be use a  high-res timer to handle
+/* Be sure to use a monospaced font
+ */
 static bool lv_timer_roller_time_cb(struct repeating_timer *t)
 {
     lv_roller_set_selected(ui_RollerSecond, ++second, LV_ANIM_OFF);
 
-    if (second == 60) {
-        second = 0;
+    if (60 == second) {
+        second = 0;     /* update first, then write back */
         lv_roller_set_selected(ui_RollerSecond, second, LV_ANIM_OFF);
         lv_roller_set_selected(ui_RollerMinute, ++minute, LV_ANIM_OFF);
     }
 
-    if (minute == 60) {
+    if (60 == minute) {
         minute = 0;
         lv_roller_set_selected(ui_RollerMinute, minute, LV_ANIM_OFF);
         lv_roller_set_selected(ui_RollerHour, ++hour, LV_ANIM_OFF);
     }
 
-    if (hour == 24) {
+    if (24 == hour) {
         hour = 0;
         lv_roller_set_selected(ui_RollerHour, hour, LV_ANIM_OFF);
     }
@@ -205,11 +210,15 @@ static inline void lv_timer_label_tips_cb()
         tips_index = 0;
 }
 
-extern lv_obj_t *ui_LabelBattery;
+// extern lv_obj_t *ui_LabelBattery;
+extern lv_obj_t *ui_PanelStatusBar;
 
 /* TODO: Real battery percent detect */
 static inline void lv_timer_battery_cb()
 {
+    lv_obj_t *ui_LabelBattery = ui_comp_get_child(ui_PanelStatusBar,
+                                                  UI_COMP_PANELSTATUSBAR_LABELBATTERY);
+
     static uint8_t battery_percent = 100;
     lv_label_set_text_fmt(ui_LabelBattery, "%d%%", --battery_percent);
 
@@ -235,27 +244,8 @@ static inline bool lvgl_clock_cb(struct repeating_timer *t)
     return true;
 }
 
-int main(void)
+static void post_timers_init()
 {
-    stdio_init_all();
-    /* system up hardware init */
-    hal_init();
-
-    /* lvgl init */
-    struct repeating_timer lvgl_clock_timer;
-    lv_init();
-    lv_port_disp_init();
-    /* start a timer for lvgl clock */
-    add_repeating_timer_us(5000, lvgl_clock_cb, NULL, &lvgl_clock_timer);
-
-    epink_blank();      /* a global reflush for epd is required */
-    ui_init();          /* load UI widgets of APP */
-    native_rtc_init();  /* some post hardware init */
-
-    // lv_timer_t *timer_roller = lv_timer_create_basic();
-    // timer_roller->timer_cb = lv_timer_roller_time_cb;
-    // timer_roller->period = 1000;
-    // timer for updating seconds in clock, mcu handled
     struct repeating_timer roller_timer;
     add_repeating_timer_ms(1000, lv_timer_roller_time_cb, NULL, &roller_timer);
 
@@ -271,17 +261,62 @@ int main(void)
 
     /* timer for updating temperture and humidity */
     lv_timer_t *timer_temp_humid = lv_timer_create_basic();
-    timer_battery->timer_cb = lv_timer_temp_humid_cb;
-    timer_battery->period = 3000;
+    timer_temp_humid->timer_cb = lv_timer_temp_humid_cb;
+    timer_temp_humid->period = 2000;
+}
 
-    esp01s_test();
+static void network_config()
+{
+    const char *data = "https://192.168.4.1";
+
+    /* make a QR code on it, (0, -5), 120x120 */
+    lv_obj_t *qr_code = lv_qrcode_create(ui_ScreenEpinkConfig, 120, lv_color_hex(0x0),
+                                         lv_color_hex(0xffffffff));
+    lv_obj_align(qr_code, LV_ALIGN_CENTER, 0, -5);
+    lv_qrcode_update(qr_code, data, strlen(data));
+    lv_disp_load_scr(ui_ScreenEpinkConfig);
+
+    /* lol, persent configurating */
+    sleep_ms(3000);
+
+    /* network configuration is okay, switch to home */
+    lv_disp_load_scr(ui_ScreenEpinkHome);
+}
+
+int main(void)
+{
+    stdio_init_all();
+    /* system up hardware init */
+    hal_init();
+
+    /* lvgl init */
+    struct repeating_timer lvgl_clock_timer;
+    lv_init();
+    lv_port_disp_init();
+    /* start a timer for lvgl clock */
+    add_repeating_timer_us(5000, lvgl_clock_cb, NULL, &lvgl_clock_timer);
+
+    epink_blank();      /* a global reflush for E-paper is required */
+    ui_init();          /* call qquareline project initialization process */
+
+    network_config();
+
+    native_rtc_init();  /* some post hardware init */
+    post_timers_init();
 
     while (1) {
         tight_loop_contents();
-        // lv_timer_handler();
-        // lv_tick_inc(5);
-        // sleep_ms(5);
+
+        sleep_ms(3000);
+        lv_disp_load_scr(ui_ScreenSleep);
+        break;
     }
+
+    while (1) {
+        sleep_ms(3000);
+        lv_disp_load_scr(ui_ScreenEpinkHome);
+    }
+
 
     return 0;
 }

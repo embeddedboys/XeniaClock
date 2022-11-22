@@ -31,21 +31,48 @@
 #include "esp01s.h"
 #include "hardware/uart.h"
 
-#define ESP01S_CMD(cmd)     cmd "\r\n"
-#define ESP01S_CMD_AT       ESP01S_CMD("AT")
-#define ESP01S_CMD_INFO     ESP01S_CMD("AT+GMR")
+#define ESP8266_CMD_SUFFIX          "\r\n"
+#define ESP8266_CMD(cmd)            cmd ESP8266_CMD_SUFFIX
+#define ESP8266_CMD_AT              ESP8266_CMD("AT")
+#define ESP8266_CMD_AT_GMR          ESP8266_CMD("AT+GMR")
+#define ESP8266_CMD_AT_CWMODE(m)    ESP8266_CMD("AT+CWMODE="#m)
+#define ESP8266_CMD_AT_CWJAP(ssid, psk)     ESP8266_CMD("AT+CWJAP=" #ssid "," #psk)
 // AT+CWJAP="redmiax3000","h2231841."
 // AT+PING="192.168.31.57"
 
-void esp01s_test()
+static struct esp01s_config cfg = {
+    .ifce = DEFAULT_ESP8266_UART_IFACE,
+    .mode = DEFAULT_ESP8266_WORK_MODE,
+};
+
+static void __esp01s_send_command(char *cmd)
 {
-    uart_puts(uart1, "AT+CWMODE=1\r\n");
-    uart_puts(uart1, "AT+CWJAP=\"redmiax3000\",\"h2231841.\"\r\n");
+    uart_puts(DEFAULT_ESP8266_UART_IFACE, cmd);
 }
 
-void esp01s_change_mode(uint8_t mode)
+void esp01s_test()
 {
+    __esp01s_send_command(ESP8266_CMD_AT);
+}
 
+void esp01s_change_mode(esp8266_mode_t mode)
+{
+    switch (mode) {
+    case ESP8266_STATION_MODE:
+    case ESP8266_SOFT_AP_MODE:
+    case ESP8266_SOFT_AP_STATION_MODE:
+        __esp01s_send_command(ESP8266_CMD_AT_CWMODE(mode));
+        break;
+    default:
+        __esp01s_send_command(ESP8266_CMD_AT_CWMODE(DEFAULT_ESP8266_WORK_MODE));
+        break;
+    }
+}
+
+void esp01s_start_ap()
+{
+    
+    esp01s_change_mode(ESP8266_SOFT_AP_MODE);
 }
 
 void esp01s_connect_wifi()

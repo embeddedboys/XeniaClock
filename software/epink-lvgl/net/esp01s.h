@@ -35,16 +35,38 @@
 #include "pico/stdlib.h"
 #include "hardware/uart.h"
 
+typedef enum {
+    ESP8266_STATION_MODE = 0x00,
+    ESP8266_SOFT_AP_MODE = 0x01,
+    ESP8266_SOFT_AP_STATION_MODE = 0x02,
+}esp8266_mode_t;
+
+#define DEFAULT_ESP8266_UART_IFACE  uart1
+#define DEFAULT_ESP8266_WORK_MODE   ESP8266_STATION_MODE
+
+#define DEFAULT_ESP8266_AP_NAME     "Xenia-Clock"
+
+#define DEFAULT_ESP8266_WIFI_SSID   "redmiax3000"
+#define DEFAULT_ESP8266_WIFI_PSK    "h2231841."
+
 struct esp01s_config {
-    uint8_t mode;
+    uart_inst_t *ifce;
+
+    esp8266_mode_t mode;
+
+    /* If in station mode */
     char *ssid;
     char *psk;
+    
+    /* If in SoftAP mode */
+    char *ap_name;
+    uint8_t ap_chn; /* AP channel */
+    uint8_t ap_ecn; /* encypt mode */
+    char *ap_psk;   /* password for WPA2 ecn mode */
+    
     char *ip;
 };
 
 void esp01s_test();
-
-#define DEFAULT_WIFI_SSID "redmiax3000"
-#define DEFAULT_WIFI_PSK  "h2231841."
 
 #endif

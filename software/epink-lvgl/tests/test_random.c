@@ -21,6 +21,13 @@ static const char *g_tips[] = {
 };
 static uint8_t tips_index = 0;
 
+#define ESP8266_CMD_SUFFIX          "\r\n"
+#define ESP8266_CMD(cmd)            cmd ESP8266_CMD_SUFFIX
+#define ESP8266_CMD_AT              ESP8266_CMD("AT")
+#define ESP8266_CMD_AT_GMR          ESP8266_CMD("AT+GMR")
+#define ESP8266_CMD_AT_CWMODE(m)    ESP8266_CMD("AT+CWMODE="#m)
+#define ESP8266_CMD_AT_CWJAP(ssid, psk)     ESP8266_CMD("AT+CWJAP=" #ssid "," #psk)
+
 int main(int argc, char **argv)
 {
     int fd;
@@ -33,9 +40,11 @@ int main(int argc, char **argv)
     //     printf("%x ", epink_disp_buffer[i]);
     // }
     // printf("\n");
-    printf("%d\n", getpriority(PRIO_PROCESS, 0));
-    setpriority(PRIO_PROCESS, 0, -20);
-    printf("%d\n", getpriority(PRIO_PROCESS, 0));
-    while(1);
+    // printf("%d\n", getpriority(PRIO_PROCESS, 0));
+    // setpriority(PRIO_PROCESS, 0, -20);
+    // printf("%d\n", getpriority(PRIO_PROCESS, 0));
+    // while(1);
+    printf("%s\n", ESP8266_CMD_AT_CWMODE(1));
+    printf("%s\n", ESP8266_CMD_AT_CWJAP("mywifi", "12345678"));
     return 0;
 }
