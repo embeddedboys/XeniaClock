@@ -23,9 +23,6 @@ extern "C" {
 #endif
 
 extern lv_obj_t * ui_ScreenEpinkHome;
-extern lv_obj_t * ui_PanelStatusBar;
-extern lv_obj_t * ui_LabelTime;
-extern lv_obj_t * ui_LabelBattery;
 extern lv_obj_t * ui_PanelWidgets;
 extern lv_obj_t * ui_RollerHour;
 extern lv_obj_t * ui_RollerMinute;
@@ -40,11 +37,19 @@ extern lv_obj_t * ui_Image4;
 extern lv_obj_t * ui_Image5;
 extern lv_obj_t * ui_LabelTips;
 extern lv_obj_t * ui_LabelTest;
+extern lv_obj_t * ui_PanelStatusBar;
+extern lv_obj_t * ui_ScreenEpinkConfig;
+extern lv_obj_t * ui_PanelStatusBarConfig;
+extern lv_obj_t * ui_PanelWidgetsConfig;
+extern lv_obj_t * ui_LabelWifiName;
+extern lv_obj_t * ui_ScreenSleep;
+extern lv_obj_t * ui_ImageSleep;
 
 
 LV_IMG_DECLARE(ui_img_line_180_1_png);    // assets/line_180_1.png
 LV_IMG_DECLARE(ui_img_humidity_png);    // assets/humidity.png
 LV_IMG_DECLARE(ui_img_tempture_png);    // assets/tempture.png
+LV_IMG_DECLARE(ui_img_884727455);    // assets/Clock-Tower-160x200.png
 
 
 LV_FONT_DECLARE(ui_font_FiraCodeBold12);

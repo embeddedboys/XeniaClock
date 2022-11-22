@@ -16,4 +16,11 @@ extern uint32_t LV_EVENT_GET_COMP_CHILD;
 #define _UI_COMP_IMAGE1_NUM 1
 lv_obj_t * ui_Image1_create(lv_obj_t * comp_parent);
 
+// COMPONENT PanelStatusBar
+#define UI_COMP_PANELSTATUSBAR_PANELSTATUSBAR 0
+#define UI_COMP_PANELSTATUSBAR_LABELDATE 1
+#define UI_COMP_PANELSTATUSBAR_LABELBATTERY 2
+#define _UI_COMP_PANELSTATUSBAR_NUM 3
+lv_obj_t * ui_PanelStatusBar_create(lv_obj_t * comp_parent);
+
 #endif

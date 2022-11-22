@@ -9,9 +9,6 @@
 
 ///////////////////// VARIABLES ////////////////////
 lv_obj_t * ui_ScreenEpinkHome;
-lv_obj_t * ui_PanelStatusBar;
-lv_obj_t * ui_LabelTime;
-lv_obj_t * ui_LabelBattery;
 lv_obj_t * ui_PanelWidgets;
 lv_obj_t * ui_RollerHour;
 lv_obj_t * ui_RollerMinute;
@@ -26,6 +23,13 @@ lv_obj_t * ui_Image4;
 lv_obj_t * ui_Image5;
 lv_obj_t * ui_LabelTips;
 lv_obj_t * ui_LabelTest;
+lv_obj_t * ui_PanelStatusBar;
+lv_obj_t * ui_ScreenEpinkConfig;
+lv_obj_t * ui_PanelStatusBarConfig;
+lv_obj_t * ui_PanelWidgetsConfig;
+lv_obj_t * ui_LabelWifiName;
+lv_obj_t * ui_ScreenSleep;
+lv_obj_t * ui_ImageSleep;
 
 ///////////////////// TEST LVGL SETTINGS ////////////////////
 #if LV_COLOR_DEPTH != 8
@@ -45,40 +49,8 @@ void ui_ScreenEpinkHome_screen_init(void)
     ui_ScreenEpinkHome = lv_obj_create(NULL);
     lv_obj_clear_flag(ui_ScreenEpinkHome, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
 
-    ui_PanelStatusBar = lv_obj_create(ui_ScreenEpinkHome);
-    lv_obj_set_width(ui_PanelStatusBar, 190);
-    lv_obj_set_height(ui_PanelStatusBar, 20);
-    lv_obj_set_x(ui_PanelStatusBar, 0);
-    lv_obj_set_y(ui_PanelStatusBar, 5);
-    lv_obj_set_align(ui_PanelStatusBar, LV_ALIGN_TOP_MID);
-    lv_obj_clear_flag(ui_PanelStatusBar, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
-    lv_obj_set_style_bg_color(ui_PanelStatusBar, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_bg_opa(ui_PanelStatusBar, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
-
-    ui_LabelTime = lv_label_create(ui_PanelStatusBar);
-    lv_obj_set_width(ui_LabelTime, LV_SIZE_CONTENT);   /// 1
-    lv_obj_set_height(ui_LabelTime, LV_SIZE_CONTENT);    /// 1
-    lv_obj_set_x(ui_LabelTime, 5);
-    lv_obj_set_y(ui_LabelTime, 0);
-    lv_obj_set_align(ui_LabelTime, LV_ALIGN_LEFT_MID);
-    lv_label_set_text(ui_LabelTime, "2022/11/8");
-    lv_obj_set_style_text_color(ui_LabelTime, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_text_opa(ui_LabelTime, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_text_font(ui_LabelTime, &ui_font_NeverMindSemiSerifBold12, LV_PART_MAIN | LV_STATE_DEFAULT);
-
-    ui_LabelBattery = lv_label_create(ui_PanelStatusBar);
-    lv_obj_set_width(ui_LabelBattery, LV_SIZE_CONTENT);   /// 1
-    lv_obj_set_height(ui_LabelBattery, LV_SIZE_CONTENT);    /// 1
-    lv_obj_set_x(ui_LabelBattery, -5);
-    lv_obj_set_y(ui_LabelBattery, 0);
-    lv_obj_set_align(ui_LabelBattery, LV_ALIGN_RIGHT_MID);
-    lv_label_set_text(ui_LabelBattery, "100%");
-    lv_obj_set_style_text_color(ui_LabelBattery, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_text_opa(ui_LabelBattery, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_text_font(ui_LabelBattery, &ui_font_NeverMindSemiSerifBold12, LV_PART_MAIN | LV_STATE_DEFAULT);
-
     ui_PanelWidgets = lv_obj_create(ui_ScreenEpinkHome);
-    lv_obj_set_width(ui_PanelWidgets, 190);
+    lv_obj_set_width(ui_PanelWidgets, 200);
     lv_obj_set_height(ui_PanelWidgets, 160);
     lv_obj_set_x(ui_PanelWidgets, 0);
     lv_obj_set_y(ui_PanelWidgets, 15);
@@ -259,6 +231,92 @@ void ui_ScreenEpinkHome_screen_init(void)
     lv_obj_set_style_text_opa(ui_LabelTest, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_font(ui_LabelTest, &ui_font_NeverMindHandBold14, LV_PART_MAIN | LV_STATE_DEFAULT);
 
+    ui_PanelStatusBar = ui_PanelStatusBar_create(ui_ScreenEpinkHome);
+    lv_obj_set_x(ui_PanelStatusBar, 0);
+    lv_obj_set_y(ui_PanelStatusBar, 5);
+    lv_obj_clear_flag(ui_PanelStatusBar, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
+    lv_obj_set_style_bg_color(ui_PanelStatusBar, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(ui_PanelStatusBar, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    lv_obj_set_style_text_color(ui_comp_get_child(ui_PanelStatusBar, UI_COMP_PANELSTATUSBAR_LABELDATE),
+                                lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_opa(ui_comp_get_child(ui_PanelStatusBar, UI_COMP_PANELSTATUSBAR_LABELDATE), 255,
+                              LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_font(ui_comp_get_child(ui_PanelStatusBar, UI_COMP_PANELSTATUSBAR_LABELDATE),
+                               &ui_font_NeverMindSemiSerifBold12, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    lv_obj_set_style_text_color(ui_comp_get_child(ui_PanelStatusBar, UI_COMP_PANELSTATUSBAR_LABELBATTERY),
+                                lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_opa(ui_comp_get_child(ui_PanelStatusBar, UI_COMP_PANELSTATUSBAR_LABELBATTERY), 255,
+                              LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_font(ui_comp_get_child(ui_PanelStatusBar, UI_COMP_PANELSTATUSBAR_LABELBATTERY),
+                               &ui_font_NeverMindSemiSerifBold12, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+}
+void ui_ScreenEpinkConfig_screen_init(void)
+{
+    ui_ScreenEpinkConfig = lv_obj_create(NULL);
+    lv_obj_clear_flag(ui_ScreenEpinkConfig, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
+
+    ui_PanelStatusBarConfig = ui_PanelStatusBar_create(ui_ScreenEpinkConfig);
+    lv_obj_set_x(ui_PanelStatusBarConfig, 0);
+    lv_obj_set_y(ui_PanelStatusBarConfig, 5);
+    lv_obj_clear_flag(ui_PanelStatusBarConfig, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
+    lv_obj_set_style_bg_color(ui_PanelStatusBarConfig, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(ui_PanelStatusBarConfig, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    lv_obj_set_style_text_color(ui_comp_get_child(ui_PanelStatusBarConfig, UI_COMP_PANELSTATUSBAR_LABELDATE),
+                                lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_opa(ui_comp_get_child(ui_PanelStatusBarConfig, UI_COMP_PANELSTATUSBAR_LABELDATE), 255,
+                              LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_font(ui_comp_get_child(ui_PanelStatusBarConfig, UI_COMP_PANELSTATUSBAR_LABELDATE),
+                               &ui_font_NeverMindSemiSerifBold12, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    lv_obj_set_style_text_color(ui_comp_get_child(ui_PanelStatusBarConfig, UI_COMP_PANELSTATUSBAR_LABELBATTERY),
+                                lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_opa(ui_comp_get_child(ui_PanelStatusBarConfig, UI_COMP_PANELSTATUSBAR_LABELBATTERY), 255,
+                              LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_font(ui_comp_get_child(ui_PanelStatusBarConfig, UI_COMP_PANELSTATUSBAR_LABELBATTERY),
+                               &ui_font_NeverMindSemiSerifBold12, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    ui_PanelWidgetsConfig = lv_obj_create(ui_ScreenEpinkConfig);
+    lv_obj_set_width(ui_PanelWidgetsConfig, 200);
+    lv_obj_set_height(ui_PanelWidgetsConfig, 160);
+    lv_obj_set_x(ui_PanelWidgetsConfig, 0);
+    lv_obj_set_y(ui_PanelWidgetsConfig, 15);
+    lv_obj_set_align(ui_PanelWidgetsConfig, LV_ALIGN_CENTER);
+    lv_obj_clear_flag(ui_PanelWidgetsConfig, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
+
+    ui_LabelWifiName = lv_label_create(ui_ScreenEpinkConfig);
+    lv_obj_set_width(ui_LabelWifiName, 200);
+    lv_obj_set_height(ui_LabelWifiName, 30);
+    lv_obj_set_x(ui_LabelWifiName, 1);
+    lv_obj_set_y(ui_LabelWifiName, 80);
+    lv_obj_set_align(ui_LabelWifiName, LV_ALIGN_CENTER);
+    lv_label_set_long_mode(ui_LabelWifiName, LV_LABEL_LONG_DOT);
+    lv_label_set_text(ui_LabelWifiName, "Please scan QR code for\nWi-Fi connection");
+    lv_obj_set_style_text_color(ui_LabelWifiName, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_opa(ui_LabelWifiName, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_letter_space(ui_LabelWifiName, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_line_space(ui_LabelWifiName, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_align(ui_LabelWifiName, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_decor(ui_LabelWifiName, LV_TEXT_DECOR_NONE, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_font(ui_LabelWifiName, &ui_font_NeverMindHandBold14, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+}
+void ui_ScreenSleep_screen_init(void)
+{
+    ui_ScreenSleep = lv_obj_create(NULL);
+    lv_obj_clear_flag(ui_ScreenSleep, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
+
+    ui_ImageSleep = lv_img_create(ui_ScreenSleep);
+    lv_img_set_src(ui_ImageSleep, &ui_img_884727455);
+    lv_obj_set_width(ui_ImageSleep, LV_SIZE_CONTENT);   /// 160
+    lv_obj_set_height(ui_ImageSleep, LV_SIZE_CONTENT);    /// 200
+    lv_obj_set_align(ui_ImageSleep, LV_ALIGN_CENTER);
+    lv_obj_add_flag(ui_ImageSleep, LV_OBJ_FLAG_ADV_HITTEST);     /// Flags
+    lv_obj_clear_flag(ui_ImageSleep, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
+
 }
 
 void ui_init(void)
@@ -269,5 +327,7 @@ void ui_init(void)
     lv_theme_t * theme = lv_theme_basic_init(dispp);
     lv_disp_set_theme(dispp, theme);
     ui_ScreenEpinkHome_screen_init();
+    ui_ScreenEpinkConfig_screen_init();
+    ui_ScreenSleep_screen_init();
     lv_disp_load_scr(ui_ScreenEpinkHome);
 }
