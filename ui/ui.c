@@ -211,7 +211,7 @@ void ui_ScreenEpinkHome_screen_init(void)
     lv_obj_set_y(ui_LabelTips, 80);
     lv_obj_set_align(ui_LabelTips, LV_ALIGN_CENTER);
     lv_label_set_long_mode(ui_LabelTips, LV_LABEL_LONG_DOT);
-    lv_label_set_text(ui_LabelTips, "What are the characteristics of a person?");
+    lv_label_set_text(ui_LabelTips, "Have a great day!");
     lv_obj_set_style_text_color(ui_LabelTips, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_opa(ui_LabelTips, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_letter_space(ui_LabelTips, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -294,7 +294,7 @@ void ui_ScreenEpinkConfig_screen_init(void)
     lv_obj_set_y(ui_LabelWifiName, 80);
     lv_obj_set_align(ui_LabelWifiName, LV_ALIGN_CENTER);
     lv_label_set_long_mode(ui_LabelWifiName, LV_LABEL_LONG_DOT);
-    lv_label_set_text(ui_LabelWifiName, "Please scan QR code for\nWi-Fi connection");
+    lv_label_set_text(ui_LabelWifiName, "connect to \"Xenia-Clock\" then scan this QR code");
     lv_obj_set_style_text_color(ui_LabelWifiName, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_opa(ui_LabelWifiName, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_letter_space(ui_LabelWifiName, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
