@@ -36,15 +36,23 @@
 #include "hardware/uart.h"
 
 typedef enum {
-    ESP8266_STATION_MODE = 0x00,
-    ESP8266_SOFT_AP_MODE = 0x01,
-    ESP8266_SOFT_AP_STATION_MODE = 0x02,
+    ESP8266_DISABLE_MODE = 0,
+    ESP8266_STATION_MODE = 1,
+    ESP8266_SOFT_AP_MODE = 2,
+    ESP8266_SOFT_AP_STATION_MODE = 3,
 }esp8266_mode_t;
 
 #define DEFAULT_ESP8266_UART_IFACE  uart1
 #define DEFAULT_ESP8266_WORK_MODE   ESP8266_STATION_MODE
 
+/* SoftAP */
 #define DEFAULT_ESP8266_AP_NAME     "Xenia-Clock"
+#define DEFAULT_ESP8266_AP_PSK      "12345678"
+#define DEFAULT_ESP8266_AP_CHANNEL  5
+#define DEFAULT_ESP8266_AP_ECN      0
+
+/* Web server */
+#define DEFAULT_ESP8266_SERVER_PORT 80
 
 #define DEFAULT_ESP8266_WIFI_SSID   "redmiax3000"
 #define DEFAULT_ESP8266_WIFI_PSK    "h2231841."
@@ -68,5 +76,7 @@ struct esp01s_config {
 };
 
 void esp01s_test();
+void esp01s_set_ap_config(struct esp01s_config *cfg);
+void esp01s_start_ap();
 
 #endif

@@ -33,8 +33,23 @@
 #ifndef __VALS_H
 #define __VALS_H
 
-#define DEFAULT_SPI_SPEED (50000000) // 50MHz
-#define DEFAULT_I2C_SPEED (400000) // 400KHz
+#define DEFAULT_SPI_SPEED (50000000)    // 50MHz
+#define DEFAULT_I2C_SPEED (400000)      // 400KHz
 #define DEFAULT_UART_SPEED (115200)
+
+#define BATTERY_PRECENT_DEAD    (0)
+#define BATTERY_PERCENT_LOW     (25)
+#define BATTERY_PERCENT_HALT    (50)
+#define BATTERY_PERCENT_GOOD    (75)
+#define BATTERY_PERCENT_FULL    (100)
+
+#define SECOND(x)               (x)
+#define MILLISECOND(x)          (x)
+#define MICROSECOND(x)          (x)
+
+#define REFRESH_SPEED_FAST      (2000)
+#define REFRESH_SPEED_NORMAL    (5000)
+#define REFRESH_SPEED_SLOW      (9000)
+#define REFRESH_SPEED_USER      (0x4)
 
 #endif

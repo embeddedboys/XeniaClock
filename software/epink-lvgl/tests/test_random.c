@@ -27,11 +27,12 @@ static uint8_t tips_index = 0;
 #define ESP8266_CMD_AT_GMR          ESP8266_CMD("AT+GMR")
 #define ESP8266_CMD_AT_CWMODE(m)    ESP8266_CMD("AT+CWMODE="#m)
 #define ESP8266_CMD_AT_CWJAP(ssid, psk)     ESP8266_CMD("AT+CWJAP=" #ssid "," #psk)
+#define ESP8266_CMD_AT_CWSAP(ssid, psk, chn, ecn)  ESP8266_CMD("AT+CWSAP=" #ssid "," #psk "," #chn "," #ecn)
 
 int main(int argc, char **argv)
 {
     int fd;
-
+    int mode = 1;
     // fd = open("/dev/urandom", O_RDONLY);
 
     // read(fd, epink_disp_buffer, ARRAY_SIZE(epink_disp_buffer));
@@ -44,7 +45,8 @@ int main(int argc, char **argv)
     // setpriority(PRIO_PROCESS, 0, -20);
     // printf("%d\n", getpriority(PRIO_PROCESS, 0));
     // while(1);
-    printf("%s\n", ESP8266_CMD_AT_CWMODE(1));
-    printf("%s\n", ESP8266_CMD_AT_CWJAP("mywifi", "12345678"));
+    printf("%s", ESP8266_CMD_AT_CWMODE(mode));
+    printf("%s", ESP8266_CMD_AT_CWJAP("mywifi", "12345678"));
+    printf("%s", ESP8266_CMD_AT_CWSAP("mywifi", "12345678", 5, 3));
     return 0;
 }

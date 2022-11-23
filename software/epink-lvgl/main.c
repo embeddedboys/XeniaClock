@@ -219,11 +219,11 @@ static inline void lv_timer_battery_cb()
     lv_obj_t *ui_LabelBattery = ui_comp_get_child(ui_PanelStatusBar,
                                                   UI_COMP_PANELSTATUSBAR_LABELBATTERY);
 
-    static uint8_t battery_percent = 100;
+    static uint8_t battery_percent = BATTERY_PERCENT_FULL;
     lv_label_set_text_fmt(ui_LabelBattery, "%d%%", --battery_percent);
 
-    if (battery_percent == 0)
-        battery_percent = 100;
+    if (battery_percent == BATTERY_PRECENT_DEAD)
+        battery_percent = BATTERY_PERCENT_FULL;
 }
 
 extern lv_obj_t *ui_LabelTemperture;
@@ -247,27 +247,29 @@ static inline bool lvgl_clock_cb(struct repeating_timer *t)
 static void post_timers_init()
 {
     struct repeating_timer roller_timer;
-    add_repeating_timer_ms(1000, lv_timer_roller_time_cb, NULL, &roller_timer);
+    add_repeating_timer_ms(MILLISECOND(1000), lv_timer_roller_time_cb, NULL, &roller_timer);
 
     /* timer for updating daily tips, should requst tips from internet */
     lv_timer_t *timer_tips = lv_timer_create_basic();
     timer_tips->timer_cb = lv_timer_label_tips_cb;
-    timer_tips->period = 10000;
+    timer_tips->period = REFRESH_SPEED_NORMAL;
 
     /* timer for updating battery percent, just a demo for now */
     lv_timer_t *timer_battery = lv_timer_create_basic();
     timer_battery->timer_cb = lv_timer_battery_cb;
-    timer_battery->period = 2000;
+    timer_battery->period = REFRESH_SPEED_FAST;
 
     /* timer for updating temperture and humidity */
     lv_timer_t *timer_temp_humid = lv_timer_create_basic();
     timer_temp_humid->timer_cb = lv_timer_temp_humid_cb;
-    timer_temp_humid->period = 2000;
+    timer_temp_humid->period = REFRESH_SPEED_FAST;
 }
 
 static void network_config()
 {
-    const char *data = "https://192.168.4.1";
+    esp01s_start_ap();
+
+    const char *data = "http://192.168.4.1";
 
     /* make a QR code on it, (0, -5), 120x120 */
     lv_obj_t *qr_code = lv_qrcode_create(ui_ScreenEpinkConfig, 120, lv_color_hex(0x0),
@@ -279,7 +281,7 @@ static void network_config()
     /* lol, persent configurating */
     sleep_ms(3000);
 
-    /* network configuration is okay, switch to home */
+    /* if network configuration is okay, switch to home */
     lv_disp_load_scr(ui_ScreenEpinkHome);
 }
 
@@ -294,7 +296,7 @@ int main(void)
     lv_init();
     lv_port_disp_init();
     /* start a timer for lvgl clock */
-    add_repeating_timer_us(5000, lvgl_clock_cb, NULL, &lvgl_clock_timer);
+    add_repeating_timer_us(MICROSECOND(5000), lvgl_clock_cb, NULL, &lvgl_clock_timer);
 
     epink_blank();      /* a global reflush for E-paper is required */
     ui_init();          /* call qquareline project initialization process */
