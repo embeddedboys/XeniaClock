@@ -46,7 +46,7 @@ typedef enum {
 #define DEFAULT_ESP8266_WORK_MODE   ESP8266_STATION_MODE
 
 /* SoftAP */
-#define DEFAULT_ESP8266_AP_NAME     "Xenia-Clock"
+#define DEFAULT_ESP8266_AP_NAME     "Ghost" // max for 13 chars
 #define DEFAULT_ESP8266_AP_PSK      "12345678"
 #define DEFAULT_ESP8266_AP_CHANNEL  5
 #define DEFAULT_ESP8266_AP_ECN      0
@@ -65,13 +65,14 @@ struct esp01s_config {
     /* If in station mode */
     char *ssid;
     char *psk;
-    
+
     /* If in SoftAP mode */
     char *ap_name;
     uint8_t ap_chn; /* AP channel */
     uint8_t ap_ecn; /* encypt mode */
     char *ap_psk;   /* password for WPA2 ecn mode */
-    
+
+    /* ip of esp */
     char *ip;
 };
 

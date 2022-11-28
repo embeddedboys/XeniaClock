@@ -59,6 +59,7 @@
 #include "lvgl/lvgl.h"
 #include "lvgl/demos/lv_demos.h"
 #include "lvgl/src/extra/libs/qrcode/lv_qrcode.h"
+#include "src/widgets/lv_label.h"
 #include "ui/ui.h"
 #include "ui/ui_comp.h"
 
@@ -132,10 +133,10 @@ static void native_rtc_init()
     rtc_device_init();
 
     /* set a test time to device */
-    // t.hour = 16;
-    // t.min = 32;
-    // t.sec = 30;
-    // p_rtc_device_set_time(t);
+    t.hour = 16;
+    t.min = 32;
+    t.sec = 30;
+    p_rtc_device_set_time(t);
 
     /* init rtc host in mcu */
     rtc_host_init();
@@ -194,7 +195,6 @@ static const char *g_tips[] = {
     "Cheers!",
     "Sleep seven to eight hours per night.",
     "Keep company with good people.",
-    "Avoid news overdose.",
     "Get regular exercise.",
     "Do something meaningful each day.",
     "Think good thoughts for others.",
@@ -265,11 +265,15 @@ static void post_timers_init()
     timer_temp_humid->period = REFRESH_SPEED_FAST;
 }
 
+extern lv_obj_t *ui_LabelWifiName;
 static void network_config()
 {
     esp01s_start_ap();
-
     const char *data = "http://192.168.4.1";
+
+    /* show a default AP name */
+    lv_label_set_text_fmt(ui_LabelWifiName, "connect to \"%s\" then scan this QR code",
+                        DEFAULT_ESP8266_AP_NAME);
 
     /* make a QR code on it, (0, -5), 120x120 */
     lv_obj_t *qr_code = lv_qrcode_create(ui_ScreenEpinkConfig, 120, lv_color_hex(0x0),
