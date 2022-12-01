@@ -33,6 +33,7 @@
 #ifndef __EPD_H
 #define __EPD_H
 
+#include <stdio.h>
 #include <stdint.h>
 #include <string.h>
 
@@ -77,6 +78,10 @@ arguments that define feature behaviors."
 #define EPINK_UPDATE_MODE_FULL 1
 #define EPINK_UPDATE_MODE_PART 2
 
+#ifndef DEFAULT_EPINK_UPDATE_MODE
+    #define DEFAULT_EPINK_UPDATE_MODE EPINK_UPDATE_MODE_PART
+#endif
+
 #define EPINK_DISP_BUFFER_SIZE (EPINK_WIDTH*EPINK_HEIGHT/8)
 #define EPINK_DISP_BUFFER_OFFSET(p,x)(p*EPINK_WIDTH + x)
 
@@ -87,6 +92,8 @@ arguments that define feature behaviors."
 #else
     #define EPINK_DEBUG
 #endif
+
+#define EPINK_ERROR(...) printf("[ERROR]" __VA_ARGS__)
 
 /* Base  */
 void cs_select();
@@ -102,37 +109,41 @@ void epink_write_command(uint8_t command);
 void epink_write_data(uint8_t data);
 void epink_wait_busy();
 
-// void epink_init(uint8_t mode);
+void epink_init(uint8_t mode);
 // void epink_clear(uint8_t color);
-// void epink_blank();
+void epink_blank();
 struct display_ops {
-    void (*module_init)(uint8_t mode);
+    int (*module_init)(uint8_t mode);
     void (*module_flush)();
     void (*module_clear)(uint8_t color);
+    void (*module_blank)();
 };
 struct display_module {
-
+    uint32_t id;
     char *name;
     struct display_ops ops;
 
+    struct display_module *p_next;
 } default_module;
 
-#define UI_HANDLER_REGISTER(handler) \
-    static struct ui_handler handler##_handler = { \
-        .name = #handler, \
+extern int register_module( struct display_module *module );
+struct display_module *request_disp_module(char *name);
+void disp_modules_init( void );
+#define DISP_MODULE_REGISTER(module) \
+    static struct display_module module##_module = { \
+        .name = #module, \
         .ops = { \
-                .module_init = handler##_init, \
-                .module_flush = handler##_flush, \
-                .module_clear = handler##_clear, \
+                .module_init = module##_init, \
+                .module_flush = module##_flush, \
+                .module_clear = module##_clear, \
         }, \
     }; \
-    static void __attribute__((constructor)) handler##_register(void) \
+    static void __attribute__((constructor)) module##_register(void) \
     { \
-        register_handler(&handler##_handler); \
+        register_module(&module##_module); \
     }
 
-uint8_t epink_disp_buffer[EPINK_DISP_BUFFER_SIZE];
-
+extern uint8_t epink_disp_buffer[EPINK_DISP_BUFFER_SIZE];
 extern unsigned char fontdata_mini_4x6[1536];
 extern unsigned char fontdata_8x16[4096];
 

@@ -142,7 +142,7 @@ void ep_luat_device_init( uint8_t mode )
     }
 }
 
-static void ep_luat_init(uint8_t mode)
+static int ep_luat_init(uint8_t mode)
 {
     ep_luat_device_init(mode);
 }
@@ -196,3 +196,23 @@ void ep_luat_flush()
     // sleep_ms(100);
     ep_luat_turn_on_display();
 }
+
+// void ep_luat_blank()
+// {
+//     ep_luat_init(EPINK_UPDATE_MODE_FULL);
+
+//     /*  a global clear before drawing operations  */
+//     ep_luat_clear(0x00);
+//     sleep_ms(200);
+//     ep_luat_clear(0xFF);
+//     sleep_ms(200);
+
+//     ep_luat_init(EPINK_UPDATE_MODE_PART);
+
+//     ep_luat_clear(0x00);
+//     sleep_ms(200);
+//     ep_luat_clear(0xFF);
+//     sleep_ms(200);
+// }
+
+DISP_MODULE_REGISTER(ep_luat);

@@ -39,10 +39,7 @@
 #include "epd.h"
 #include <stddef.h>
 
-// uint8_t epink_disp_buffer[EPINK_DISP_BUFFER_SIZE];
-
-// extern unsigned char fontdata_mini_4x6[1536];
-// extern unsigned char fontdata_8x16[4096];
+uint8_t epink_disp_buffer[EPINK_DISP_BUFFER_SIZE];
 
 /* ========== epink pin controls ========== */
 #ifdef EPINK_CS_PIN
@@ -172,10 +169,23 @@ void epink_wait_busy()
 void epink_init(uint8_t mode)
 {
     // epink_device_init(mode);
-    if (!default_module.ops.module_init)
+    // default_module = *request_disp_module("ssd1681");
+    if (default_module.ops.module_init)
         default_module.ops.module_init(mode);
 
-    memset(epink_disp_buffer, 0xFF, ARRAY_SIZE(epink_disp_buffer));
+    memset(epink_disp_buffer, EPINK_COLOR_WHITE, ARRAY_SIZE(epink_disp_buffer));
+}
+
+/**
+ * @brief Flush each byte in display buffer to screen
+ *
+ */
+void epink_flush()
+{
+    if (default_module.ops.module_flush)
+        default_module.ops.module_flush();
+    else
+        EPINK_ERROR("This module doesn't expose a {flush} function!\n");
 }
 
 /**
@@ -185,25 +195,35 @@ void epink_init(uint8_t mode)
  */
 void epink_clear(uint8_t color)
 {
-
+    if (default_module.ops.module_clear)
+        default_module.ops.module_clear(color);
+    else
+        EPINK_ERROR("This module doesn't expose a {clear} function!\n");
 }
 
 void epink_blank()
 {
-    epink_init(EPINK_UPDATE_MODE_FULL);
-
-    /*  a global clear before drawing operations  */
-    epink_clear(0x00);
-    sleep_ms(200);
-    epink_clear(0xFF);
-    sleep_ms(200);
-
-    epink_init(EPINK_UPDATE_MODE_PART);
-
-    epink_clear(0x00);
-    sleep_ms(200);
-    epink_clear(0xFF);
-    sleep_ms(200);
+    if (default_module.ops.module_blank) {
+        default_module.ops.module_blank();
+    }
+    else {
+        EPINK_ERROR("This module doesn't expose a {blank} function!\n \
+                    Using a default blank ops\n");
+        epink_init(EPINK_UPDATE_MODE_FULL);
+    
+        /*  a global clear before drawing operations  */
+        epink_clear(0x00);
+        sleep_ms(200);
+        epink_clear(0xFF);
+        sleep_ms(200);
+    
+        epink_init(EPINK_UPDATE_MODE_PART);
+    
+        epink_clear(0x00);
+        sleep_ms(200);
+        epink_clear(0xFF);
+        sleep_ms(200);
+    }
 }
 
 /**
@@ -222,14 +242,6 @@ static void __make_random_dram_data()
     for (int i = 0; i < ARRAY_SIZE(epink_disp_buffer); i++) {
         epink_disp_buffer[i] = 0x49;
     }
-}
-
-/**
- * @brief Flush each byte in display buffer to screen
- *
- */
-void epink_flush()
-{
 }
 
 /**

@@ -11,6 +11,10 @@ project
 
     Those files named epd means `e-paper driver`, it's HAL layer of bottom display panels.
 
+- module manager
+
+    This file used to manager multiple display modules used in one device
+
 - ep_luat
 
     This module is made by luatos offical but sold out event screen panle

@@ -302,6 +302,7 @@ int main(void)
     /* start a timer for lvgl clock */
     add_repeating_timer_us(MICROSECOND(5000), lvgl_clock_cb, NULL, &lvgl_clock_timer);
 
+    default_module = *request_disp_module("ep_luat");
     epink_blank();      /* a global reflush for E-paper is required */
     ui_init();          /* call qquareline project initialization process */
 
