@@ -58,7 +58,7 @@ static void my_set_pix_cb(lv_disp_drv_t * disp_drv, uint8_t * buf, lv_coord_t bu
  *  STATIC VARIABLES
  **********************/
 extern uint8_t epink_disp_buffer[200*200/8];
-// int pixel_count=0;
+uint8_t *pen = epink_disp_buffer;
 
 /**********************
  *      MACROS
@@ -104,7 +104,7 @@ void lv_port_disp_init( void )
      */
     
     /* Example for 1) */
-    static lv_disp_draw_buf_t draw_buf_dsc_1;
+    // static lv_disp_draw_buf_t draw_buf_dsc_1;
     // static lv_color_t buf_1[MY_DISP_HOR_RES * MY_DISP_VER_RES / 8];                          /*A buffer for 10 rows*/
     // lv_disp_draw_buf_init(&draw_buf_dsc_1, buf_1, NULL, MY_DISP_HOR_RES * MY_DISP_VER_RES / 8);   /*Initialize the display buffer*/
 
@@ -119,7 +119,7 @@ void lv_port_disp_init( void )
     static lv_color_t buf_3_1[MY_DISP_HOR_RES * MY_DISP_VER_RES];            /*A screen sized buffer*/
     static lv_color_t buf_3_2[MY_DISP_HOR_RES * MY_DISP_VER_RES];            /*Another screen sized buffer*/
     lv_disp_draw_buf_init( &draw_buf_dsc_3, buf_3_1, buf_3_2, MY_DISP_HOR_RES * MY_DISP_VER_RES );  /*Initialize the display buffer*/
-                           
+
     /*-----------------------------------
      * Register the display in LVGL
      *----------------------------------*/
@@ -178,25 +178,25 @@ static void disp_exit( void )
 
 static void my_set_pix_cb(lv_disp_drv_t * disp_drv, uint8_t * buf, lv_coord_t buf_w, lv_coord_t x, lv_coord_t y, lv_color_t color, lv_opa_t opa)
 {
-    static uint8_t offset=0;
-    int page,page_left;
-    uint8_t *pen = epink_disp_buffer;
-    page = x / 8;
+    // int page,page_left;
+    // uint8_t *pen = epink_disp_buffer;
+    // page = x / 8;
     /* The page_left is the bit we need to set to page, will use later */
-    page_left = ( x % 8 == 0 ) ? 0 : x % 8;
+    // page_left = ( x % 8 == 0 ) ? 0 : x % 8;
 
-    // buf += buf_w/8 * y;
-    // buf += x/8;
+    // if(lv_color_brightness(color) < 128) {
+    //     pen[y * 25 + page] &= ~( 1 << ( 7 - page_left ) );
+    // }
+    // else {
+    //     pen[y * 25 + page] |= ( 1 << ( 7 - page_left ) );
+    // }
 
     if(lv_color_brightness(color) < 128) {
-        pen[y * 25 + page] &= ~( 1 << ( 7 - page_left ) );
+        epink_draw_pixel(x, y, 0xff);
     }
     else {
-        pen[y * 25 + page] |= ( 1 << ( 7 - page_left ) );
+        epink_draw_pixel(x, y, 0x00);
     }
-    
-    // printf("x:%d, y:%d\n", x, y);
-    // pixel_count++;
 }
 
 /*Flush the content of the internal buffer the specific area on the display
@@ -228,7 +228,6 @@ static void disp_flush( lv_disp_drv_t *disp_drv, const lv_area_t *area,
     // printf("pixel count:%d\n", pixel_count);
     // pixel_count=0;
 
-    // memcpy(epink_disp_buffer, &color_p->full, 200*200/8);
     epink_flush();
     /*IMPORTANT!!!
      *Inform the graphics library that you are ready with the flushing*/

@@ -40,6 +40,7 @@
 #include <stddef.h>
 
 uint8_t epink_disp_buffer[EPINK_DISP_BUFFER_SIZE];
+// static uint8_t *pen = epink_disp_buffer;
 
 /* ========== epink pin controls ========== */
 #ifdef EPINK_CS_PIN
@@ -90,10 +91,10 @@ void epink_reset()
 {
     epink_res_set();
     sleep_ms(200);
-
+    
     epink_res_clr();
     sleep_ms(2);
-
+    
     epink_res_set();
     sleep_ms(200);
 }
@@ -136,7 +137,7 @@ static void epink_wait_busy_timeout(uint32_t timeout)
             sleep_ms(100);
         }
     }
-
+    
     EPINK_DEBUG("epink_wait_busy_timeout ok\n");
 }
 
@@ -146,18 +147,7 @@ static void epink_wait_busy_timeout(uint32_t timeout)
  */
 void epink_wait_busy()
 {
-    uint32_t timeout = 100;
-
-    while (gpio_get(EPINK_BUSY_PIN)) {
-        if (timeout-- == 0) {
-            EPINK_DEBUG("epink_wait_busy timeout\n");
-            break;
-        } else {
-            sleep_ms(100);
-        }
-    }
-
-    EPINK_DEBUG("epink_wait_busy ok\n");
+    while (gpio_get(EPINK_BUSY_PIN));
 }
 
 /**
@@ -172,7 +162,9 @@ void epink_init(uint8_t mode)
     // default_module = *request_disp_module("ssd1681");
     if (default_module.ops.module_init)
         default_module.ops.module_init(mode);
-
+    else
+        EPINK_ERROR("This module doesn't exposed a {init} function!\n");
+        
     memset(epink_disp_buffer, EPINK_COLOR_WHITE, ARRAY_SIZE(epink_disp_buffer));
 }
 
@@ -185,7 +177,7 @@ void epink_flush()
     if (default_module.ops.module_flush)
         default_module.ops.module_flush();
     else
-        EPINK_ERROR("This module doesn't expose a {flush} function!\n");
+        EPINK_ERROR("This module doesn't exposed a {flush} function!\n");
 }
 
 /**
@@ -198,27 +190,26 @@ void epink_clear(uint8_t color)
     if (default_module.ops.module_clear)
         default_module.ops.module_clear(color);
     else
-        EPINK_ERROR("This module doesn't expose a {clear} function!\n");
+        EPINK_ERROR("This module doesn't exposed a {clear} function!\n");
 }
 
 void epink_blank()
 {
     if (default_module.ops.module_blank) {
         default_module.ops.module_blank();
-    }
-    else {
-        EPINK_ERROR("This module doesn't expose a {blank} function!\n \
+    } else {
+        EPINK_ERROR("This module doesn't exposed a {blank} function!\n \
                     Using a default blank ops\n");
         epink_init(EPINK_UPDATE_MODE_FULL);
-    
+        
         /*  a global clear before drawing operations  */
         epink_clear(0x00);
         sleep_ms(200);
         epink_clear(0xFF);
         sleep_ms(200);
-    
+        
         epink_init(EPINK_UPDATE_MODE_PART);
-    
+        
         epink_clear(0x00);
         sleep_ms(200);
         epink_clear(0xFF);
@@ -263,69 +254,11 @@ void epink_buffer_clear()
  */
 void epink_draw_pixel(uint8_t x, uint8_t y, uint8_t color)
 {
-    /* If we want to do a given pixel draw, the best
-     * way might be draw it in a display buffer, because
-     * most display controller like this "epink", usually
-     * could enter a page write mode(check maunal of ssd1306),
-     * It's really makes a speed up and reduces the
-     * display buffer size we need to alloced.
-     *
-     * But the problems also goes on, In this mode, the eight pixel
-     * bit data was conbined to a byte and write to controller directly
-     * so we need to clac the given (x,y) in which page at display buffer
-     * and use "|=", "&=" to operate the page then flush it to screen.
-     *
-     * Actually, the flush operation can be executed when you already
-     * drawed all the pixel data to buffer
-     *
-     * These pages in display buffer looks like this :
-     *      Y
-     *    X ******** ******** ... ******** 25 page
-     *      ******** ******** ... ********
-     *         ...
-     *      ******** ******** ... ********
-     *      200 line
-     *                                  5000 bytes
-     * So we did it like blow
-     */
-    uint8_t page, page_left;
-    uint8_t *pen = epink_disp_buffer;
-#ifdef EPINK_COORD_CHECK
-
-    if ((x >= 0 && x < EPINK_WIDTH) && (y >= 0 && y < EPINK_HEIGHT)) {
-#endif
-        /* How to get the page in ram? */
-        /* 1. Calc the "X" in which page of line */
-        page = x / 8;
-        /* The page_left is the bit we need to set to page, will use later */
-        page_left = (x % 8 == 0) ? 0 : x % 8;
-        EPINK_DEBUG("page:%d, page_left:%d\n", page, page_left);
-
-        /* 2. Get which line using "Y" */
-        /* The number 25 means a line contains 25 page,
-         * I should use a MARCO better, but in order to be
-         * more intuitive and if we use "Y * 25 + page",
-         * we can got the target page in display buffer,
-         * then we just set the offset bit to 0 means draw
-         * it into black.
-         *
-         * A little bit explanation of "1 << (7 - page_left)",
-         * when we draw a page to screen, the lowest bit of
-         * page corresponded the highest bit of byte in buffer.
-         */
-        if (color)
-            pen[y * 25 + page] &= ~(1 << (7 - page_left));
-        else
-            pen[y * 25 + page] |= (1 << (7 - page_left));
-
-        EPINK_DEBUG("set:%d, clear:%d\n", (uint8_t)~(1 << page_left),
-                    (1 << page_left));
-        EPINK_DEBUG("which:%d, dump:%d\n", y * 25 + page, pen[y * 25 + page]);
-
-#ifdef EPINK_COORD_CHECK
+    if (default_module.ops.module_put_pixel) {
+        default_module.ops.module_put_pixel(x, y, color);
+    } else {
+        EPINK_ERROR("This module doesn't exposed a {draw_pixel} function!\n");
     }
-
-#endif
 }
 
 /**
@@ -341,14 +274,14 @@ static void epink_putascii(uint8_t x, uint8_t y, char c)
     const unsigned char *dots = (uint8_t *)&fontdata_8x16[c * 16];
     uint8_t *pen = epink_disp_buffer;
     uint8_t row, col, byte;
-
+    
     /* In this case, we use a 8x16 size font, so
      * we need to draw 16 byte totally, for each
      * byte, draw it's each bit from higher to low
      */
     for (row = 0; row < 16; row++) {
         byte = dots[row];
-
+        
         for (col = 0; col < 8; col++) {
             epink_draw_pixel(x + col, y + row, (byte << col) & 0x80);
         }
@@ -367,7 +300,7 @@ static void epink_putascii_string(uint8_t x, uint8_t y, char *str)
     while (*str != '\0') {
         epink_putascii(x, y, *str++);
         x += 8; /* move x to the next pos */
-
+        
         /* start a new line if reach the end of line */
         if (x >= EPINK_WIDTH) {
             x = 0;

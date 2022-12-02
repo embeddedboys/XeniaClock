@@ -100,6 +100,7 @@ static void ep_luat_turn_on_display()
     epink_wait_busy();
 }
 
+#if EPINK_USE_INIT
 void ep_luat_device_init( uint8_t mode )
 {
     epink_reset();
@@ -146,13 +147,17 @@ static int ep_luat_init(uint8_t mode)
 {
     ep_luat_device_init(mode);
 }
+#else
+static int (*ep_luat_init)(uint8_t mode) = NULL;
+#endif
 
 /**
  * @brief Directly clear the GDDRAM in controller
  * 
  * @param color 0xFF means white, 0x00 means black
  */
-void ep_luat_clear( uint8_t color )
+#if EPINK_USE_CLEAR
+static void ep_luat_clear( uint8_t color )
 {
     uint8_t width, height;
     width = ( EPINK_WIDTH % 8 == 0 ) ? ( EPINK_WIDTH / 8 ) :
@@ -172,7 +177,11 @@ void ep_luat_clear( uint8_t color )
     
     ep_luat_turn_on_display();
 }
+#else
+static void (*ep_luat_clear)(uint8_t color) = NULL;
+#endif
 
+#if EPINK_USE_FLUSH
 void ep_luat_flush()
 {
     uint8_t *pen = epink_disp_buffer;
@@ -196,23 +205,123 @@ void ep_luat_flush()
     // sleep_ms(100);
     ep_luat_turn_on_display();
 }
+#else
+static void (*ep_luat_flush)() = NULL;
+#endif
 
-// void ep_luat_blank()
-// {
-//     ep_luat_init(EPINK_UPDATE_MODE_FULL);
+#if EPINK_USE_SET_UPDATE_MODE
+static void ep_luat_set_update_mode(uint8_t mode)
+{
+    epink_write_command( 0x32 );
+    
+    if( mode == EPINK_UPDATE_MODE_FULL )
+        for( uint8_t i = 0; i < ARRAY_SIZE( EPD_1IN54_lut_full_update ); i++ ) {
+            epink_write_data( EPD_1IN54_lut_full_update[i] );
+        }
+    else if( mode == EPINK_UPDATE_MODE_PART )
+        for( uint8_t i = 0; i < ARRAY_SIZE( EPD_1IN54_lut_partial_update ); i++ ) {
+            epink_write_data( EPD_1IN54_lut_partial_update[i] );
+        }
+    else {
+        EPINK_DEBUG( "epink_init: unknown update mode\n" );
+    }
+}
+#else
+static void (*ep_luat_set_update_mode)(uint8_t mode) = NULL;
+#endif
 
-//     /*  a global clear before drawing operations  */
-//     ep_luat_clear(0x00);
-//     sleep_ms(200);
-//     ep_luat_clear(0xFF);
-//     sleep_ms(200);
+#if EPINK_USE_BLANK
+static void ep_luat_blank()
+{
+    ep_luat_init(EPINK_UPDATE_MODE_FULL);
 
-//     ep_luat_init(EPINK_UPDATE_MODE_PART);
+    /*  a global clear before drawing operations  */
+    ep_luat_clear(EPINK_COLOR_BLACK);
+    sleep_ms(200);
+    ep_luat_clear(EPINK_COLOR_WHITE);
+    sleep_ms(200);
 
-//     ep_luat_clear(0x00);
-//     sleep_ms(200);
-//     ep_luat_clear(0xFF);
-//     sleep_ms(200);
-// }
+    ep_luat_init(EPINK_UPDATE_MODE_PART);
+
+    ep_luat_clear(EPINK_COLOR_BLACK);
+    sleep_ms(200);
+    ep_luat_clear(EPINK_COLOR_WHITE);
+    sleep_ms(200);
+}
+#else
+static void (*ep_luat_blank)() = NULL;
+#endif
+
+#if EPINK_USE_PUT_PIXEL
+static void ep_luat_put_pixel(uint16_t x, uint16_t y, uint8_t color)
+{
+    /* If we want to do a given pixel draw, the best
+     * way might be draw it in a display buffer, because
+     * most display controller like this "epink", usually
+     * could enter a page write mode(check maunal of ssd1306),
+     * It's really makes a speed up and reduces the
+     * display buffer size we need to alloced.
+     *
+     * But the problems also goes on, In this mode, the eight pixel
+     * bit data was conbined to a byte and write to controller directly
+     * so we need to clac the given (x,y) in which page at display buffer
+     * and use "|=", "&=" to operate the page then flush it to screen.
+     *
+     * Actually, the flush operation can be executed when you already
+     * drawed all the pixel data to buffer
+     *
+     * These pages in display buffer looks like this :
+     *      Y
+     *    X ******** ******** ... ******** 25 page
+     *      ******** ******** ... ********
+     *         ...
+     *      ******** ******** ... ********
+     *      200 line
+     *                                  5000 bytes
+     * So we did it like blow
+     */
+    // uint8_t page, page_left;
+    uint8_t *pen = epink_disp_buffer;
+#ifdef EPINK_COORD_CHECK
+    if ((x >= 0 && x < EPINK_WIDTH) && (y >= 0 && y < EPINK_HEIGHT)) {
+#endif
+        /* How to get the page in ram? */
+        /* 1. Calc the "X" in which page of line */
+        // page = x / 8;
+        /* The page_left is the bit we need to set to page, will use later */
+        // page_left = (x % 8 == 0) ? 0 : x % 8;
+        // EPINK_DEBUG("page:%d, page_left:%d\n", page, page_left);
+        
+        /* 2. Get which line using "Y" */
+        /* The number 25 means a line contains 25 page,
+         * I should use a MARCO better, but in order to be
+         * more intuitive and if we use "Y * 25 + page",
+         * we can got the target page in display buffer,
+         * then we just set the offset bit to 0 means draw
+         * it into black.
+         *
+         * A little bit explanation of "1 << (7 - page_left)",
+         * when we draw a page to screen, the lowest bit of
+         * page corresponded the highest bit of byte in buffer.
+         */
+        if (color)
+            // pen[y * 25 + (x / 8)] &= ~(1 << (7 - (x % 8)));
+            pen[y * 25 + (x / 8)] &= ~(0x80 >> (x % 8));
+        else
+            // pen[y * 25 + (x / 8)] |= (1 << (7 - (x % 8)));
+            pen[y * 25 + (x / 8)] |= (0x80 >> (x % 8));
+            
+        // EPINK_DEBUG("set:%d, clear:%d\n", (uint8_t)~(1 << page_left),
+        //             (1 << page_left));
+        // EPINK_DEBUG("which:%d, dump:%d\n", y * 25 + page, pen[y * 25 + page]);
+        
+#ifdef EPINK_COORD_CHECK
+    }
+    
+#endif
+}
+#else
+static void (*ep_luat_put_pixel)(uint16_t x, uint16_t y, uint8_t color) = NULL;
+#endif
 
 DISP_MODULE_REGISTER(ep_luat);

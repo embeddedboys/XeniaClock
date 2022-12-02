@@ -133,9 +133,9 @@ static void native_rtc_init()
     rtc_device_init();
 
     /* set a test time to device */
-    t.hour = 16;
-    t.min = 32;
-    t.sec = 30;
+    t.hour = 19;    /* if i could get home earlier */
+    t.min = 30;
+    t.sec = 00;
     p_rtc_device_set_time(t);
 
     /* init rtc host in mcu */
@@ -282,7 +282,7 @@ static void network_config()
     lv_qrcode_update(qr_code, data, strlen(data));
     lv_disp_load_scr(ui_ScreenEpinkConfig);
 
-    /* lol, persent configurating */
+    /* lol, pretend we are configuring device */
     sleep_ms(3000);
 
     /* if network configuration is okay, switch to home */
@@ -291,9 +291,9 @@ static void network_config()
 
 int main(void)
 {
-    stdio_init_all();
     /* system up hardware init */
     hal_init();
+    stdio_init_all();
 
     /* lvgl init */
     struct repeating_timer lvgl_clock_timer;
@@ -303,6 +303,7 @@ int main(void)
     add_repeating_timer_us(MICROSECOND(5000), lvgl_clock_cb, NULL, &lvgl_clock_timer);
 
     default_module = *request_disp_module("ep_luat");
+    // default_module = *request_disp_module("ssd1681");
     epink_blank();      /* a global reflush for E-paper is required */
     ui_init();          /* call qquareline project initialization process */
 
@@ -320,6 +321,8 @@ int main(void)
     }
 
     while (1) {
+        tight_loop_contents();
+
         sleep_ms(3000);
         lv_disp_load_scr(ui_ScreenEpinkHome);
     }

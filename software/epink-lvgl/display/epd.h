@@ -74,16 +74,16 @@ arguments that define feature behaviors."
 #define EPINK_BPP 1
 #define EPINK_COLOR_WHITE (0xff)
 #define EPINK_COLOR_BLACK (0x00)
+#define EPINK_DISP_BUFFER_SIZE (EPINK_WIDTH*EPINK_HEIGHT/8)
+#define EPINK_DISP_BUFFER_OFFSET(p,x)(p*EPINK_WIDTH + x)
 
+/* ========== epink panel settings ========== */
 #define EPINK_UPDATE_MODE_FULL 1
 #define EPINK_UPDATE_MODE_PART 2
 
 #ifndef DEFAULT_EPINK_UPDATE_MODE
     #define DEFAULT_EPINK_UPDATE_MODE EPINK_UPDATE_MODE_PART
 #endif
-
-#define EPINK_DISP_BUFFER_SIZE (EPINK_WIDTH*EPINK_HEIGHT/8)
-#define EPINK_DISP_BUFFER_OFFSET(p,x)(p*EPINK_WIDTH + x)
 
 // #define EPINK_DEBUG_MODE
 #define EPINK_COORD_CHECK
@@ -112,15 +112,40 @@ void epink_wait_busy();
 void epink_init(uint8_t mode);
 // void epink_clear(uint8_t color);
 void epink_blank();
+void epink_flush();
+void epink_draw_pixel(uint8_t x, uint8_t y, uint8_t color);
+
+struct display_config {
+    uint32_t width;
+    uint32_t height;
+    uint32_t bpp;
+
+    uint32_t update_mode;
+} default_cfg;
+
 struct display_ops {
+#define EPINK_USE_INIT              1
     int (*module_init)(uint8_t mode);
+
+#define EPINK_USE_FLUSH             1
     void (*module_flush)();
+
+#define EPINK_USE_CLEAR             1
     void (*module_clear)(uint8_t color);
+
+#define EPINK_USE_BLANK             1
     void (*module_blank)();
+
+#define EPINK_USE_SET_UPDATE_MODE   1
+    void (*module_set_update_mode)(uint8_t mode);
+
+#define EPINK_USE_PUT_PIXEL         1
+    void (*module_put_pixel)(uint16_t x, uint16_t y, uint8_t color);
 };
 struct display_module {
     uint32_t id;
     char *name;
+    uint8_t *fb;
     struct display_ops ops;
 
     struct display_module *p_next;
@@ -136,6 +161,9 @@ void disp_modules_init( void );
                 .module_init = module##_init, \
                 .module_flush = module##_flush, \
                 .module_clear = module##_clear, \
+                .module_blank = module##_blank, \
+                .module_set_update_mode = module##_set_update_mode, \
+                .module_put_pixel = module##_put_pixel \
         }, \
     }; \
     static void __attribute__((constructor)) module##_register(void) \
