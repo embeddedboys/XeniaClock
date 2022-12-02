@@ -76,6 +76,23 @@ struct esp01s_config {
     char *ip;
 };
 
+struct esp01s_server {
+    void (*init)(void);
+    void (*start_server)(void);
+    void (*stop_server)(void);
+    void (*restart_server)(void);
+
+    void (*listen_on)(uint16_t port);
+};
+
+struct esp01s_connection {
+    uint32_t id;
+    uint32_t port;
+
+    char *type;
+    char *ip;
+};
+
 void esp01s_test();
 void esp01s_set_ap_config(struct esp01s_config *cfg);
 void esp01s_start_ap();

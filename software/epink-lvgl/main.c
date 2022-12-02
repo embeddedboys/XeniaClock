@@ -257,7 +257,7 @@ static void post_timers_init()
     /* timer for updating battery percent, just a demo for now */
     lv_timer_t *timer_battery = lv_timer_create_basic();
     timer_battery->timer_cb = lv_timer_battery_cb;
-    timer_battery->period = REFRESH_SPEED_FAST;
+    timer_battery->period = REFRESH_SPEED_SLOW;
 
     /* timer for updating temperture and humidity */
     lv_timer_t *timer_temp_humid = lv_timer_create_basic();
@@ -292,8 +292,8 @@ static void network_config()
 int main(void)
 {
     /* system up hardware init */
-    hal_init();
     stdio_init_all();
+    hal_init();
 
     /* lvgl init */
     struct repeating_timer lvgl_clock_timer;
