@@ -38,6 +38,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include "hardware/uart.h"
 #include "pico/stdio.h"
 #include "pico/stdlib.h"
 #include "pico/time.h"
@@ -59,6 +60,7 @@
 #include "lvgl/lvgl.h"
 #include "lvgl/demos/lv_demos.h"
 #include "lvgl/src/extra/libs/qrcode/lv_qrcode.h"
+#include "src/misc/lv_timer.h"
 #include "src/widgets/lv_label.h"
 #include "ui/ui.h"
 #include "ui/ui_comp.h"
@@ -107,6 +109,8 @@ static void hal_init(void)
     uart_init(uart1, DEFAULT_UART_SPEED);
     gpio_set_function(8, GPIO_FUNC_UART);
     gpio_set_function(9, GPIO_FUNC_UART);
+
+    uart_set_fifo_enabled(uart1, false);
 }
 
 static void sys_clk_init()
@@ -133,10 +137,10 @@ static void native_rtc_init()
     rtc_device_init();
 
     /* set a test time to device */
-    t.hour = 19;    /* if i could get home earlier */
-    t.min = 30;
-    t.sec = 00;
-    p_rtc_device_set_time(t);
+    // t.hour = 19;    /* if i could get home earlier */
+    // t.min = 30;
+    // t.sec = 00;
+    // p_rtc_device_set_time(t);
 
     /* init rtc host in mcu */
     rtc_host_init();
@@ -144,9 +148,9 @@ static void native_rtc_init()
     /* read RTC time from mcu */
     t = rtc_host_get_datetime();
 
-    hour = t.hour;
-    minute = t.min;
-    second = t.sec;
+    // hour = t.hour;
+    // minute = t.min;
+    // second = t.sec;
 
     /* write back to lvgl */
     lv_roller_set_selected(ui_RollerHour, hour, LV_ANIM_OFF);
@@ -263,12 +267,13 @@ static void post_timers_init()
     lv_timer_t *timer_temp_humid = lv_timer_create_basic();
     timer_temp_humid->timer_cb = lv_timer_temp_humid_cb;
     timer_temp_humid->period = REFRESH_SPEED_FAST;
+    lv_timer_pause(timer_temp_humid);
 }
 
 extern lv_obj_t *ui_LabelWifiName;
 static void network_config()
 {
-    esp01s_start_ap();
+    esp01s_init();
     const char *data = "http://192.168.4.1";
 
     /* show a default AP name */
@@ -294,6 +299,8 @@ int main(void)
     /* system up hardware init */
     stdio_init_all();
     hal_init();
+
+    printf("%s, %d\n", __func__, __LINE__);
 
     /* lvgl init */
     struct repeating_timer lvgl_clock_timer;

@@ -32,8 +32,11 @@
 #define __ESP01S_H
 
 #include <stdio.h>
+#include <stdlib.h>
 #include "pico/stdlib.h"
 #include "hardware/uart.h"
+
+#include "common/tools.h"
 
 typedef enum {
     ESP8266_DISABLE_MODE = 0,
@@ -46,7 +49,7 @@ typedef enum {
 #define DEFAULT_ESP8266_WORK_MODE   ESP8266_STATION_MODE
 
 /* SoftAP */
-#define DEFAULT_ESP8266_AP_NAME     "Ghost" // max for 13 chars
+#define DEFAULT_ESP8266_AP_NAME     "Ghosts" // max for 13 chars
 #define DEFAULT_ESP8266_AP_PSK      "12345678"
 #define DEFAULT_ESP8266_AP_CHANNEL  5
 #define DEFAULT_ESP8266_AP_ECN      0
@@ -93,6 +96,7 @@ struct esp01s_connection {
     char *ip;
 };
 
+void esp01s_init();
 void esp01s_test();
 void esp01s_set_ap_config(struct esp01s_config *cfg);
 void esp01s_start_ap();

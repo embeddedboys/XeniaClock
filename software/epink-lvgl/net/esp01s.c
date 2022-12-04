@@ -29,8 +29,12 @@
  */
 
 #include "esp01s.h"
+#include "common/tools.h"
+#include "hardware/irq.h"
+#include "hardware/regs/intctrl.h"
 #include "hardware/uart.h"
 #include "pico/time.h"
+#include "src/misc/lv_mem.h"
 
 #define ESP8266_CMD_SUFFIX          "\r\n"
 #define ESP8266_CMD(cmd)            cmd ESP8266_CMD_SUFFIX
@@ -53,17 +57,18 @@
 // #define ESP8266_CMD_AT_CWJAP(ssid,psk)     ESP8266_CMD("AT+CWJAP=" #ssid "," #psk)
 // #define ESP8266_CMD_AT_CWSAP(ssid,psk,chn,ecn)  ESP8266_CMD("AT+CWSAP=" #ssid "," #psk "," #chn "," #ecn)
 
+static uint32_t g_rx_buf_index = 0;
+static uint8_t g_rx_buf[128];
+
 static void __esp01s_send_command(char *cmd);
 
 #define ESP8266_SEND_CMD_NO_PARAM(cmd) do { \
         __esp01s_send_command(ESP8266_CMD(cmd));         \
-        printf("at_cmd: %s\n", ESP8266_CMD(cmd));       \
     } while(0);
 
 #define ESP8266_SEND_CMD(cmd, ...) do { \
         char at_cmd[48];    \
         sprintf(at_cmd, ESP8266_CMD(cmd), __VA_ARGS__);   \
-        printf("at_cmd: %s\n", at_cmd); \
         __esp01s_send_command(at_cmd);  \
     } while(0);
 
@@ -72,10 +77,26 @@ static struct esp01s_config cfg = {
     .mode = DEFAULT_ESP8266_WORK_MODE,
 };
 
+void esp01s_rx_isr() {
+    while(uart_is_readable(DEFAULT_ESP8266_UART_IFACE)) {
+        uint8_t ch = uart_getc(DEFAULT_ESP8266_UART_IFACE);
+        // printf("%c", ch);
+        g_rx_buf[g_rx_buf_index++] = ch;
+    }
+}
+
 static void __esp01s_send_command(char *cmd)
 {
+    uint8_t buf[64];
+    // printf("=========== %s, %d\n", __func__, __LINE__);
     uart_puts(DEFAULT_ESP8266_UART_IFACE, cmd);
+    sleep_ms(100);
+    g_rx_buf[g_rx_buf_index] = '\0';
+    g_rx_buf_index = 0;
+    printf("========%s========\n", g_rx_buf);
 }
+
+ 
 
 void esp01s_test()
 {
@@ -133,9 +154,8 @@ void esp01s_start_ap()
     in_cfg.ap_chn = DEFAULT_ESP8266_AP_CHANNEL;
     in_cfg.ap_ecn = DEFAULT_ESP8266_AP_ECN;
     
-    ESP8266_SEND_CMD_NO_PARAM(ESP8266_CMD_AT_RST);
+    // ESP8266_SEND_CMD_NO_PARAM(ESP8266_CMD_AT_RST);
     esp01s_change_mode(ESP8266_SOFT_AP_MODE);
-    sleep_ms(100);
     
     esp01s_set_ap_config(&in_cfg);
 }
@@ -200,8 +220,6 @@ void esp01s_server_tcp_send(char *ip, uint16_t length, char *content)
      * need call `esp01s_server_status` first
      * to query connections
      */
-    
-    
 }
 
 
@@ -228,3 +246,15 @@ void esp01s_ping(char *ip)
 }
 
 /* TODO: NTP handle */
+
+/* entrance of this module */
+void esp01s_init()
+{
+    irq_set_exclusive_handler(UART1_IRQ, esp01s_rx_isr);
+    irq_set_enabled(UART1_IRQ, true);
+
+    uart_set_irq_enables(DEFAULT_ESP8266_UART_IFACE, true, false);
+    __esp01s_send_command("ATE1\r\n");
+    esp01s_start_ap();
+    esp01s_server_status();
+}
