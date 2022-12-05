@@ -207,7 +207,7 @@ static const char *g_tips[] = {
 };
 static uint8_t tips_index = 0;
 
-static inline void lv_timer_label_tips_cb()
+static inline void lv_timer_label_tips_cb(struct _lv_timer_t *t)
 {
     lv_label_set_text(ui_LabelTips, g_tips[tips_index++]);
     if (tips_index > (ARRAY_SIZE(g_tips) - 1))
@@ -218,7 +218,7 @@ static inline void lv_timer_label_tips_cb()
 extern lv_obj_t *ui_PanelStatusBar;
 
 /* TODO: Real battery percent detect */
-static inline void lv_timer_battery_cb()
+static inline void lv_timer_battery_cb(struct _lv_timer_t *t)
 {
     lv_obj_t *ui_LabelBattery = ui_comp_get_child(ui_PanelStatusBar,
                                                   UI_COMP_PANELSTATUSBAR_LABELBATTERY);
@@ -233,7 +233,7 @@ static inline void lv_timer_battery_cb()
 extern lv_obj_t *ui_LabelTemperture;
 extern lv_obj_t *ui_LabelHumidity;
 
-static inline void lv_timer_temp_humid_cb()
+static inline void lv_timer_temp_humid_cb(struct _lv_timer_t *t)
 {
     struct aht10_data data = aht10_read_humidity_temperture();
 
@@ -273,7 +273,7 @@ static void post_timers_init()
 extern lv_obj_t *ui_LabelWifiName;
 static void network_config()
 {
-    esp01s_init();
+    esp01s_init(NULL);
     const char *data = "http://192.168.4.1";
 
     /* show a default AP name */

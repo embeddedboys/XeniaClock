@@ -36,6 +36,7 @@
 #include "pico/stdlib.h"
 #include "hardware/uart.h"
 
+#include "lvgl/lvgl.h"
 #include "common/tools.h"
 
 typedef enum {
@@ -45,7 +46,15 @@ typedef enum {
     ESP8266_SOFT_AP_STATION_MODE = 3,
 }esp8266_mode_t;
 
+typedef enum {
+    ESP8266_STATUS_RESET        = 0,
+    ESP8266_STATUS_BUSY         = 1,
+    ESP8266_STATUS_IDLE         = 2,
+    ESP8266_STATUS_INITIALIZED  = 3,
+} esp8266_status_t;
+
 #define DEFAULT_ESP8266_UART_IFACE  uart1
+#define DEFAULT_ESP8266_UART_IRQ    UART1_IRQ
 #define DEFAULT_ESP8266_WORK_MODE   ESP8266_STATION_MODE
 
 /* SoftAP */
@@ -65,18 +74,19 @@ struct esp01s_config {
 
     esp8266_mode_t mode;
 
-    /* If in station mode */
+    /* if in station mode */
     char *ssid;
     char *psk;
 
-    /* If in SoftAP mode */
+    /* if in SoftAP mode */
     char *ap_name;
     uint8_t ap_chn; /* AP channel */
     uint8_t ap_ecn; /* encypt mode */
     char *ap_psk;   /* password for WPA2 ecn mode */
 
-    /* ip of esp */
-    char *ip;
+    /* common */
+    char *ip;   /* ip of esp */
+    bool echo_enabled;
 };
 
 struct esp01s_server {
@@ -90,15 +100,28 @@ struct esp01s_server {
 
 struct esp01s_connection {
     uint32_t id;
-    uint32_t port;
-
     char *type;
-    char *ip;
+    char *addr;
+    uint32_t remote_port;
+    uint32_t local_port;
+    uint32_t tetype;
+
+    struct esp01s_connection *p_next;
 };
 
-void esp01s_init();
+struct esp01s_handle {
+    uint8_t initialized;
+    esp8266_status_t stat;
+
+    struct esp01s_config cfg;
+    struct esp01s_connection *conns;
+};
+
+void esp01s_init(struct esp01s_handle *handle);
 void esp01s_test();
-void esp01s_set_ap_config(struct esp01s_config *cfg);
-void esp01s_start_ap();
+void esp01s_set_ap_config(struct esp01s_handle *handle, struct esp01s_config *cfg);
+void esp01s_start_ap(struct esp01s_handle *handle);
+
+void lv_timer_esp01s_index_cb(struct _lv_timer_t *t);
 
 #endif

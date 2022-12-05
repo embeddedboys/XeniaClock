@@ -43,3 +43,16 @@ pico_enable_stdio_usb(epink_desktop 1)
 pico_enable_stdio_uart(epink_desktop 0)
 
 pico_add_extra_outputs(epink_desktop)
+
+# build the index html page first
+add_custom_target(
+    build_index ALL
+    COMMAND ${PYTHON_EXECUTABLE}
+        ${CMAKE_CURRENT_SOURCE_DIR}/net/html2doth.py
+        ${CMAKE_CURRENT_SOURCE_DIR}/net/index.html
+        ${CMAKE_CURRENT_SOURCE_DIR}/net/index.h
+
+    BYPRODUCTS ${CMAKE_CURRENT_SOURCE_DIR}/net/index.h
+    COMMENT "Generating index.h"
+)
+add_dependencies(epink_desktop build_index)
