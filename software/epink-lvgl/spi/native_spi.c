@@ -1,9 +1,9 @@
 /**
- * @file tools.h
+ * @file native_spi.c
  * @author IotaHydrae (writeforever@foxmail.com)
  * @brief 
  * @version 0.1
- * @date 2022-11-20
+ * @date 2022-12-06
  * 
  * MIT License
  * 
@@ -28,24 +28,4 @@
  * 
  */
 
-#ifndef __TOOLS_H
-#define __TOOLS_H
-
-#include <stdint.h>
-#include <stddef.h>
-
-#define DEBUG 1
-
-#if DEBUG
-#define pr_debug(fmt, ...) printf("[ 08:00:00 ] [DEBUG] %s : "fmt, __func__, ##__VA_ARGS__);
-#else
-#define pr_debug
-#endif
-
-#ifndef ARRAY_SIZE
-    #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
-#endif
-
-
-
-#endif
+#include "spi/native_spi.h"
