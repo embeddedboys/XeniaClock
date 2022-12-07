@@ -29,6 +29,7 @@
  */
 
 #include "native_i2c.h"
+#include "common/tools.h"
 #include "hardware/i2c.h"
 
 // static inline void i2c_transfer()
@@ -45,4 +46,11 @@ uint8_t i2c_read_reg(uint8_t addr, uint8_t reg)
     i2c_write_blocking(i2c_default, addr, wbuf, 1, true);
     i2c_read_blocking(i2c_default, addr, rbuf, 1, false);
     return rbuf[0];
+}
+
+void native_i2c_init(void)
+{
+    pr_debug("registering native i2c function pointer\n");
+    p_i2c_write_reg = i2c_write_reg;
+    p_i2c_read_reg = i2c_read_reg;
 }

@@ -38,4 +38,9 @@
 void i2c_write_reg(uint8_t addr, uint8_t reg, uint8_t val);
 uint8_t i2c_read_reg(uint8_t addr, uint8_t reg);
 
+void (*p_i2c_write_reg)(uint8_t addr, uint8_t reg, uint8_t val);
+uint8_t (*p_i2c_read_reg)(uint8_t addr, uint8_t reg);
+
+void native_i2c_init(void);
+
 #endif

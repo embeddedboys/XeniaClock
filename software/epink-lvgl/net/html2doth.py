@@ -28,7 +28,10 @@ def generate_c_header_file(list_web_content, output):
 
         fp.write("""#define INDEX_HTML_CONTENT \"""")
         for line in list_web_content:
-            fp.write(line.split("\n")[0]+"\\\n");
+            pure_line  = line.split("\n")[0]
+            # should give each `"` a `\`
+            pure_line = pure_line.replace("\"", "\\\"")
+            fp.write(pure_line+"\\\n");
         fp.write("\"")
 
         fp.write("\n#endif\n")

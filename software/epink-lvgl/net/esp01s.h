@@ -38,6 +38,7 @@
 
 #include "lvgl/lvgl.h"
 #include "common/tools.h"
+#include "common/list.h"
 
 typedef enum {
     ESP8266_DISABLE_MODE = 0,
@@ -95,7 +96,7 @@ struct esp01s_server {
     void (*stop_server)(void);
     void (*restart_server)(void);
 
-    void (*listen_on)(uint16_t port);
+    void (*listen_on)(uint16_t port, char *root);
 };
 
 struct esp01s_connection {
@@ -106,7 +107,7 @@ struct esp01s_connection {
     uint32_t local_port;
     uint32_t tetype;
 
-    struct esp01s_connection *p_next;
+    struct list_head head;
 };
 
 struct esp01s_handle {
@@ -114,7 +115,7 @@ struct esp01s_handle {
     esp8266_status_t stat;
 
     struct esp01s_config cfg;
-    struct esp01s_connection *conns;
+    struct esp01s_connection conns;
 };
 
 void esp01s_init(struct esp01s_handle *handle);

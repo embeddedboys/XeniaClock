@@ -68,6 +68,8 @@
 
 static void __esp01s_send_command(char *cmd);
 
+static lv_timer_t *timer_server_process;
+
 static struct esp01s_handle g_esp01s_handle = {0};
 static struct esp01s_handle *p_correct_handle = &g_esp01s_handle;
 
@@ -111,7 +113,7 @@ static void __esp01s_send(char *buf, uint32_t delay_ms)
     uart_puts(DEFAULT_ESP8266_UART_IFACE, buf);
     /* a delay is needed for waiting esp8266 internal process */
     sleep_ms(delay_ms);
-
+    
     /* append terminate ch '\0' to the end of buf and reset buf index */
     esp01s_rx_buf_reset();
     // pr_debug("========%s========\n", g_rx_buf);
@@ -139,7 +141,7 @@ static inline void esp01s_set_echo_enabled(struct esp01s_handle *handle, bool en
         pr_debug("module is not initialized! do nothing.\n");
         return;
     }
-
+    
     if (enabled) {
         ESP8266_SEND_CMD(ESP8266_CMD_ATE \
                          "%d",
@@ -159,7 +161,7 @@ void esp01s_change_mode(struct esp01s_handle *handle, esp8266_mode_t mode)
         pr_debug("module is not initialized! do nothing.\n");
         return;
     }
-
+    
     switch (mode) {
     case ESP8266_STATION_MODE:
     case ESP8266_SOFT_AP_MODE:
@@ -169,13 +171,13 @@ void esp01s_change_mode(struct esp01s_handle *handle, esp8266_mode_t mode)
         mode = DEFAULT_ESP8266_WORK_MODE;
         break;
     }
-
+    
     ESP8266_SEND_CMD(
                 ESP8266_CMD_AT_CWMODE \
                 "%d",
                 mode
     );
-
+    
     handle->cfg.mode = mode;
 }
 
@@ -196,16 +198,16 @@ void esp01s_set_ap_config(struct esp01s_handle *handle, struct esp01s_config *cf
 void esp01s_start_ap(struct esp01s_handle *handle)
 {
     struct esp01s_config in_cfg;
-
+    
     in_cfg.ap_name = DEFAULT_ESP8266_AP_NAME;
     in_cfg.ap_psk = DEFAULT_ESP8266_AP_PSK;
     in_cfg.ap_chn = DEFAULT_ESP8266_AP_CHANNEL;
     in_cfg.ap_ecn = DEFAULT_ESP8266_AP_ECN;
-
+    
     // ESP8266_SEND_CMD_NO_PARAM(ESP8266_CMD_AT_RST);
     esp01s_change_mode(handle, ESP8266_SOFT_AP_MODE);
     handle->cfg.mode = ESP8266_SOFT_AP_MODE;
-
+    
     esp01s_set_ap_config(handle, &in_cfg);
 }
 
@@ -218,7 +220,7 @@ void esp01s_stop_ap(struct esp01s_handle *handle)
 void esp01s_server_start(struct esp01s_handle *handle)
 {
     esp01s_start_ap(handle);
-
+    
     ESP8266_SEND_CMD(
                 ESP8266_CMD_AT_CIPMUX \
                 "%d",
@@ -233,9 +235,14 @@ void esp01s_server_stop(struct esp01s_handle *handle)
                 "%d",
                 ESP8266_CMD_OFF
     );
-
+    
     esp01s_stop_ap(handle);
     esp01s_reset(handle);
+}
+
+static void esp01s_server_process_cb()
+{
+
 }
 
 void esp01s_server_listen_on(struct esp01s_handle *handle,
@@ -256,6 +263,10 @@ void esp01s_server_listen_on(struct esp01s_handle *handle,
                     ESP8266_CMD_OFF, port
         );
     }
+    
+    timer_server_process = lv_timer_create_basic();
+    lv_timer_set_cb(timer_server_process, esp01s_server_process_cb);
+    lv_timer_pause(timer_server_process);
 }
 
 void esp01s_server_set_timeout(uint16_t timeout)
@@ -269,51 +280,37 @@ void esp01s_server_set_timeout(uint16_t timeout)
 
 static void esp01s_conns_list_reset(struct esp01s_connection *conns)
 {
-    struct esp01s_connection *p_tmp_conn = conns;
-    while (p_tmp_conn) {
-        // pr_debug("node address : %p\n", p_tmp_conn);
-        // pr_debug("next node address : %p\n", p_tmp_conn->p_next);
-        struct esp01s_connection *tmp = p_tmp_conn;
-        p_tmp_conn = p_tmp_conn->p_next;
-        pr_debug("node : %d has been freed\n", tmp->id);
+    struct list_head *pos, *q;
+    struct esp01s_connection *tmp;
+    
+    list_for_each_safe(pos, q, &conns->head) {
+        tmp = list_entry(pos, struct esp01s_connection, head);
+        list_del(pos);
+        pr_debug("freeing connection : %d\n", tmp->id);
         free(tmp);
-        tmp = NULL;
     }
-    conns = NULL;
     pr_debug("connections linked list has been all freed!\n");
-}
-
-static void esp01s_conns_list_append(struct esp01s_handle *handle,
-                                     struct esp01s_connection *node)
-{
-    if (!handle->conns) { /* first connection */
-        pr_debug("it's first connection\n");
-        handle->conns = node;
-    } else {    /* more than one connection */
-        pr_debug("it's appending connection\n");
-        struct esp01s_connection *p_tmp_conn = handle->conns;
-        while (p_tmp_conn->p_next) {
-            p_tmp_conn = p_tmp_conn->p_next;
-        }
-        p_tmp_conn->p_next = node;
-    }
-    node->p_next = NULL;
 }
 
 struct esp01s_connection esp01s_server_status(struct esp01s_handle *handle)
 {
     struct esp01s_connection *p_tmp_conn;
-
+    
     /* reset connection linked list */
-    if (handle->conns != NULL) {
-        esp01s_conns_list_reset(handle->conns);
+    // if (handle->conns != NULL) {
+    //     esp01s_conns_list_reset(handle->conns);
+    // }
+    
+    if (!list_empty(&handle->conns.head)) {
+        pr_debug("list is not empty, resetting it!\n");
+        esp01s_conns_list_reset(&handle->conns);
     }
-
+    
     /* send AT command CIPSTATUS */
     ESP8266_SEND_CMD_NO_PARAM(
                 ESP8266_CMD_AT_CIPSTATUS
     );
-
+    
     /* process rx buf */
     uint8_t len = 0;
     uint8_t pass_echo_count = 2;
@@ -322,19 +319,19 @@ struct esp01s_connection esp01s_server_status(struct esp01s_handle *handle)
         token = strtok(line, "+");
         if (token == NULL)
             break;
-
+            
         /* skip the echo lines */
         if (handle->cfg.echo_enabled && pass_echo_count) {
             pass_echo_count -= 1;
             pr_debug("passing this line because it's a echo\n");
             continue;
         }
-
+        
         /* parse each line */
         len++;
         pr_debug("== %d : %s", len, token);
         pr_debug("parsing connection : %d ...\n", len);
-
+        
         struct esp01s_connection *conn = (struct esp01s_connection *) \
                                          malloc(sizeof(struct esp01s_connection));
         memset(conn, 0x00, sizeof(struct esp01s_connection));
@@ -348,55 +345,58 @@ struct esp01s_connection esp01s_server_status(struct esp01s_handle *handle)
         //        &conn->remote_port,
         //        &conn->local_port,
         //        &conn->tetype);
-
+        
         /* parse connection id */
         char *p = strchr(token, ':');
-        conn->id = atoi(p+1);
+        conn->id = atoi(p + 1);
         pr_debug("parsing : %s -> %d\n", p + 1, conn->id);
-
+        
         /* parse connection type */
-        p = strchr(p+1, ',');
-        strncpy(conn->type, p+2, 3);
+        p = strchr(p + 1, ',');
+        strncpy(conn->type, p + 2, 3);
         pr_debug("parsing : %s -> %s\n", p + 1, conn->type);
-
+        
         /* parse connection address */
-        p = strchr(p+1, ',');
-        char *tmp = (p+2);
+        p = strchr(p + 1, ',');
+        char *tmp = (p + 2);
         int i = 0;
         while (*tmp != '"') {
             conn->addr[i++] = *tmp++;
         }
         pr_debug("parsing : %s -> %s\n", p + 1, conn->addr);
-
+        
         /* parse conn remote port */
-        p = strchr(p+1, ',');
-        conn->remote_port = atoi(p+1);
+        p = strchr(p + 1, ',');
+        conn->remote_port = atoi(p + 1);
         pr_debug("parsing : %s -> %d\n", p + 1, conn->remote_port);
-
+        
         /* parse conn local port */
-        p = strchr(p+1, ',');
-        conn->local_port = atoi(p+1);
+        p = strchr(p + 1, ',');
+        conn->local_port = atoi(p + 1);
         pr_debug("parsing : %s -> %d\n", p + 1, conn->local_port);
-
+        
         /* parse connection type */
-        p = strchr(p+1, ',');
-        conn->tetype = atoi(p+1);
+        p = strchr(p + 1, ',');
+        conn->tetype = atoi(p + 1);
         pr_debug("parsing : %s -> %d\n", p + 1, conn->tetype);
-
+        
         pr_debug("parsed connection : %d\n", len);
         /* store nodes into list */
-        esp01s_conns_list_append(handle, conn);
+        // esp01s_conns_list_append(handle, conn);
+        list_add(&conn->head, &handle->conns.head);
     }
-
+    
 #ifdef DEBUG
-    pr_debug("dump nodes...\n");
-    struct esp01s_connection *p_tmp = handle->conns;
-    while (p_tmp) {
-        pr_debug("%p\n", p_tmp);
-        p_tmp = p_tmp->p_next;
+    if (!list_empty(&handle->conns.head)) {
+        pr_debug("dump nodes...\n");
+        struct esp01s_connection *cursor;
+        list_for_each_entry(cursor, &handle->conns.head, head) {
+            pr_debug("node address : %p\n", cursor);
+            pr_debug("conn id : %d\n", cursor->id);
+        }
     }
 #endif
-
+    
     if (len >= 1) { /* we got some connections from client */
         pr_debug("we got some connections from client\n");
     } else {
@@ -415,11 +415,25 @@ void esp01s_server_tcp_send(struct esp01s_handle *handle,
      * to query connections
      */
     esp01s_server_status(handle);
-
+    
     /* if we have got at least one connection */
-    if (handle->conns != NULL) {
-        struct esp01s_connection *p_tmp_conn = handle->conns;
-        while (p_tmp_conn) {
+    // if (handle->conns != NULL) {
+    //     struct esp01s_connection *p_tmp_conn = handle->conns;
+    //     while (p_tmp_conn) {
+    //         pr_debug("%p, sending content to conn->id : %d\n", p_tmp_conn, p_tmp_conn->id);
+    //         ESP8266_SEND_CMD(
+    //                     ESP8266_CMD_AT_CIPSEND \
+    //                     "%d,%d",
+    //                     p_tmp_conn->id, length
+    //         );
+    //         __esp01s_send_data(INDEX_HTML_CONTENT);
+    //         p_tmp_conn = p_tmp_conn->p_next;
+    //     }
+    // }
+    if (!list_empty(&handle->conns.head)) {
+        pr_debug("there are some connections to send data\n");
+        struct esp01s_connection *p_tmp_conn;
+        list_for_each_entry(p_tmp_conn, &handle->conns.head, head) {
             pr_debug("%p, sending content to conn->id : %d\n", p_tmp_conn, p_tmp_conn->id);
             ESP8266_SEND_CMD(
                         ESP8266_CMD_AT_CIPSEND \
@@ -427,7 +441,6 @@ void esp01s_server_tcp_send(struct esp01s_handle *handle,
                         p_tmp_conn->id, length
             );
             __esp01s_send_data(INDEX_HTML_CONTENT);
-            p_tmp_conn = p_tmp_conn->p_next;
         }
     }
 }
@@ -462,7 +475,7 @@ void esp01s_run_config(struct esp01s_handle *handle)
     esp01s_server_tcp_send(handle, NULL,
                            strlen(INDEX_HTML_CONTENT),
                            INDEX_HTML_CONTENT);
-    // esp01s_server_status(handle);
+    esp01s_server_status(handle);
 }
 
 /* entrance of this module */
@@ -479,15 +492,17 @@ void esp01s_init(struct esp01s_handle *handle)
     irq_set_exclusive_handler(DEFAULT_ESP8266_UART_IRQ, esp01s_rx_isr);
     irq_set_enabled(DEFAULT_ESP8266_UART_IRQ, true);
     uart_set_irq_enables(DEFAULT_ESP8266_UART_IFACE, true, false);
-
+    
     /* if user given a handle, then we replaced with it */
     if (handle != NULL) {
         pr_debug("using user given esp01s handle\n");
         p_correct_handle = handle;
     }
-    handle->conns = NULL;
+    
+    INIT_LIST_HEAD(&p_correct_handle->conns.head);
+    
     p_correct_handle->initialized = ESP8266_STATUS_INITIALIZED;
     esp01s_run_config(p_correct_handle);
-
+    
     pr_debug("esp01s is initialized\n");
 }

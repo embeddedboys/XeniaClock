@@ -51,8 +51,8 @@ $ mkdir build && cd build
 
 3. run the build process in the build dir
 ```shell
-$ cmake ..
-$ make -j12
+$ cmake .. -DCMAKE_EXPORT_COMPILE_COMMANDS=1 -GNinja
+$ ninja
 ```
 
 4. reset the device in to flash mode and burn

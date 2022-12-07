@@ -137,10 +137,10 @@ static void native_rtc_init()
     rtc_device_init();
 
     /* set a test time to device */
-    // t.hour = 19;    /* if i could get home earlier */
-    // t.min = 30;
-    // t.sec = 00;
-    // p_rtc_device_set_time(t);
+    t.hour = hour;    /* if i could get home earlier */
+    t.min = minute;
+    t.sec = second;
+    p_rtc_device_set_time(t);
 
     /* init rtc host in mcu */
     rtc_host_init();
