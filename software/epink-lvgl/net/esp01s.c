@@ -445,6 +445,32 @@ void esp01s_server_tcp_send(struct esp01s_handle *handle,
     }
 }
 
+void esp01s_server_broadcast(struct esp01s_handle *handle,
+                            uint16_t length,
+                            char *content)
+{
+    pr_debug("---length : %d\n", length);
+    /* TODO: send to all connected clients,
+     * need call `esp01s_server_status` first
+     * to query connections
+     */
+    esp01s_server_status(handle);
+
+    if (!list_empty(&handle->conns.head)) {
+        pr_debug("there are some connections to send data\n");
+        struct esp01s_connection *p_tmp_conn;
+        list_for_each_entry(p_tmp_conn, &handle->conns.head, head) {
+            pr_debug("%p, sending content to conn->id : %d\n", p_tmp_conn, p_tmp_conn->id);
+            ESP8266_SEND_CMD(
+                        ESP8266_CMD_AT_CIPSEND \
+                        "%d,%d",
+                        p_tmp_conn->id, length
+            );
+            __esp01s_send_data(INDEX_HTML_CONTENT);
+        }
+    }
+}
+
 /* ========== STA mode ========== */
 void esp01s_connect_wifi()
 {
