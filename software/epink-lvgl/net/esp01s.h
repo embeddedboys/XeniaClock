@@ -110,6 +110,13 @@ struct esp01s_connection {
     struct list_head head;
 };
 
+struct esp01s_get_response_kv {
+    char key[24];
+    char val[24];
+
+    struct list_head head;
+};
+
 struct esp01s_handle {
     uint8_t initialized;
     esp8266_status_t stat;
@@ -123,6 +130,8 @@ void esp01s_test();
 void esp01s_set_ap_config(struct esp01s_handle *handle, struct esp01s_config *cfg);
 void esp01s_start_ap(struct esp01s_handle *handle);
 
-void lv_timer_esp01s_index_cb(struct _lv_timer_t *t);
+void esp01s_server_broadcast(struct esp01s_handle *handle,
+                            uint16_t length,
+                            char *content);
 
 #endif
