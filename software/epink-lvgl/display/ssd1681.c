@@ -256,7 +256,7 @@ void ssd1681_test()
     // sleep_ms(200);
     
     for (int x = 0, y = 0; x < 200; x++, y++) {
-        ssd1681_put_pixel(x, y, EPINK_COLOR_BLACK);
+        ssd1681_put_pixel(x, y, EPINK_COLOR_WHITE);
         ssd1681_put_pixel(x + 1, y, EPINK_COLOR_BLACK);
         ssd1681_put_pixel(x + 2, y, EPINK_COLOR_BLACK);
         ssd1681_put_pixel(x + 3, y, EPINK_COLOR_BLACK);

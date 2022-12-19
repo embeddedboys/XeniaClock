@@ -90,25 +90,42 @@ static struct esp01s_config cfg = {
     .mode = DEFAULT_ESP8266_WORK_MODE,
 };
 
+#define local_irq_disable() do { \
+        uart_set_irq_enables(DEFAULT_ESP8266_UART_IFACE, false, false); \
+    } while(0);
+
 static uint32_t g_rx_buf_index = 0;
-static char g_rx_buf[128];
+static char g_rx_buf[256];
 static bool g_dev_requesting = false;
-void esp01s_rx_isr()
+static void esp01s_rx_isr()
 {
+    // uart_set_irq_enables(DEFAULT_ESP8266_UART_IFACE, false, false);
+    
     while (uart_is_readable(DEFAULT_ESP8266_UART_IFACE)) {
         // char ch = uart_getc(DEFAULT_ESP8266_UART_IFACE);
         g_rx_buf[g_rx_buf_index++] = uart_getc(DEFAULT_ESP8266_UART_IFACE);
-        if (strstr(g_rx_buf, "+IPD") && !g_dev_requesting) {
-            pr_debug("device requesting!\n");
-            g_dev_requesting = true;
-            lv_timer_resume(timer_server_process);
+        // printf("%c", g_rx_buf[g_rx_buf_index-1]);
+        
+        // memcpy(g_tmp_buf, g_rx_buf, 256);
+        if (!g_dev_requesting                  &&
+            strstr(g_rx_buf, "+IPD")           &&
+            g_rx_buf[g_rx_buf_index-4] == '\r' &&
+            g_rx_buf[g_rx_buf_index-3] == '\n' &&
+            g_rx_buf[g_rx_buf_index-2] == '\r' &&
+            g_rx_buf[g_rx_buf_index-1] == '\n'
+        ) {
+            // g_dev_requesting = true;
+            pr_debug("%s\n", g_rx_buf);
+            // lv_timer_resume(timer_server_process);
         }
     }
+
+    // uart_set_irq_enables(DEFAULT_ESP8266_UART_IFACE, true, false);
 }
 
 static inline void esp01s_rx_buf_clear()
 {
-    memset(g_rx_buf, 0, 128);
+    memset(g_rx_buf, 0, 256);
 }
 
 static inline void esp01s_rx_buf_reset()
@@ -125,7 +142,6 @@ static void __esp01s_send(char *buf, uint32_t delay_ms)
 
     /* append terminate ch '\0' to the end of buf and reset buf index */
     esp01s_rx_buf_reset();
-    // pr_debug("========%s========\n", g_rx_buf);
 }
 
 static void __esp01s_send_command(char *cmd)
@@ -253,17 +269,17 @@ static void esp01s_server_process_cb()
 {
     /* sleep should never called in this function */
     if (g_dev_requesting) {
-        lv_timer_pause(timer_server_process);
-
+#if 0
         pr_debug("processing rx buffer!\n");
 
         /* parsing IPD */
         char * p_tmp = strchr(g_rx_buf, '+');
-        if (!p_tmp)
-            goto handled;
+        // if (!p_tmp)
+            // goto handled;
+        pr_debug("============\n");
 
-        char ipd[48];
         // pr_debug("%s\n", p_tmp+1);
+        char ipd[48];
         char *tmp = (p_tmp + 1);
         int i = 0;
         while (*tmp != '\n') {
@@ -271,7 +287,7 @@ static void esp01s_server_process_cb()
         }
         ipd[i] = '\0';
         pr_debug("parsing : -> %s\n", ipd);
-
+        
         /* parsing response key,value from IPD */
         p_tmp = strchr(ipd, '?');
         // pr_debug("parsing : -> %s\n", p_tmp+1);
@@ -286,12 +302,12 @@ static void esp01s_server_process_cb()
         
         p_tmp = strchr(p_tmp+1, '&');
         pr_debug("parsing : -> %s\n", p_tmp+1);
-
         esp01s_rx_buf_clear();
         esp01s_rx_buf_reset();
 
-handled:
+#endif
         /* request handled */
+        pr_debug("request handled!\n");
         g_dev_requesting = false;
     }
 }
@@ -366,19 +382,26 @@ struct esp01s_connection esp01s_server_status(struct esp01s_handle *handle)
     /* process rx buf */
     uint8_t len = 0;
     uint8_t pass_echo_count = 2;
+    
+    if (handle->cfg.echo_enabled)
+        pass_echo_count = 2;
+    else
+        pass_echo_count = 1;
+    
     char *token, *line;
     for (line = g_rx_buf;; line = NULL) {
         token = strtok(line, "+");
         if (token == NULL)
             break;
-            
+
         /* skip the echo lines */
-        if (handle->cfg.echo_enabled && pass_echo_count) {
+        if (pass_echo_count) {
             pass_echo_count -= 1;
             pr_debug("passing this line because it's a echo\n");
             continue;
         }
-        
+
+        pr_debug("------ %s\n", token);
         /* parse each line */
         len++;
         pr_debug("== %d : %s", len, token);
@@ -535,9 +558,11 @@ void esp01s_ping(char *ip)
 
 void esp01s_run_config(struct esp01s_handle *handle)
 {
-    esp01s_set_echo_enabled(handle, true);
+    esp01s_set_echo_enabled(handle, false);
     esp01s_server_start(handle);
     esp01s_server_listen_on(handle, 80, true);
+
+    /* send content */
     esp01s_server_broadcast(handle,
                            strlen(INDEX_HTML_CONTENT),
                            INDEX_HTML_CONTENT);

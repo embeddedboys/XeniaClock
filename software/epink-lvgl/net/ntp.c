@@ -29,3 +29,41 @@
  */
 
 #include "net/esp01s.h"
+
+// Difference between Jan 1, 1900 and Jan 1, 1970
+#define UNIX_OFFSET 2208988800L
+
+#define NTP_DEFAULT_SERVER "pool.ntp.org"
+#define NTP_DEFAULT_PORT "123"
+
+// Flags 00|100|011 for li=0, vn=4, mode=3
+#define NTP_FLAGS 0x23
+
+typedef struct {
+
+    uint8_t flags;
+
+    uint8_t stratum;
+    uint8_t poll;
+
+    uint8_t precision;
+
+    uint32_t root_delay;
+    uint32_t root_dispersion;
+
+    uint8_t referenceID[4];
+
+    uint32_t ref_ts_secs;
+    uint32_t ref_ts_frac;
+
+    uint32_t origin_ts_secs;
+    uint32_t origin_ts_frac;
+
+    uint32_t recv_ts_secs; // This is what we need mostly to get current time.
+    uint32_t recv_ts_fracs;
+
+    uint32_t transmit_ts_secs;
+    uint32_t transmit_ts_frac;
+
+} ntp_packet;
+

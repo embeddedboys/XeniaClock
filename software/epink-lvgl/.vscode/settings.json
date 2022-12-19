@@ -1,5 +1,9 @@
 {
     "files.associations": {
-        "esp01s.h": "c"
+        "esp01s.h": "c",
+        "types.h": "c",
+        "netdb.h": "c",
+        "socket.h": "c",
+        "inet.h": "c"
     }
 }
