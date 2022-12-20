@@ -1,9 +1,9 @@
 /**
- * @file tools.h
+ * @file types.h
  * @author IotaHydrae (writeforever@foxmail.com)
  * @brief
  * @version 0.1
- * @date 2022-11-20
+ * @date 2022-12-20
  *
  * MIT License
  *
@@ -28,35 +28,25 @@
  *
  */
 
-#ifndef __TOOLS_H
-#define __TOOLS_H
+#pragma once
 
-#include <stdint.h>
-#include <stddef.h>
+#ifndef __TYPES_H
+#define __TYPES_H
 
-#define DEBUG 1
-
-#if DEBUG
-    #define pr_debug(fmt, ...) printf("[DEBUG] %s : "fmt, __func__, ##__VA_ARGS__);
-#else
-    #define pr_debug
+#ifndef u8
+    typedef unsigned char u8;
 #endif
 
-#ifndef ARRAY_SIZE
-    #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
+#ifndef u16
+    typedef unsigned short u16;
 #endif
 
-#ifndef container_of
-/**
- * container_of - cast a member of a structure out to the containing structure
- * @ptr:    the pointer to the member.
- * @type:   the type of the container struct this is embedded in.
- * @member: the name of the member within the struct.
- *
- */
-#define container_of(ptr, type, member) ({          \
-        const typeof(((type *)0)->member) * __mptr = (ptr); \
-        (type *)((char *)__mptr - offsetof(type, member)); })
+#ifndef u32
+    typedef unsigned int u32;
 #endif
 
+#ifndef u64
+    typedef unsigned long u64;
 #endif
+
+#endif  /* __TYPES_H */

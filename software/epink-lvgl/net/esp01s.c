@@ -94,38 +94,42 @@ static struct esp01s_config cfg = {
         uart_set_irq_enables(DEFAULT_ESP8266_UART_IFACE, false, false); \
     } while(0);
 
-static uint32_t g_rx_buf_index = 0;
-static char g_rx_buf[256];
+#define GLOBAL_RX_BUF_LEN   (1024)
+static volatile uint32_t g_rx_buf_index = 0;
+static char g_rx_buf[GLOBAL_RX_BUF_LEN];
 static bool g_dev_requesting = false;
 static void esp01s_rx_isr()
 {
-    // uart_set_irq_enables(DEFAULT_ESP8266_UART_IFACE, false, false);
+    uart_set_irq_enables(DEFAULT_ESP8266_UART_IFACE, false, false);
     
     while (uart_is_readable(DEFAULT_ESP8266_UART_IFACE)) {
-        // char ch = uart_getc(DEFAULT_ESP8266_UART_IFACE);
-        g_rx_buf[g_rx_buf_index++] = uart_getc(DEFAULT_ESP8266_UART_IFACE);
-        // printf("%c", g_rx_buf[g_rx_buf_index-1]);
+        char ch = uart_getc(DEFAULT_ESP8266_UART_IFACE);
+        g_rx_buf[g_rx_buf_index] = ch;
+        printf("%c", g_rx_buf[g_rx_buf_index]);
+        g_rx_buf_index+=1;
         
         // memcpy(g_tmp_buf, g_rx_buf, 256);
         if (!g_dev_requesting                  &&
-            strstr(g_rx_buf, "+IPD")           &&
-            g_rx_buf[g_rx_buf_index-4] == '\r' &&
-            g_rx_buf[g_rx_buf_index-3] == '\n' &&
-            g_rx_buf[g_rx_buf_index-2] == '\r' &&
-            g_rx_buf[g_rx_buf_index-1] == '\n'
+            // strstr(g_rx_buf, "+IPD")           &&
+            g_rx_buf[g_rx_buf_index-3] == 0x54 &&
+            g_rx_buf[g_rx_buf_index-2] == 0x0d &&
+            g_rx_buf[g_rx_buf_index-1] == 0x0a
         ) {
-            // g_dev_requesting = true;
-            pr_debug("%s\n", g_rx_buf);
+            // g_dev_requesting = !g_dev_requesting;
+            pr_debug("device requesting!\n");
+            // pr_debug("%s\n", g_rx_buf);
             // lv_timer_resume(timer_server_process);
         }
+        if (g_rx_buf_index == ARRAY_SIZE(g_rx_buf))
+            g_rx_buf_index = 0;
     }
 
-    // uart_set_irq_enables(DEFAULT_ESP8266_UART_IFACE, true, false);
+    uart_set_irq_enables(DEFAULT_ESP8266_UART_IFACE, true, false);
 }
 
 static inline void esp01s_rx_buf_clear()
 {
-    memset(g_rx_buf, 0, 256);
+    memset(g_rx_buf, 0, 512);
 }
 
 static inline void esp01s_rx_buf_reset()
@@ -331,10 +335,10 @@ void esp01s_server_listen_on(struct esp01s_handle *handle,
         );
     }
     
-    timer_server_process = lv_timer_create_basic();
-    lv_timer_set_cb(timer_server_process, esp01s_server_process_cb);
-    lv_timer_set_period(timer_server_process, 200);
-    lv_timer_pause(timer_server_process);
+    // timer_server_process = lv_timer_create_basic();
+    // lv_timer_set_cb(timer_server_process, esp01s_server_process_cb);
+    // lv_timer_set_period(timer_server_process, 200);
+    // lv_timer_pause(timer_server_process);
 }
 
 void esp01s_server_set_timeout(uint16_t timeout)
