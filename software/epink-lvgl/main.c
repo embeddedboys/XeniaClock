@@ -51,6 +51,7 @@
 #include "common/tools.h"
 #include "common/vals.h"
 #include "display/epd.h"
+#include "display/ssd1306.h"
 #include "rtc/native_rtc.h"
 #include "sensors/aht10.h"
 #include "net/esp01s.h"
@@ -60,6 +61,9 @@
 #include "lvgl/lvgl.h"
 #include "lvgl/demos/lv_demos.h"
 #include "lvgl/src/extra/libs/qrcode/lv_qrcode.h"
+#include "src/core/lv_disp.h"
+#include "src/core/lv_obj_pos.h"
+#include "src/hal/lv_hal_disp.h"
 #include "src/misc/lv_timer.h"
 #include "src/widgets/lv_label.h"
 #include "ui/ui.h"
@@ -273,7 +277,7 @@ static void post_timers_init()
 extern lv_obj_t *ui_LabelWifiName;
 static void network_config()
 {
-    esp01s_init(NULL);
+    //esp01s_init(NULL);
     const char *data = "http://192.168.4.1";
 
     /* show a default AP name */
@@ -294,6 +298,26 @@ static void network_config()
     lv_disp_load_scr(ui_ScreenEpinkHome);
 }
 
+static void sub_screen_display()
+{
+    ssd1306_test();
+
+    lv_disp_t *disp = lv_disp_get_default();
+
+    pr_debug("%s, default disp hor ver : %d %d\n", __func__, disp->driver->hor_res, disp->driver->ver_res);
+
+    lv_disp_t *sub_disp = lv_disp_get_next(NULL);
+
+    pr_debug("%s, sub disp hor ver : %d %d\n", __func__, sub_disp->driver->hor_res, sub_disp->driver->ver_res);
+
+    lv_disp_set_default(sub_disp);
+
+    lv_obj_t *label = lv_label_create(lv_scr_act());
+    lv_label_set_text(label, "18:30");
+    lv_obj_set_style_text_font(label, &ui_font_FiraCodeSemiBold40, 0);
+    lv_obj_align(label, LV_ALIGN_CENTER, 0, 0);
+}
+
 int main(void)
 {
     /* system up hardware init */
@@ -306,18 +330,21 @@ int main(void)
     struct repeating_timer lvgl_clock_timer;
     lv_init();
     lv_port_disp_init();
+
+    sub_screen_display();
+
     /* start a timer for lvgl clock */
     add_repeating_timer_us(MICROSECOND(5000), lvgl_clock_cb, NULL, &lvgl_clock_timer);
 
     default_module = *request_disp_module("ep_luat");
     // default_module = *request_disp_module("ssd1681");
     epink_blank();      /* a global reflush for E-paper is required */
-    ui_init();          /* call qquareline project initialization process */
-
+    // ui_init();          /* call qquareline project initialization process */
     network_config();
 
     native_rtc_init();  /* some post hardware init */
     post_timers_init();
+    while(1);
 
     while (1) {
         tight_loop_contents();

@@ -94,4 +94,6 @@ void ssd1306_write_data(uint8_t val);
 void ssd1306_set_pixel(uint8_t x, uint8_t y, uint8_t color);
 void ssd1306_flush();
 
+void ssd1306_test();
+
 #endif /* __SSD1306_H */

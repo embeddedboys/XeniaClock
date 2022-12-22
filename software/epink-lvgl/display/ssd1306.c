@@ -178,3 +178,13 @@ void ssd1306_set_pixel(uint8_t x, uint8_t y, uint8_t color)
     /*oled_set_pos(page, x);
     oled_write_dat(oled_buffer[offset]);*/
 }
+
+void ssd1306_test()
+{
+    ssd1306_device_init();
+
+    for (int x=0;x<128;x++)
+        for(int y=0;y<16;y++)
+            ssd1306_set_pixel(x, y, 1);
+    ssd1306_flush();
+}
