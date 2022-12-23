@@ -37,7 +37,7 @@
 #define DEBUG 1
 
 #if DEBUG
-    #define pr_debug(fmt, ...) printf("[DEBUG] %s : "fmt, __func__, ##__VA_ARGS__);
+    #define pr_debug(fmt, ...) printf("[ DEBUG ] +%d %s : "fmt, __LINE__, __func__, ##__VA_ARGS__);
 #else
     #define pr_debug
 #endif

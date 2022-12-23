@@ -142,6 +142,7 @@ struct display_ops {
 #define EPINK_USE_PUT_PIXEL         1
     void (*module_put_pixel)(uint16_t x, uint16_t y, uint8_t color);
 };
+
 struct display_module {
     uint32_t id;
     char *name;
@@ -170,6 +171,7 @@ void disp_modules_init( void );
     { \
         register_module(&module##_module); \
     }
+void display_init(void);
 
 extern uint8_t epink_disp_buffer[EPINK_DISP_BUFFER_SIZE];
 extern unsigned char fontdata_mini_4x6[1536];

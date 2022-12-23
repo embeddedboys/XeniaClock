@@ -138,6 +138,7 @@ static void native_rtc_init()
 {
     datetime_t t;
     /* TODO: init rtc device */
+    pr_debug("initializing rtc device ...\n");
     rtc_device_init();
 
     /* set a test time to device */
@@ -145,18 +146,24 @@ static void native_rtc_init()
     t.min = minute;
     t.sec = second;
     p_rtc_device_set_time(t);
+    pr_debug("time of rtc device has been set to %02d:%02d:%02d\n",
+            hour, minute, second);
 
     /* init rtc host in mcu */
+    pr_debug("initializing rtc host ...");
     rtc_host_init();
 
     /* read RTC time from mcu */
     t = rtc_host_get_datetime();
+    pr_debug("got time from rtc host : %02d:%02d:%02d\n",
+            t.hour, t.min, t.sec);
 
     // hour = t.hour;
     // minute = t.min;
     // second = t.sec;
 
     /* write back to lvgl */
+    pr_debug("setting lvgl time roller ...\n");
     lv_roller_set_selected(ui_RollerHour, hour, LV_ANIM_OFF);
     lv_roller_set_selected(ui_RollerMinute, minute, LV_ANIM_OFF);
     lv_roller_set_selected(ui_RollerSecond, second, LV_ANIM_OFF);
@@ -254,20 +261,24 @@ static inline bool lvgl_clock_cb(struct repeating_timer *t)
 
 static void post_timers_init()
 {
+    pr_debug("registering time roller timer ...\n");
     struct repeating_timer roller_timer;
     add_repeating_timer_ms(MILLISECOND(1000), lv_timer_roller_time_cb, NULL, &roller_timer);
 
     /* timer for updating daily tips, should requst tips from internet */
+    pr_debug("registering tips timer ...\n");
     lv_timer_t *timer_tips = lv_timer_create_basic();
     timer_tips->timer_cb = lv_timer_label_tips_cb;
     timer_tips->period = REFRESH_SPEED_NORMAL;
 
     /* timer for updating battery percent, just a demo for now */
+    pr_debug("registering battery percent timer ...\n");
     lv_timer_t *timer_battery = lv_timer_create_basic();
     timer_battery->timer_cb = lv_timer_battery_cb;
     timer_battery->period = REFRESH_SPEED_SLOW;
 
     /* timer for updating temperture and humidity */
+    pr_debug("registering temperture and humidity timer ...\n");
     lv_timer_t *timer_temp_humid = lv_timer_create_basic();
     timer_temp_humid->timer_cb = lv_timer_temp_humid_cb;
     timer_temp_humid->period = REFRESH_SPEED_FAST;
@@ -277,6 +288,7 @@ static void post_timers_init()
 extern lv_obj_t *ui_LabelWifiName;
 static void network_config()
 {
+    pr_debug("configurating network ...\n");
     //esp01s_init(NULL);
     const char *data = "http://192.168.4.1";
 
@@ -293,14 +305,28 @@ static void network_config()
 
     /* lol, pretend we are configuring device */
     sleep_ms(3000);
+    pr_debug("network has been sucessfully configured!\n");
 
     /* if network configuration is okay, switch to home */
+    pr_debug("loading ui home screen ...\n");
     lv_disp_load_scr(ui_ScreenEpinkHome);
 }
 
-static void sub_screen_display()
+lv_obj_t *sub_display_label_time;
+static bool sub_display_label_flash = true;
+static inline void sub_screen_display_update_cb()
 {
-    ssd1306_test();
+    if (sub_display_label_flash)
+        lv_label_set_text_fmt(sub_display_label_time, "%02d:%02d", hour, minute);
+    else
+        lv_label_set_text_fmt(sub_display_label_time, "%02d %02d", hour, minute);
+    
+    sub_display_label_flash = !sub_display_label_flash;
+}
+
+static void sub_screen_display_init()
+{
+    ssd1306_init();
 
     lv_disp_t *disp = lv_disp_get_default();
 
@@ -312,10 +338,14 @@ static void sub_screen_display()
 
     lv_disp_set_default(sub_disp);
 
-    lv_obj_t *label = lv_label_create(lv_scr_act());
-    lv_label_set_text(label, "18:30");
-    lv_obj_set_style_text_font(label, &ui_font_FiraCodeSemiBold40, 0);
-    lv_obj_align(label, LV_ALIGN_CENTER, 0, 0);
+    sub_display_label_time = lv_label_create(lv_scr_act());
+    lv_label_set_text_fmt(sub_display_label_time, "%02d:%02d", hour, minute);
+    lv_obj_set_style_text_font(sub_display_label_time, &ui_font_FiraCodeSemiBold40, 0);
+    lv_obj_align(sub_display_label_time, LV_ALIGN_CENTER, 0, 0);
+
+    lv_timer_t *sub_screen_display_timer = lv_timer_create_basic();
+    sub_screen_display_timer->timer_cb = sub_screen_display_update_cb;
+    sub_screen_display_timer->period = MICROSECOND(500);
 }
 
 int main(void)
@@ -324,27 +354,31 @@ int main(void)
     stdio_init_all();
     hal_init();
 
-    printf("%s, %d\n", __func__, __LINE__);
+    pr_debug("\n");
 
     /* lvgl init */
     struct repeating_timer lvgl_clock_timer;
     lv_init();
     lv_port_disp_init();
 
-    sub_screen_display();
-
     /* start a timer for lvgl clock */
     add_repeating_timer_us(MICROSECOND(5000), lvgl_clock_cb, NULL, &lvgl_clock_timer);
 
-    default_module = *request_disp_module("ep_luat");
-    // default_module = *request_disp_module("ssd1681");
-    epink_blank();      /* a global reflush for E-paper is required */
-    // ui_init();          /* call qquareline project initialization process */
-    network_config();
+    display_init();
+
+    ui_init();          /* call qquareline project initialization process */
+
+    network_config();   /* initilize network */
 
     native_rtc_init();  /* some post hardware init */
-    post_timers_init();
-    while(1);
+
+    post_timers_init(); /* widget timers init */
+    
+    sub_screen_display_init();
+
+    while (1) {
+        tight_loop_contents();
+    }
 
     while (1) {
         tight_loop_contents();

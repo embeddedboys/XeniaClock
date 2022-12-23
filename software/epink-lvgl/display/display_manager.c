@@ -5,6 +5,7 @@
 #include <string.h>
 #include <errno.h>
 
+#include "common/tools.h"
 #include "epd.h"
 
 static struct display_module *g_pt_disp_module = NULL;
@@ -44,10 +45,13 @@ struct display_module *request_disp_module(char *name)
     
     while (p_tmp) {
         if (0 == strcmp(p_tmp->name, name)) {
+            pr_debug("%s display module matched!\n", p_tmp->name);
             return p_tmp;
         }
         p_tmp = p_tmp->p_next;
     }
+
+    return NULL;
 }
 
 void disp_modules_init( void )
@@ -74,4 +78,23 @@ void disp_modules_init( void )
         }
         p_tmp = p_tmp->p_next;
     }
+}
+
+void display_init(void)
+{
+    char *module_name = "ep_luat";
+
+    pr_debug("requesting display module : %s\n", module_name);
+    struct display_module *p_disp_m = request_disp_module("ep_luat");
+    
+    if (!p_disp_m) {
+        pr_debug("request default module failed!\n");
+        return;
+    } else {
+        pr_debug("default module %s successfully requested!\n", module_name);
+        default_module = *p_disp_m;
+    }
+
+    // epink_blank();      /* a global reflush for E-paper is required */
+    default_module.ops.module_blank();
 }

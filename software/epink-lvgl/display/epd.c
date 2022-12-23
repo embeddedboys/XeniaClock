@@ -163,7 +163,7 @@ void epink_init(uint8_t mode)
     if (default_module.ops.module_init)
         default_module.ops.module_init(mode);
     else
-        EPINK_ERROR("This module doesn't exposed a {init} function!\n");
+        EPINK_ERROR("This module [%s] doesn't exposed a {init} function!\n", default_module.name);
         
     memset(epink_disp_buffer, EPINK_COLOR_WHITE, ARRAY_SIZE(epink_disp_buffer));
 }
@@ -177,7 +177,7 @@ void epink_flush()
     if (default_module.ops.module_flush)
         default_module.ops.module_flush();
     else
-        EPINK_ERROR("This module doesn't exposed a {flush} function!\n");
+        EPINK_ERROR("This module [%s] doesn't exposed a {flush} function!\n", default_module.name);
 }
 
 /**
@@ -190,7 +190,7 @@ void epink_clear(uint8_t color)
     if (default_module.ops.module_clear)
         default_module.ops.module_clear(color);
     else
-        EPINK_ERROR("This module doesn't exposed a {clear} function!\n");
+        EPINK_ERROR("This module [%s] doesn't exposed a {clear} function!\n", default_module.name);
 }
 
 void epink_blank()
@@ -198,8 +198,8 @@ void epink_blank()
     if (default_module.ops.module_blank) {
         default_module.ops.module_blank();
     } else {
-        EPINK_ERROR("This module doesn't exposed a {blank} function!\n \
-                    Using a default blank ops\n");
+        EPINK_ERROR("This module [%s] doesn't exposed a {blank} function!\n \
+                    Using a default blank ops\n", default_module.name);
         epink_init(EPINK_UPDATE_MODE_FULL);
         
         /*  a global clear before drawing operations  */
@@ -257,7 +257,7 @@ void epink_draw_pixel(uint8_t x, uint8_t y, uint8_t color)
     if (default_module.ops.module_put_pixel) {
         default_module.ops.module_put_pixel(x, y, color);
     } else {
-        EPINK_ERROR("This module doesn't exposed a {draw_pixel} function!\n");
+        EPINK_ERROR("This module [%s] doesn't exposed a {draw_pixel} function!\n", default_module.name);
     }
 }
 

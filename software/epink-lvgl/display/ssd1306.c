@@ -28,9 +28,13 @@
  *
  */
 
-#include "ssd1306.h"
+#include <string.h>
 
-static uint8_t ssd1306_buffer[SSD1306_BUFFER_SIZE];
+#include "ssd1306.h"
+#include "common/tools.h"
+
+static uint8_t ssd1306_buffer[SSD1306_BUFFER_SIZE] = {0};
+static uint8_t old_ssd1306_buffer[SSD1306_BUFFER_SIZE] = {0};
 
 void ssd1306_write_cmd(uint8_t val)
 {
@@ -114,16 +118,6 @@ void ssd1306_set_pos(uint8_t page, uint8_t col)
     ssd1306_write_cmd(0x10 | (col >> 4));
 }
 
-void ssd1306_init()
-{
-    int count = 0;
-    ssd1306_device_init();
-    
-    for (; count < SSD1306_BUFFER_SIZE; count++) {
-        ssd1306_buffer[count] = 0x00;
-    }
-}
-
 void ssd1306_flush()
 {
     uint8_t page, col;
@@ -132,9 +126,14 @@ void ssd1306_flush()
         for (col = 0; col < SSD1306_HOR_RES_MAX; col++)
             // if (oled_buffer[OFFSET(page, col)] != 0x00)
         {
-            ssd1306_set_pos(page, col);
-            ssd1306_write_data(ssd1306_buffer[OFFSET(page, col)]);
+            
+            if (ssd1306_buffer[OFFSET(page, col)] != old_ssd1306_buffer[OFFSET(page, col)]) {
+                ssd1306_set_pos(page, col);
+                ssd1306_write_data(ssd1306_buffer[OFFSET(page, col)]);
+            }
         }
+    
+    memcpy(old_ssd1306_buffer, ssd1306_buffer, SSD1306_BUFFER_SIZE);
 }
 
 void ssd1306_clear()
@@ -142,13 +141,19 @@ void ssd1306_clear()
     uint8_t page, col;
     
     for (page = 0; page < SSD1306_PAGE_SIZE; page++)
-        for (col = 0; col < 128; col++)
-            if (ssd1306_buffer[OFFSET(page, col)] > 0x00) {
+        for (col = 0; col < SSD1306_HOR_RES_MAX; col++) {
                 ssd1306_set_pos(page, col);
-                ssd1306_write_data(0x00);
-            }
-    // memset(oled_buffer, 0x0, 1024);
-    // oled_flush();
+                ssd1306_write_data(0x0);
+        }
+}
+
+void ssd1306_init()
+{
+    pr_debug("initializing driver ic ssd1306 ...\n");
+    ssd1306_device_init();
+    
+    pr_debug("clearing screen ...\n");
+    ssd1306_clear();
 }
 
 void ssd1306_set_pixel(uint8_t x, uint8_t y, uint8_t color)
@@ -183,8 +188,5 @@ void ssd1306_test()
 {
     ssd1306_device_init();
 
-    for (int x=0;x<128;x++)
-        for(int y=0;y<16;y++)
-            ssd1306_set_pixel(x, y, 1);
-    ssd1306_flush();
+    ssd1306_clear();
 }
