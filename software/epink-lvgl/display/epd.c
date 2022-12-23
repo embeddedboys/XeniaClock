@@ -254,11 +254,7 @@ void epink_buffer_clear()
  */
 void epink_draw_pixel(uint8_t x, uint8_t y, uint8_t color)
 {
-    if (default_module.ops.module_put_pixel) {
-        default_module.ops.module_put_pixel(x, y, color);
-    } else {
-        EPINK_ERROR("This module [%s] doesn't exposed a {draw_pixel} function!\n", default_module.name);
-    }
+    default_module.ops.module_put_pixel(x, y, color);
 }
 
 /**

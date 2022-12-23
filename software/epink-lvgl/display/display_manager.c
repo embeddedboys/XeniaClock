@@ -80,12 +80,12 @@ void disp_modules_init( void )
     }
 }
 
-void display_init(void)
+void default_display_module_init(void)
 {
-    char *module_name = "ep_luat";
+    char module_name[] = "ep_luat";
 
     pr_debug("requesting display module : %s\n", module_name);
-    struct display_module *p_disp_m = request_disp_module("ep_luat");
+    struct display_module *p_disp_m = request_disp_module(module_name);
     
     if (!p_disp_m) {
         pr_debug("request default module failed!\n");

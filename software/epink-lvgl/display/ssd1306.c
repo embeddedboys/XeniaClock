@@ -30,29 +30,115 @@
 
 #include <string.h>
 
-#include "ssd1306.h"
+#include "i2c/native_i2c.h"
+#include "display/epd.h"
+#include "display/ssd1306.h"
 #include "common/tools.h"
+#include "pico/time.h"
 
+/* ssd1306 functions switch */
+#define SSD1306_USE_INIT              1
+#define SSD1306_USE_FLUSH             1
+#define SSD1306_USE_CLEAR             1
+#define SSD1306_USE_BLANK             1
+#define SSD1306_USE_SET_UPDATE_MODE   0
+#define SSD1306_USE_PUT_PIXEL         1
+
+#define SSD1306_CMD     (0x00)
+#define SSD1306_DATA    (0x40)
+
+#define SSD1306_COLOR_BLACK     (0xff)
+#define SSD1306_COLOR_WHITE     (0x00)
+
+/* The old buffer is used in flush function */
 static uint8_t ssd1306_buffer[SSD1306_BUFFER_SIZE] = {0};
 static uint8_t old_ssd1306_buffer[SSD1306_BUFFER_SIZE] = {0};
 
-void ssd1306_write_cmd(uint8_t val)
+static void ssd1306_write_cmd(uint8_t val)
 {
     uint8_t wbuf[2] = {0};
     wbuf[0] = 0x00;
     wbuf[1] = val;
     i2c_write_blocking(i2c_default, 0x3c, wbuf, 2, false);
+    // i2c_write_reg(SSD1306_ADDRESS, SSD1306_CMD, val);
 }
 
-void ssd1306_write_data(uint8_t val)
+static void ssd1306_write_data(uint8_t val)
 {
     uint8_t wbuf[2] = {0};
     wbuf[0] = 0x40;
     wbuf[1] = val;
     i2c_write_blocking(i2c_default, 0x3c, wbuf, 2, false);
+    // i2c_write_reg(SSD1306_ADDRESS, SSD1306_DATA, val);
 }
+
+static void ssd1306_set_pos(uint8_t page, uint8_t col)
+{
+    ssd1306_write_cmd(0xb0 + page);
+    
+    ssd1306_write_cmd(0x00 | (col & 0x0f));
+    ssd1306_write_cmd(0x10 | (col >> 4));
+}
+
+#if SSD1306_USE_FLUSH
+static void ssd1306_flush()
+{
+    uint8_t page, col;
+    
+    for (page = 0; page < SSD1306_PAGE_SIZE; page++)
+        for (col = 0; col < SSD1306_HOR_RES_MAX; col++)
+            // if (oled_buffer[OFFSET(page, col)] != 0x00)
+        {
+            
+            if (ssd1306_buffer[OFFSET(page, col)] != old_ssd1306_buffer[OFFSET(page, col)]) {
+                ssd1306_set_pos(page, col);
+                ssd1306_write_data(ssd1306_buffer[OFFSET(page, col)]);
+            }
+        }
+    
+    memcpy(old_ssd1306_buffer, ssd1306_buffer, SSD1306_BUFFER_SIZE);
+}
+#else
+static void ssd1306_flush()
+{
+
+}
+#endif
+
+#if SSD1306_USE_CLEAR
+static void ssd1306_clear(uint8_t color)
+{
+    uint8_t page, col;
+    
+    for (page = 0; page < SSD1306_PAGE_SIZE; page++)
+        for (col = 0; col < SSD1306_HOR_RES_MAX; col++) {
+                ssd1306_set_pos(page, col);
+                ssd1306_write_data(color);
+        }
+}
+#else
+static void ssd1306_clear(uint8_t color)
+{
+
+}
+#endif
+
+#if SSD1306_USE_SET_UPDATE_MODE
+static void ssd1306_set_update_mode(uint8_t mode)
+{
+
+}
+#else
+static void ssd1306_set_update_mode(uint8_t mode)
+{
+
+}
+#endif
+
 static void ssd1306_device_init()
 {
+    /* TODO: add a reset ops here */
+
 #ifdef SSD1306_128_32
     ssd1306_write_cmd(0xAE);//--display off
     // ssd1306_write_cmd(0x00);
@@ -78,7 +164,7 @@ static void ssd1306_device_init()
     ssd1306_write_cmd(0x49);
     ssd1306_write_cmd(0x8D);//set charge pump enable
     ssd1306_write_cmd(0x14);
-    sleep_ms(200);
+    sleep_ms(20);
     ssd1306_write_cmd(0xAF);//--turn on oled pan
 #else
     ssd1306_write_cmd(0xAE); /*display off*/
@@ -109,54 +195,44 @@ static void ssd1306_device_init()
 #endif
 }
 
-
-void ssd1306_set_pos(uint8_t page, uint8_t col)
-{
-    ssd1306_write_cmd(0xb0 + page);
-    
-    ssd1306_write_cmd(0x00 | (col & 0x0f));
-    ssd1306_write_cmd(0x10 | (col >> 4));
-}
-
-void ssd1306_flush()
-{
-    uint8_t page, col;
-    
-    for (page = 0; page < SSD1306_PAGE_SIZE; page++)
-        for (col = 0; col < SSD1306_HOR_RES_MAX; col++)
-            // if (oled_buffer[OFFSET(page, col)] != 0x00)
-        {
-            
-            if (ssd1306_buffer[OFFSET(page, col)] != old_ssd1306_buffer[OFFSET(page, col)]) {
-                ssd1306_set_pos(page, col);
-                ssd1306_write_data(ssd1306_buffer[OFFSET(page, col)]);
-            }
-        }
-    
-    memcpy(old_ssd1306_buffer, ssd1306_buffer, SSD1306_BUFFER_SIZE);
-}
-
-void ssd1306_clear()
-{
-    uint8_t page, col;
-    
-    for (page = 0; page < SSD1306_PAGE_SIZE; page++)
-        for (col = 0; col < SSD1306_HOR_RES_MAX; col++) {
-                ssd1306_set_pos(page, col);
-                ssd1306_write_data(0x0);
-        }
-}
-
-void ssd1306_init()
+#if SSD1306_USE_INIT
+static int ssd1306_init(uint8_t mode)
 {
     pr_debug("initializing driver ic ssd1306 ...\n");
     ssd1306_device_init();
     
     pr_debug("clearing screen ...\n");
-    ssd1306_clear();
-}
+    ssd1306_clear(SSD1306_COLOR_WHITE);
 
-void ssd1306_set_pixel(uint8_t x, uint8_t y, uint8_t color)
+    return 0;
+}
+#else
+static int ssd1306_init(uint8_t mode)
+{
+    return 0;
+}
+#endif
+
+#if SSD1306_USE_BLANK
+static void ssd1306_blank()
+{
+    ssd1306_clear(SSD1306_COLOR_BLACK);
+
+    sleep_ms(200);
+
+    ssd1306_clear(SSD1306_COLOR_WHITE);
+
+    sleep_ms(200);
+}
+#else
+static void ssd1306_blank()
+{
+
+}
+#endif
+
+#if SSD1306_USE_PUT_PIXEL
+static void ssd1306_put_pixel(uint16_t x, uint16_t y, uint8_t color)
 {
     uint8_t page, page_left;
     uint8_t *pen = ssd1306_buffer;
@@ -179,14 +255,24 @@ void ssd1306_set_pixel(uint8_t x, uint8_t y, uint8_t color)
 #ifdef OLED_COORD_CHECK
     }
 #endif
-    
-    /*oled_set_pos(page, x);
-    oled_write_dat(oled_buffer[offset]);*/
 }
+#else
+static void ssd1306_put_pixel(uint16_t x, uint16_t y, uint8_t color)
+{
+
+}
+#endif
 
 void ssd1306_test()
 {
-    ssd1306_device_init();
+    ssd1306_init(1);
 
-    ssd1306_clear();
+    ssd1306_blank();
+
+    for (int x=0;x<128;x++)
+        for (int y=0;y<16;y++)
+            ssd1306_put_pixel(x, y, 1);
+    ssd1306_flush();
 }
+
+DISP_MODULE_REGISTER(ssd1306);

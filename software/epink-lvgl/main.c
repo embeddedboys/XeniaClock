@@ -150,7 +150,7 @@ static void native_rtc_init()
             hour, minute, second);
 
     /* init rtc host in mcu */
-    pr_debug("initializing rtc host ...");
+    pr_debug("initializing rtc host ...\n");
     rtc_host_init();
 
     /* read RTC time from mcu */
@@ -326,16 +326,14 @@ static inline void sub_screen_display_update_cb()
 
 static void sub_screen_display_init()
 {
-    ssd1306_init();
-
+    /* get lvgl displays */
     lv_disp_t *disp = lv_disp_get_default();
-
     pr_debug("%s, default disp hor ver : %d %d\n", __func__, disp->driver->hor_res, disp->driver->ver_res);
 
     lv_disp_t *sub_disp = lv_disp_get_next(NULL);
-
     pr_debug("%s, sub disp hor ver : %d %d\n", __func__, sub_disp->driver->hor_res, sub_disp->driver->ver_res);
 
+    /* set default disp to sub screen */
     lv_disp_set_default(sub_disp);
 
     sub_display_label_time = lv_label_create(lv_scr_act());
@@ -343,9 +341,24 @@ static void sub_screen_display_init()
     lv_obj_set_style_text_font(sub_display_label_time, &ui_font_FiraCodeSemiBold40, 0);
     lv_obj_align(sub_display_label_time, LV_ALIGN_CENTER, 0, 0);
 
+    /* add a time refresh timer */
+    pr_debug("adding sub screen refresh timer ...\n");
     lv_timer_t *sub_screen_display_timer = lv_timer_create_basic();
     sub_screen_display_timer->timer_cb = sub_screen_display_update_cb;
     sub_screen_display_timer->period = MICROSECOND(500);
+}
+
+static void banner()
+{
+    printf("\n\n\n\n");
+    printf(R"EOF(
+__  __          _              ____ _            _    
+\ \/ /___ _ __ (_) __ _       / ___| | ___   ___| | __
+ \  // _ \ '_ \| |/ _` |     | |   | |/ _ \ / __| |/ /
+ /  \  __/ | | | | (_| |     | |___| | (_) | (__|   < 
+/_/\_\___|_| |_|_|\__,_|      \____|_|\___/ \___|_|\_\
+    )EOF");
+    printf("\n\nPlease wait. Booting ...\n\n");
 }
 
 int main(void)
@@ -354,8 +367,8 @@ int main(void)
     stdio_init_all();
     hal_init();
 
-    pr_debug("\n");
-
+    banner();
+ 
     /* lvgl init */
     struct repeating_timer lvgl_clock_timer;
     lv_init();
@@ -364,18 +377,21 @@ int main(void)
     /* start a timer for lvgl clock */
     add_repeating_timer_us(MICROSECOND(5000), lvgl_clock_cb, NULL, &lvgl_clock_timer);
 
-    display_init();
+    /* call squareline project initialization process */
+    ui_init();      
 
-    ui_init();          /* call qquareline project initialization process */
+    /* initilize network */
+    network_config();
 
-    network_config();   /* initilize network */
+    /* some post hardware init */
+    native_rtc_init();
 
-    native_rtc_init();  /* some post hardware init */
-
-    post_timers_init(); /* widget timers init */
+    /* widget timers init */
+    post_timers_init();     
     
     sub_screen_display_init();
 
+    pr_debug("going to loop\n");
     while (1) {
         tight_loop_contents();
     }

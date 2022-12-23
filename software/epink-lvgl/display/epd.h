@@ -171,7 +171,7 @@ void disp_modules_init( void );
     { \
         register_module(&module##_module); \
     }
-void display_init(void);
+void default_display_module_init(void);
 
 extern uint8_t epink_disp_buffer[EPINK_DISP_BUFFER_SIZE];
 extern unsigned char fontdata_mini_4x6[1536];

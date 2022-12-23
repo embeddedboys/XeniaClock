@@ -321,7 +321,10 @@ static void ep_luat_put_pixel(uint16_t x, uint16_t y, uint8_t color)
 #endif
 }
 #else
-static void (*ep_luat_put_pixel)(uint16_t x, uint16_t y, uint8_t color) = NULL;
+static void ep_luat_put_pixel(uint16_t x, uint16_t y, uint8_t color)
+{
+
+}
 #endif
 
 DISP_MODULE_REGISTER(ep_luat);

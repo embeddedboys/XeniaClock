@@ -38,25 +38,26 @@
 #include "pico/stdlib.h"
 #include "hardware/i2c.h"
 
-#define BIT(x) (1 << x)
-#define ARRAY_SIZE(x) (sizeof(x)/sizeof(x[0]))
-
 #define SSD1306_ADDRESS (0x3c)
 
-#define SSD1306_CMD     (0x00)
-#define SSD1306_DATA    (0x40)
-
-#define SSD1306_128_32 0
-#define SSD1306_128_64 1
+#define SSD1306_128_32 1
+#define SSD1306_128_64 0
 
 #ifndef OLED_MODULE_TYPE
-    #define OLED_MODULE_TYPE SSD1306_128_32
+    #if SSD1306_128_32
+        #define OLED_MODULE_TYPE SSD1306_128_32
+    #else
+        #define OLED_MODULE_TYPE SSD1306_128_64
+    #endif
 #endif
 
 #if OLED_MODULE_TYPE == SSD1306_128_64
     #define SSD1306_HOR_RES_MAX 128
     #define SSD1306_VER_RES_MAX 64
 #elif OLED_MODULE_TYPE == SSD1306_128_32
+    #define SSD1306_HOR_RES_MAX 128
+    #define SSD1306_VER_RES_MAX 32
+#else
     #define SSD1306_HOR_RES_MAX 128
     #define SSD1306_VER_RES_MAX 32
 #endif
@@ -77,22 +78,22 @@
 
 // #define OLED_COORD_CHECK
 
-enum {
+typedef enum {
     SSD1306_ADDR_MODE_HORIZONTAL,
     SSD1306_ADDR_MODE_VERTICAL,
     SSD1306_ADDR_MODE_PAGE,
     SSD1306_ADDR_MODE_INVALID,
-};
+}ssd1306_addr_mode_t;
 
 /**
  * Register Map of SSD1306
  * 0x00 ~ 0xFF
  */
 
-void ssd1306_init();
-void ssd1306_write_data(uint8_t val);
-void ssd1306_set_pixel(uint8_t x, uint8_t y, uint8_t color);
-void ssd1306_flush();
+// void ssd1306_init();
+// void ssd1306_write_data(uint8_t val);
+// void ssd1306_put_pixel(uint8_t x, uint8_t y, uint8_t color);
+// void ssd1306_flush();
 
 void ssd1306_test();
 

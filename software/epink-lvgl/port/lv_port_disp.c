@@ -4,6 +4,7 @@
  */
 
 /*Copy this file as "lv_port_disp.c" and set this value to "1" to enable content*/
+#include "display/epd.h"
 #include "display/ssd1306.h"
 #include "src/hal/lv_hal_disp.h"
 #if 1
@@ -26,6 +27,7 @@
 
 #include "../lvgl/lvgl.h"
 #include "lv_port_disp.h"
+#include "display/epd.h"
 
 /*********************
  *      DEFINES
@@ -76,9 +78,7 @@ extern void epink_buffer_clear();
 extern void epink_flush();
 extern void epink_draw_pixel( uint8_t x, uint8_t y, uint8_t color );
 
-extern void ssd1306_init();
-extern void ssd1306_set_pixel(uint8_t x, uint8_t y, uint8_t color);
-extern void ssd1306_flush();
+static struct display_module *g_sub_disp_m;
 
 void lv_port_disp_init( void )
 {
@@ -198,9 +198,16 @@ void lv_port_disp_init( void )
 /*Initialize your display and the required peripherals.*/
 static void disp_init( void )
 {
-    /* malloc resources */
-    // g_dump_buffer = ( uint8_t * )malloc( MY_DISP_HOR_RES * MY_DISP_VER_RES * 4 );
-    // memset( g_dump_buffer, 0x0, MY_DISP_HOR_RES * MY_DISP_VER_RES * 4 );
+    default_display_module_init();
+
+    /* initlize sub screen */
+    g_sub_disp_m = request_disp_module("ssd1306");
+    if (!g_sub_disp_m) {
+        pr_debug("failed to request sub display module!\n");
+        return;
+    }
+
+    g_sub_disp_m->ops.module_init(EPINK_UPDATE_MODE_FULL);
 }
 
 static void disp_exit( void )
@@ -234,10 +241,10 @@ static void my_set_pix_cb(lv_disp_drv_t * disp_drv, uint8_t * buf, lv_coord_t bu
 static void sub_screen_set_pix_cb(lv_disp_drv_t * disp_drv, uint8_t * buf, lv_coord_t buf_w, lv_coord_t x, lv_coord_t y, lv_color_t color, lv_opa_t opa)
 {
     if(lv_color_brightness(color) < 128) {
-        ssd1306_set_pixel(x, y, 1);
+        g_sub_disp_m->ops.module_put_pixel(x, y, 1);
     }
     else {
-        ssd1306_set_pixel(x, y, 0);
+        g_sub_disp_m->ops.module_put_pixel(x, y, 0);
     }
 }
 
@@ -279,7 +286,7 @@ static void disp_flush( lv_disp_drv_t *disp_drv, const lv_area_t *area,
 static void sub_screen_disp_flush( lv_disp_drv_t *disp_drv, const lv_area_t *area,
                         lv_color_t *color_p )
 {
-    ssd1306_flush();
+    g_sub_disp_m->ops.module_flush();
 
     lv_disp_flush_ready( disp_drv );
 }
