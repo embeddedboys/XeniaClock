@@ -96,5 +96,6 @@ typedef enum {
 // void ssd1306_flush();
 
 void ssd1306_test();
+void ssd1306_banner();
 
 #endif /* __SSD1306_H */

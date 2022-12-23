@@ -5,6 +5,7 @@
 
 /*Copy this file as "lv_port_disp.c" and set this value to "1" to enable content*/
 #include "display/epd.h"
+#include "common/tools.h"
 #include "display/ssd1306.h"
 #include "src/hal/lv_hal_disp.h"
 #if 1
@@ -28,6 +29,7 @@
 #include "../lvgl/lvgl.h"
 #include "lv_port_disp.h"
 #include "display/epd.h"
+#include "display/ssd1306.h"
 
 /*********************
  *      DEFINES
@@ -52,9 +54,9 @@ union rgb888 {
  **********************/
 static void disp_init( void );
 static void disp_exit( void );
-static void disp_flush( lv_disp_drv_t *disp_drv, const lv_area_t *area,
+static void main_screen_disp_flush( lv_disp_drv_t *disp_drv, const lv_area_t *area,
                         lv_color_t *color_p );
-static void my_set_pix_cb(lv_disp_drv_t * disp_drv, uint8_t * buf, lv_coord_t buf_w, lv_coord_t x, lv_coord_t y, lv_color_t color, lv_opa_t opa);
+static void main_screen_set_pix_cb(lv_disp_drv_t * disp_drv, uint8_t * buf, lv_coord_t buf_w, lv_coord_t x, lv_coord_t y, lv_color_t color, lv_opa_t opa);
 //static void gpu_fill(lv_disp_drv_t * disp_drv, lv_color_t * dest_buf, lv_coord_t dest_width,
 //        const lv_area_t * fill_area, lv_color_t color);
 
@@ -64,7 +66,7 @@ static void sub_screen_set_pix_cb(lv_disp_drv_t * disp_drv, uint8_t * buf, lv_co
 /**********************
  *  STATIC VARIABLES
  **********************/
-extern uint8_t epink_disp_buffer[200*200/8];
+extern uint8_t epink_disp_buffer[EPINK_DISP_BUFFER_SIZE];
 uint8_t *pen = epink_disp_buffer;
 
 /**********************
@@ -78,7 +80,8 @@ extern void epink_buffer_clear();
 extern void epink_flush();
 extern void epink_draw_pixel( uint8_t x, uint8_t y, uint8_t color );
 
-static struct display_module *g_sub_disp_m;
+static lv_disp_t *g_default_disp = NULL;
+static struct display_module *g_sub_disp_m = NULL;
 
 void lv_port_disp_init( void )
 {
@@ -143,8 +146,8 @@ void lv_port_disp_init( void )
     disp_drv.ver_res = MY_DISP_VER_RES;
     
     /*Used to copy the buffer's content to the display*/
-    disp_drv.set_px_cb = my_set_pix_cb;
-    disp_drv.flush_cb = disp_flush;
+    disp_drv.set_px_cb = main_screen_set_pix_cb;
+    disp_drv.flush_cb = main_screen_disp_flush;
     
     /*Set a display buffer*/
     disp_drv.draw_buf = &draw_buf_dsc_3;
@@ -160,24 +163,27 @@ void lv_port_disp_init( void )
     //disp_drv.gpu_fill_cb = gpu_fill;
     
     /*Finally register the driver*/
-    lv_disp_t * disp = lv_disp_drv_register( &disp_drv );
+    g_default_disp = lv_disp_drv_register( &disp_drv );
 
     // lv_disp_set_rotation(disp, LV_DISP_ROT_90);
     /* set a mono theme */
     // lv_theme_t *th = lv_theme_mono_init(disp, 1, &lv_font_montserrat_10);
     // lv_disp_set_theme(disp, th);
+}
 
+void post_lv_port_disp_init()
+{
     static lv_disp_draw_buf_t draw_buf_dsc_sub_screen;
-    static lv_color_t buf_sub_screen_1[128 * 32];            /*A screen sized buffer*/
-    static lv_color_t buf_sub_screen_2[128 * 32];            /*Another screen sized buffer*/
-    lv_disp_draw_buf_init( &draw_buf_dsc_sub_screen, buf_sub_screen_1, buf_sub_screen_2, 128 * 32 );  /*Initialize the display buffer*/
+    static lv_color_t buf_sub_screen_1[SSD1306_HOR_RES_MAX * SSD1306_VER_RES_MAX];            /*A screen sized buffer*/
+    static lv_color_t buf_sub_screen_2[SSD1306_HOR_RES_MAX * SSD1306_VER_RES_MAX];            /*Another screen sized buffer*/
+    lv_disp_draw_buf_init( &draw_buf_dsc_sub_screen, buf_sub_screen_1, buf_sub_screen_2, SSD1306_HOR_RES_MAX * SSD1306_VER_RES_MAX );  /*Initialize the display buffer*/
 
     /* register sub screen driver */
     static lv_disp_drv_t sub_disp_drv;
     lv_disp_drv_init(&sub_disp_drv);
 
-    sub_disp_drv.hor_res = 128;
-    sub_disp_drv.ver_res = 32;
+    sub_disp_drv.hor_res = SSD1306_HOR_RES_MAX;
+    sub_disp_drv.ver_res = SSD1306_VER_RES_MAX;
 
     sub_disp_drv.set_px_cb = sub_screen_set_pix_cb;
     sub_disp_drv.flush_cb = sub_screen_disp_flush;
@@ -188,7 +194,7 @@ void lv_port_disp_init( void )
     lv_disp_t * sub_disp = lv_disp_drv_register( &sub_disp_drv );
 
     /* set default disp */
-    lv_disp_set_default(disp);
+    lv_disp_set_default(g_default_disp);
 }
 
 /**********************
@@ -198,6 +204,7 @@ void lv_port_disp_init( void )
 /*Initialize your display and the required peripherals.*/
 static void disp_init( void )
 {
+    pr_debug("initializing display ...\n");
     default_display_module_init();
 
     /* initlize sub screen */
@@ -207,7 +214,7 @@ static void disp_init( void )
         return;
     }
 
-    g_sub_disp_m->ops.module_init(EPINK_UPDATE_MODE_FULL);
+    //g_sub_disp_m->ops.module_init(EPINK_UPDATE_MODE_FULL);
 }
 
 static void disp_exit( void )
@@ -215,7 +222,7 @@ static void disp_exit( void )
     /*You code here*/
 }
 
-static void my_set_pix_cb(lv_disp_drv_t * disp_drv, uint8_t * buf, lv_coord_t buf_w, lv_coord_t x, lv_coord_t y, lv_color_t color, lv_opa_t opa)
+static void main_screen_set_pix_cb(lv_disp_drv_t * disp_drv, uint8_t * buf, lv_coord_t buf_w, lv_coord_t x, lv_coord_t y, lv_color_t color, lv_opa_t opa)
 {
     // int page,page_left;
     // uint8_t *pen = epink_disp_buffer;
@@ -251,7 +258,7 @@ static void sub_screen_set_pix_cb(lv_disp_drv_t * disp_drv, uint8_t * buf, lv_co
 /*Flush the content of the internal buffer the specific area on the display
  *You can use DMA or any hardware acceleration to do this operation in the background but
  *'lv_disp_flush_ready()' has to be called when finished.*/
-static void disp_flush( lv_disp_drv_t *disp_drv, const lv_area_t *area,
+static void main_screen_disp_flush( lv_disp_drv_t *disp_drv, const lv_area_t *area,
                         lv_color_t *color_p )
 {
     /*The most simple case (but also the slowest) to put all pixels to the screen one-by-one*/

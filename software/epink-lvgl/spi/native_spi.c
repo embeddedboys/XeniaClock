@@ -28,4 +28,28 @@
  * 
  */
 
+#include "pico/stdlib.h"
 #include "spi/native_spi.h"
+
+void spi_cs_select(uint16_t pin)
+{
+    asm volatile("nop \n nop \n nop");
+    gpio_put(pin, 0);
+    asm volatile("nop \n nop \n nop");
+}
+
+void spi_cs_deselect(uint16_t pin)
+{
+    asm volatile("nop \n nop \n nop");
+    gpio_put(pin, 1);
+    asm volatile("nop \n nop \n nop");
+}
+
+void spi_write_byte(uint8_t val, uint16_t cs_pin)
+{
+    uint8_t buf[1] = {val};
+
+    spi_cs_select(cs_pin);
+    spi_write_blocking(spi_default, buf, 1);
+    spi_cs_deselect(cs_pin);
+}

@@ -326,6 +326,8 @@ static inline void sub_screen_display_update_cb()
 
 static void sub_screen_display_init()
 {
+    post_lv_port_disp_init();
+
     /* get lvgl displays */
     lv_disp_t *disp = lv_disp_get_default();
     pr_debug("%s, default disp hor ver : %d %d\n", __func__, disp->driver->hor_res, disp->driver->ver_res);
@@ -348,8 +350,10 @@ static void sub_screen_display_init()
     sub_screen_display_timer->period = MICROSECOND(500);
 }
 
-static void banner()
+static void launch_banner()
 {
+    ssd1306_banner();
+
     printf("\n\n\n\n");
     printf(R"EOF(
 __  __          _              ____ _            _    
@@ -367,7 +371,8 @@ int main(void)
     stdio_init_all();
     hal_init();
 
-    banner();
+    /* some ops used to display banner to anywhere */
+    launch_banner();
  
     /* lvgl init */
     struct repeating_timer lvgl_clock_timer;
@@ -389,6 +394,7 @@ int main(void)
     /* widget timers init */
     post_timers_init();     
     
+    /* initialize sub screen lvgl display */
     sub_screen_display_init();
 
     pr_debug("going to loop\n");

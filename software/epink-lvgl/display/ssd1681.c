@@ -124,9 +124,14 @@ static void ssd1681_device_init(uint8_t mode)
 static int ssd1681_init(uint8_t mode)
 {
     ssd1681_device_init(mode);
+
+    return 0;
 }
 #else
-static int (*ssd1681_init)(uint8_t mode) = NULL;
+static int ssd1681_init(uint8_t mode)
+{
+    return 0;
+}
 #endif
 
 static void ssd1681_update()
@@ -170,7 +175,10 @@ static void ssd1681_clear(uint8_t color)
     ssd1681_update();
 }
 #else
-static void (*ssd1681_clear)(uint8_t color) = NULL;
+static void ssd1681_clear(uint8_t color)
+{
+
+}
 #endif
 
 /**
@@ -206,7 +214,10 @@ static void ssd1681_flush()
     ssd1681_update();
 }
 #else
-static void (*ssd1681_flush)() = NULL;
+static void ssd1681_flush()
+{
+
+}
 #endif
 
 #if EPINK_USE_BLANK
@@ -219,7 +230,10 @@ static void ssd1681_blank()
     // sleep_ms(200);
 }
 #else
-static void (*ssd1681_blank)() = NULL;
+static void ssd1681_blank()
+{
+
+}
 #endif
 
 #if EPINK_USE_SET_UPDATE_MODE
@@ -228,7 +242,10 @@ static void ssd1681_set_update_mode(uint8_t mode)
 
 }
 #else
-static void (*ssd1681_set_update_mode)(uint8_t mode) = NULL;
+static void ssd1681_set_update_mode(uint8_t mode)
+{
+
+}
 #endif
 
 #if EPINK_USE_PUT_PIXEL
@@ -242,7 +259,10 @@ static void ssd1681_put_pixel(uint16_t x, uint16_t y, uint8_t color)
         pen[y * 25 + (x / 8)] |= (0x80 >> (x % 8));
 }
 #else
-static void (*ssd1681_put_pixel)(uint16_t x, uint16_t y, uint8_t color) = NULL;
+static void ssd1681_put_pixel(uint16_t x, uint16_t y, uint8_t color)
+{
+
+}
 #endif
 
 void ssd1681_test()

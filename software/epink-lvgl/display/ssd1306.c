@@ -263,6 +263,53 @@ static void ssd1306_put_pixel(uint16_t x, uint16_t y, uint8_t color)
 }
 #endif
 
+/**
+ * @brief Put a single ascii char to panel
+ *
+ * @param x start position of X
+ * @param y start position of Y
+ * @param c char that will outputting to panel
+ */
+static void ssd1306_putascii(uint8_t x, uint8_t y, char c)
+{
+    /* Get the char in ascii array, each char use 16 byte to store */
+    const unsigned char *dots = (uint8_t *)&fontdata_8x16[c * 16];
+    uint8_t row, col, byte;
+    
+    /* In this case, we use a 8x16 size font, so
+     * we need to draw 16 byte totally, for each
+     * byte, draw it's each bit from higher to low
+     */
+    for (row = 0; row < 16; row++) {
+        byte = dots[row];
+        
+        for (col = 0; col < 8; col++) {
+            ssd1306_put_pixel(x + col, y + row, (byte << col) & 0x80);
+        }
+    }
+}
+
+/**
+ * @brief Put ascii string to panel
+ *
+ * @param x start position of X
+ * @param y start position of Y
+ * @param str string that will outputting to the panel
+ */
+static void ssd1306_putascii_string(uint8_t x, uint8_t y, char *str)
+{
+    while (*str != '\0') {
+        ssd1306_putascii(x, y, *str++);
+        x += 8; /* move x to the next pos */
+        
+        /* start a new line if reach the end of line */
+        if (x >= SSD1306_HOR_RES_MAX) {
+            x = 0;
+            y += 16; /* line hight min:16 */
+        }
+    }
+}
+
 void ssd1306_test()
 {
     ssd1306_init(1);
@@ -272,6 +319,14 @@ void ssd1306_test()
     for (int x=0;x<128;x++)
         for (int y=0;y<16;y++)
             ssd1306_put_pixel(x, y, 1);
+    ssd1306_flush();
+}
+
+void ssd1306_banner()
+{
+    ssd1306_init(1);
+
+    ssd1306_putascii_string(20, 12, "Xenia Clock");
     ssd1306_flush();
 }
 

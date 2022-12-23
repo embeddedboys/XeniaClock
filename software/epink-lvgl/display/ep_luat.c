@@ -146,9 +146,14 @@ void ep_luat_device_init( uint8_t mode )
 static int ep_luat_init(uint8_t mode)
 {
     ep_luat_device_init(mode);
+
+    return 0;
 }
 #else
-static int (*ep_luat_init)(uint8_t mode) = NULL;
+static int ep_luat_init(uint8_t mode)
+{
+    return 0;
+}
 #endif
 
 /**
@@ -178,7 +183,10 @@ static void ep_luat_clear( uint8_t color )
     ep_luat_turn_on_display();
 }
 #else
-static void (*ep_luat_clear)(uint8_t color) = NULL;
+static void ep_luat_clear( uint8_t color )
+{
+
+}
 #endif
 
 #if EPINK_USE_FLUSH
@@ -206,7 +214,10 @@ void ep_luat_flush()
     ep_luat_turn_on_display();
 }
 #else
-static void (*ep_luat_flush)() = NULL;
+void ep_luat_flush()
+{
+
+}
 #endif
 
 #if EPINK_USE_SET_UPDATE_MODE
@@ -227,7 +238,10 @@ static void ep_luat_set_update_mode(uint8_t mode)
     }
 }
 #else
-static void (*ep_luat_set_update_mode)(uint8_t mode) = NULL;
+static void ep_luat_set_update_mode(uint8_t mode)
+{
+
+}
 #endif
 
 #if EPINK_USE_BLANK
@@ -249,7 +263,10 @@ static void ep_luat_blank()
     sleep_ms(200);
 }
 #else
-static void (*ep_luat_blank)() = NULL;
+static void ep_luat_blank()
+{
+
+}
 #endif
 
 #if EPINK_USE_PUT_PIXEL

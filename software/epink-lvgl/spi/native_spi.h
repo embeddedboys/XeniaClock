@@ -31,6 +31,6 @@
 #ifndef __NATIVE_SPI_H
 #define __NATIVE_SPI_H
 
-
+#include "hardware/spi.h"
 
 #endif
