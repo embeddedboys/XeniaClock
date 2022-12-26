@@ -120,6 +120,8 @@ static void esp01s_rx_isr()
             // pr_debug("%s\n", g_rx_buf);
             // lv_timer_resume(timer_server_process);
         }
+
+        /* reset buf index when the end is reached */
         if (g_rx_buf_index == ARRAY_SIZE(g_rx_buf))
             g_rx_buf_index = 0;
     }

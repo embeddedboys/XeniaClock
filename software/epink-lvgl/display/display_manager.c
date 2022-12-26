@@ -15,13 +15,13 @@ static uint32_t g_module_id = 0;
 int register_module( struct display_module *module )
 {
     struct display_module *p_tmp;
-    
+
     if( !module ) {
         return -1;
     }
-    
-    printf( "register module: %s\n", module->name );
-    
+
+    pr_debug( "register module: %s\n", module->name );
+
     if( !g_pt_disp_module ) {
         pr_debug( "first handler\n" );
         g_pt_disp_module = module;  /* first node */
@@ -35,14 +35,14 @@ int register_module( struct display_module *module )
     }
     module->id = g_module_id++;
     module->p_next = NULL;
-    
+
     return 0;
 }
 
 struct display_module *request_disp_module(char *name)
 {
     struct display_module *p_tmp = g_pt_disp_module;
-    
+
     while (p_tmp) {
         if (0 == strcmp(p_tmp->name, name)) {
             pr_debug("%s display module matched!\n", p_tmp->name);
@@ -86,7 +86,7 @@ void default_display_module_init(void)
 
     pr_debug("requesting display module : %s\n", module_name);
     struct display_module *p_disp_m = request_disp_module(module_name);
-    
+
     if (!p_disp_m) {
         pr_debug("request default module failed!\n");
         return;

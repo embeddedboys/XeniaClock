@@ -17,6 +17,7 @@ file(GLOB_RECURSE INCLUDES "include/*.h"
                             "sensors/*.h"
                             "i2c/*.h"
                             "net/*.h"
+                            "clk/*.h"
                             "rtc/*.h")
 
 file(GLOB_RECURSE SOURCES "lvgl/src/*.c"
@@ -27,6 +28,7 @@ file(GLOB_RECURSE SOURCES "lvgl/src/*.c"
                             "sensors/*.c"
                             "i2c/*.c"
                             "net/*.c"
+                            "clk/*.c"
                             "rtc/*.c")
 
 # rest of your project
@@ -34,13 +36,14 @@ add_executable(epink_desktop main.c ${INCLUDES} ${SOURCES})
 
 target_include_directories(epink_desktop PUBLIC . "lvgl")
 target_link_libraries(epink_desktop pico_stdlib
+                            hardware_clocks
                             hardware_spi
                             hardware_rtc
                             hardware_i2c
                             hardware_uart)
 
-pico_enable_stdio_usb(epink_desktop 0)
-pico_enable_stdio_uart(epink_desktop 1)
+pico_enable_stdio_usb(epink_desktop 1)
+pico_enable_stdio_uart(epink_desktop 0)
 
 pico_add_extra_outputs(epink_desktop)
 

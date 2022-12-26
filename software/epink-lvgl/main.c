@@ -55,19 +55,20 @@
 #include "rtc/native_rtc.h"
 #include "sensors/aht10.h"
 #include "net/esp01s.h"
+#include "clk/native_clk.h"
 
 /* Header files lvgl defined */
-#include "port/lv_port_disp.h"
 #include "lvgl/lvgl.h"
-#include "lvgl/demos/lv_demos.h"
 #include "lvgl/src/extra/libs/qrcode/lv_qrcode.h"
-#include "src/core/lv_disp.h"
-#include "src/core/lv_obj_pos.h"
-#include "src/hal/lv_hal_disp.h"
-#include "src/misc/lv_timer.h"
-#include "src/widgets/lv_label.h"
+#include "port/lv_port_disp.h"
 #include "ui/ui.h"
 #include "ui/ui_comp.h"
+
+static void clk_init()
+{
+    pr_debug("initlizing clocks ...\n");
+    measure_freqs();
+}
 
 /**
  * @brief hardware layer initialize
@@ -90,22 +91,28 @@ static void hal_init(void)
     gpio_init(EPINK_CS_PIN);
     gpio_set_dir(EPINK_CS_PIN, GPIO_OUT);
     gpio_put(EPINK_CS_PIN, 1);
-    bi_decl(bi_1pin_with_name(EPINK_CS_PIN, "SPI CS"));
+    bi_decl(bi_1pin_with_name(EPINK_CS_PIN, "EPINK CS"));
 
     gpio_init(EPINK_RES_PIN);
     gpio_set_dir(EPINK_RES_PIN, GPIO_OUT);
+    bi_decl(bi_1pin_with_name(EPINK_CS_PIN, "EPINK RES"));
 
     gpio_init(EPINK_DC_PIN);
     gpio_set_dir(EPINK_DC_PIN, GPIO_OUT);
+    bi_decl(bi_1pin_with_name(EPINK_CS_PIN, "EPINK DC"));
 
     gpio_init(EPINK_BUSY_PIN);
     gpio_set_dir(EPINK_BUSY_PIN, GPIO_IN);
+    bi_decl(bi_1pin_with_name(EPINK_CS_PIN, "EPINK BUSY"));
 #endif
 
     /* initialize i2c host */
     i2c_init(i2c_default, DEFAULT_I2C_SPEED);
     gpio_set_function(PICO_DEFAULT_I2C_SDA_PIN, GPIO_FUNC_I2C);
     gpio_set_function(PICO_DEFAULT_I2C_SCL_PIN, GPIO_FUNC_I2C);
+    bi_decl(bi_2pins_with_func(PICO_DEFAULT_I2C_SDA_PIN,
+                            PICO_DEFAULT_I2C_SCL_PIN,
+                            GPIO_FUNC_I2C));
     gpio_pull_up(PICO_DEFAULT_I2C_SDA_PIN);
     gpio_pull_up(PICO_DEFAULT_I2C_SCL_PIN);
 
@@ -113,13 +120,8 @@ static void hal_init(void)
     uart_init(uart1, DEFAULT_UART_SPEED);
     gpio_set_function(8, GPIO_FUNC_UART);
     gpio_set_function(9, GPIO_FUNC_UART);
-
+    bi_decl(bi_2pins_with_func(8, 9, GPIO_FUNC_UART));
     uart_set_fifo_enabled(uart1, false);
-}
-
-static void sys_clk_init()
-{
-
 }
 
 extern lv_obj_t *ui_RollerHour;
@@ -147,7 +149,7 @@ static void native_rtc_init()
     t.sec = second;
     p_rtc_device_set_time(t);
     pr_debug("time of rtc device has been set to %02d:%02d:%02d\n",
-            hour, minute, second);
+             hour, minute, second);
 
     /* init rtc host in mcu */
     pr_debug("initializing rtc host ...\n");
@@ -156,7 +158,7 @@ static void native_rtc_init()
     /* read RTC time from mcu */
     t = rtc_host_get_datetime();
     pr_debug("got time from rtc host : %02d:%02d:%02d\n",
-            t.hour, t.min, t.sec);
+             t.hour, t.min, t.sec);
 
     // hour = t.hour;
     // minute = t.min;
@@ -199,6 +201,7 @@ static bool lv_timer_roller_time_cb(struct repeating_timer *t)
 
 /* TODO: These tips should get from network */
 static const char *g_tips[] = {
+    "be nice.",
     "Stay Hungry, Stay Foolish.",
     "Learn to pause.",
     "Don't Worry, Be Happy.",
@@ -294,7 +297,7 @@ static void network_config()
 
     /* show a default AP name */
     lv_label_set_text_fmt(ui_LabelWifiName, "connect to \"%s\" then scan this QR code",
-                        DEFAULT_ESP8266_AP_NAME);
+                          DEFAULT_ESP8266_AP_NAME);
 
     /* make a QR code on it, (0, -5), 120x120 */
     lv_obj_t *qr_code = lv_qrcode_create(ui_ScreenEpinkConfig, 120, lv_color_hex(0x0),
@@ -303,7 +306,7 @@ static void network_config()
     lv_qrcode_update(qr_code, data, strlen(data));
     lv_disp_load_scr(ui_ScreenEpinkConfig);
 
-    /* lol, pretend we are configuring device */
+    /* lol, pretending we are configuring device */
     sleep_ms(3000);
     pr_debug("network has been sucessfully configured!\n");
 
@@ -320,7 +323,7 @@ static inline void sub_screen_display_update_cb()
         lv_label_set_text_fmt(sub_display_label_time, "%02d:%02d", hour, minute);
     else
         lv_label_set_text_fmt(sub_display_label_time, "%02d %02d", hour, minute);
-    
+
     sub_display_label_flash = !sub_display_label_flash;
 }
 
@@ -330,10 +333,12 @@ static void sub_screen_display_init()
 
     /* get lvgl displays */
     lv_disp_t *disp = lv_disp_get_default();
-    pr_debug("%s, default disp hor ver : %d %d\n", __func__, disp->driver->hor_res, disp->driver->ver_res);
+    pr_debug("default disp hor ver : %d %d\n", disp->driver->hor_res,
+             disp->driver->ver_res);
 
     lv_disp_t *sub_disp = lv_disp_get_next(NULL);
-    pr_debug("%s, sub disp hor ver : %d %d\n", __func__, sub_disp->driver->hor_res, sub_disp->driver->ver_res);
+    pr_debug("sub disp hor ver : %d %d\n", sub_disp->driver->hor_res,
+             sub_disp->driver->ver_res);
 
     /* set default disp to sub screen */
     lv_disp_set_default(sub_disp);
@@ -352,14 +357,15 @@ static void sub_screen_display_init()
 
 static void launch_banner()
 {
+    /* display a string on sub screen when starting */
     ssd1306_banner();
 
     printf("\n\n\n\n");
     printf(R"EOF(
-__  __          _              ____ _            _    
+__  __          _              ____ _            _
 \ \/ /___ _ __ (_) __ _       / ___| | ___   ___| | __
  \  // _ \ '_ \| |/ _` |     | |   | |/ _ \ / __| |/ /
- /  \  __/ | | | | (_| |     | |___| | (_) | (__|   < 
+ /  \  __/ | | | | (_| |     | |___| | (_) | (__|   <
 /_/\_\___|_| |_|_|\__,_|      \____|_|\___/ \___|_|\_\
     )EOF");
     printf("\n\nPlease wait. Booting ...\n\n");
@@ -373,27 +379,30 @@ int main(void)
 
     /* some ops used to display banner to anywhere */
     launch_banner();
- 
+
+    /* initialize clocks */
+    clk_init();
+
     /* lvgl init */
     struct repeating_timer lvgl_clock_timer;
     lv_init();
     lv_port_disp_init();
 
-    /* start a timer for lvgl clock */
+    /* start a native timer for lvgl clock */
     add_repeating_timer_us(MICROSECOND(5000), lvgl_clock_cb, NULL, &lvgl_clock_timer);
 
     /* call squareline project initialization process */
-    ui_init();      
+    ui_init();
 
-    /* initilize network */
+    /* initialize network */
     network_config();
 
     /* some post hardware init */
     native_rtc_init();
 
     /* widget timers init */
-    post_timers_init();     
-    
+    post_timers_init();
+
     /* initialize sub screen lvgl display */
     sub_screen_display_init();
 
