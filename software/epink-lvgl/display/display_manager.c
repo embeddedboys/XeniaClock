@@ -6,10 +6,13 @@
 #include <errno.h>
 
 #include "common/tools.h"
-#include "epd.h"
+#include "display/epd.h"
+#include "display/display_manager.h"
 
 static struct display_module *g_pt_disp_module = NULL;
 static uint32_t g_module_id = 0;
+
+/* TODO: replace these lists with kernel list_head */
 
 /* called by each handler like statusbar,chart ... */
 int register_module( struct display_module *module )
