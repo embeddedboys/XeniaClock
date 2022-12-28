@@ -35,6 +35,14 @@
 
 #include <stdint.h>
 
+#define XENIA_CLOCK_DISPLAY_MAIN_PANEL_EP_LUAT   0x00
+#define XENIA_CLOCK_DISPLAY_MAIN_PANEL_SSD1681   0x01
+#define XENIA_CLOCK_DISPLAY_MAIN_PANEL_ST7789V   0x02
+
+#ifndef DEFAULT_XENIA_CLOCK_DISPLAY_MAIN_PANEL
+    #define DEFAULT_XENIA_CLOCK_DISPLAY_MAIN_PANEL XENIA_CLOCK_DISPLAY_MAIN_PANEL_EP_LUAT
+#endif
+
 struct display_config {
     uint32_t width;
     uint32_t height;
@@ -63,6 +71,7 @@ struct display_module {
     uint32_t id;
     char *name;
     uint8_t *fb;
+    struct display_config cfg;
     struct display_ops ops;
 
     struct display_module *p_next;
@@ -84,6 +93,17 @@ void default_display_module_init(void);
                 .module_set_update_mode = module##_set_update_mode, \
                 .module_put_pixel = module##_put_pixel \
         }, \
+    }; \
+    static void __attribute__((constructor)) module##_register(void) \
+    { \
+        register_module(&module##_module); \
+    }
+
+#define DISP_MODULE_REGISTER_FEAT(module) \
+    static struct display_module module##_module = { \
+        .name = #module, \
+        .cfg = module##_cfg, \
+        .ops = module##_ops, \
     }; \
     static void __attribute__((constructor)) module##_register(void) \
     { \
