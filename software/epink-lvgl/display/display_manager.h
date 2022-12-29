@@ -34,6 +34,7 @@
 #define __DISPLAY_MANAGER_H
 
 #include <stdint.h>
+#include "common/list.h"
 
 #define XENIA_CLOCK_DISPLAY_MAIN_PANEL_EP_LUAT   0x00
 #define XENIA_CLOCK_DISPLAY_MAIN_PANEL_SSD1681   0x01
@@ -75,6 +76,7 @@ struct display_module {
     struct display_ops ops;
 
     struct display_module *p_next;
+    struct list_head head;
 } default_module;
 
 extern int register_module( struct display_module *module );

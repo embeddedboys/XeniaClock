@@ -11,6 +11,9 @@
  * 
  */
 
+#ifndef __LIST_H
+#define __LIST_H
+
 #include "common/tools.h"
 
 struct list_head {
@@ -166,3 +169,5 @@ static inline int list_empty(const struct list_head *head)
 #define list_for_each_safe(pos, n, head) \
 	for (pos = (head)->next, n = pos->next; pos != (head); \
 		pos = n, n = pos->next)
+
+#endif	/* __LIST_H */

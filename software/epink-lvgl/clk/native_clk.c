@@ -1,7 +1,7 @@
 /**
  * @file native_clk.c
  * @author IotaHydrae (writeforever@foxmail.com)
- * @brief 
+ * @brief clk subsystem of xenia clock
  * @version 0.1
  * @date 2022-12-26
  * 
@@ -37,9 +37,11 @@
 #include "hardware/structs/clocks.h"
 
 #include "common/tools.h"
+#include "common/list.h"
 #include "clk/native_clk.h"
 
-void measure_freqs(void) {
+void measure_freqs(void) 
+{
     uint32_t f_pll_sys = frequency_count_khz(CLOCKS_FC0_SRC_VALUE_PLL_SYS_CLKSRC_PRIMARY);
     uint32_t f_pll_usb = frequency_count_khz(CLOCKS_FC0_SRC_VALUE_PLL_USB_CLKSRC_PRIMARY);
     uint32_t f_rosc = frequency_count_khz(CLOCKS_FC0_SRC_VALUE_ROSC_CLKSRC);
@@ -59,4 +61,15 @@ void measure_freqs(void) {
     pr_debug("clk_rtc = %dkHz\n", f_clk_rtc);
 
     // Can't measure clk_ref / xosc as it is the ref
+}
+
+void set_sys_clk(uint16_t mhz)
+{
+    set_sys_clock_khz(mhz*KHZ, false);
+    stdio_init_all();   /* reinit uart when clk is changed */
+}
+
+void __attribute__((constructor)) native_clk_init(void)
+{
+
 }

@@ -28,8 +28,7 @@ int register_module( struct display_module *module )
     if( !g_pt_disp_module ) {
         pr_debug( "first handler\n" );
         g_pt_disp_module = module;  /* first node */
-    }
-    else {
+    } else {
         p_tmp = g_pt_disp_module;
         while( p_tmp->p_next ) {
             p_tmp = p_tmp->p_next;

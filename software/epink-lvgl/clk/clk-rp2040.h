@@ -1,9 +1,9 @@
 /**
- * @file native_clk.h
+ * @file clk_rp2040.h
  * @author IotaHydrae (writeforever@foxmail.com)
  * @brief 
  * @version 0.1
- * @date 2022-12-26
+ * @date 2022-12-30
  * 
  * MIT License
  * 
@@ -28,21 +28,18 @@
  * 
  */
 
-#pragma once
+#ifndef __CLK_RP2040_H
+#define __CLK_RP2040_H
 
-#ifndef __NATIVE_CLK_H
-#define __NATIVE_CLK_H
+#include "common/tools.h"
 
-#include <stdint.h>
-#include "common/list.h"
+#define RP2040_PLL_SYS      0
+#define RP2040_PLL_USB      1
+#define RP2040_ROSC         2
+#define RP2040_CLK_SYS      3
+#define RP2040_CLK_PERI     4
+#define RP2040_CLK_USB      5
+#define RP2040_CLK_ADC      6
+#define RP2040_CLK_RTC      7
 
-struct clk {
-    int id;
-    char *name;
-
-    struct list_head head;
-};
-
-void measure_freqs(void);
-
-#endif /* __NATIVE_CLK_H */
+#endif  /* __CLK_RP2040_H */

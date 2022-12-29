@@ -1,9 +1,9 @@
 /**
- * @file native_clk.h
+ * @file reset-rp2040.h
  * @author IotaHydrae (writeforever@foxmail.com)
  * @brief 
  * @version 0.1
- * @date 2022-12-26
+ * @date 2022-12-30
  * 
  * MIT License
  * 
@@ -28,21 +28,7 @@
  * 
  */
 
-#pragma once
+#ifndef __RST_RP2040_H
+#define __RST_RP2040_H
 
-#ifndef __NATIVE_CLK_H
-#define __NATIVE_CLK_H
-
-#include <stdint.h>
-#include "common/list.h"
-
-struct clk {
-    int id;
-    char *name;
-
-    struct list_head head;
-};
-
-void measure_freqs(void);
-
-#endif /* __NATIVE_CLK_H */
+#endif /* __RST_RP2040_H */
