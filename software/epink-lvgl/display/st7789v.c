@@ -82,8 +82,11 @@ enum st7789v_command {
     RDID3     = 0xDC,   // Read ID3
 };
 
+#define DRV_NAME "st7789v"
+
 #define ST7789V_HOR_RES     240
 #define ST7789V_VER_RES     240
+#define ST7789V_BPP         16
 
 /* TODO: port st7789v 240x240 display here */
 
@@ -233,7 +236,7 @@ static void st7789v_flush()
 
 static void st7789v_blank()
 {
-
+    st7789v_init(0);
 }
 
 static void st7789v_set_update_mode(uint8_t mode)
@@ -241,34 +244,42 @@ static void st7789v_set_update_mode(uint8_t mode)
 
 }
 
-static void st7789v_put_pixel(uint16_t x, uint16_t y, uint8_t color)
+static void st7789v_put_pixel(uint16_t x, uint16_t y, uint16_t color)
 {
-
+    st7789v_draw_pixel_immediately(x, y, ~color);
 }
 
 void st7789v_test(void)
 {
-    st7789v_init(1);
+    // st7789v_init(1);
+
+    // for (int x = 0; x < ST7789V_HOR_RES; x++)
+    //     for (int y = 0; y < ST7789V_VER_RES; y++)
+    //         st7789v_draw_pixel_immediately(x, y, 0xffff);
+    struct display_module *p_disp = request_disp_module(DRV_NAME);
+    p_disp->ops.module_init(0);
 
     for (int x = 0; x < ST7789V_HOR_RES; x++)
         for (int y = 0; y < ST7789V_VER_RES; y++)
-            st7789v_draw_pixel_immediately(x, y, 0xffff);
+            p_disp->ops.module_put_pixel(x, y, 0xffff);
 }
 
-static struct display_config st7789v_cfg = {
-    .width  = ST7789V_HOR_RES,
-    .height = ST7789V_VER_RES,
-    .bpp    = 16,
-    .update_mode = 0,
+static struct display_module st7789v_module = {
+    .name = DRV_NAME,
+    .cfg = {
+        .width = ST7789V_HOR_RES,
+        .height = ST7789V_VER_RES,
+        .bpp = ST7789V_BPP,
+        .update_mode = 0,
+    },
+    .ops = {
+        .module_init      = st7789v_init,
+        .module_blank     = st7789v_blank,
+        .module_clear     = st7789v_clear,
+        .module_flush     = st7789v_flush,
+        .module_put_pixel = st7789v_put_pixel,
+        .module_set_update_mode = st7789v_set_update_mode,
+    },
 };
 
-static struct display_ops st7789v_ops = {
-    .module_init      = st7789v_init,
-    .module_blank     = st7789v_blank,
-    .module_clear     = st7789v_clear,
-    .module_flush     = st7789v_flush,
-    .module_put_pixel = st7789v_put_pixel,
-    .module_set_update_mode = st7789v_set_update_mode,
-};
-
-DISP_MODULE_REGISTER(st7789v);
+DISP_MODULE_DRIVER(st7789v);

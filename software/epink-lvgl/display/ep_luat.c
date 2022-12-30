@@ -270,7 +270,7 @@ static void ep_luat_blank()
 #endif
 
 #if EPINK_USE_PUT_PIXEL
-static void ep_luat_put_pixel(uint16_t x, uint16_t y, uint8_t color)
+static void ep_luat_put_pixel(uint16_t x, uint16_t y, uint16_t color)
 {
     /* If we want to do a given pixel draw, the best
      * way might be draw it in a display buffer, because

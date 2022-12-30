@@ -232,7 +232,7 @@ static void ssd1306_blank()
 #endif
 
 #if SSD1306_USE_PUT_PIXEL
-static void ssd1306_put_pixel(uint16_t x, uint16_t y, uint8_t color)
+static void ssd1306_put_pixel(uint16_t x, uint16_t y, uint16_t color)
 {
     uint8_t page, page_left;
     uint8_t *pen = ssd1306_buffer;

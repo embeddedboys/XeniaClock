@@ -84,7 +84,7 @@ void disp_modules_init( void )
 
 void default_display_module_init(void)
 {
-    char module_name[] = "ep_luat";
+    char module_name[] = "st7789v";
 
     pr_debug("requesting display module : %s\n", module_name);
     struct display_module *p_disp_m = request_disp_module(module_name);

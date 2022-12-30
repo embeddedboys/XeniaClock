@@ -114,7 +114,7 @@ void epink_init(uint8_t mode);
 // void epink_clear(uint8_t color);
 void epink_blank();
 void epink_flush();
-void epink_draw_pixel(uint8_t x, uint8_t y, uint8_t color);
+void epink_draw_pixel(uint8_t x, uint8_t y, uint16_t color);
 
 #define EPINK_USE_INIT              1
 #define EPINK_USE_FLUSH             1

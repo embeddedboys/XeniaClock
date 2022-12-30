@@ -245,6 +245,11 @@ void epink_buffer_clear()
     }
 }
 
+void epink_set_backlight_level(uint8_t level)
+{
+    
+}
+
 /**
  * @brief draw a given position pixel to display buffer
  *
@@ -252,7 +257,7 @@ void epink_buffer_clear()
  * @param y draw position os Y
  * @param color 1 means black, 0 means white
  */
-void epink_draw_pixel(uint8_t x, uint8_t y, uint8_t color)
+void epink_draw_pixel(uint8_t x, uint8_t y, uint16_t color)
 {
     default_module.ops.module_put_pixel(x, y, color);
 }

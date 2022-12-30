@@ -249,7 +249,7 @@ static void ssd1681_set_update_mode(uint8_t mode)
 #endif
 
 #if EPINK_USE_PUT_PIXEL
-static void ssd1681_put_pixel(uint16_t x, uint16_t y, uint8_t color)
+static void ssd1681_put_pixel(uint16_t x, uint16_t y, uint16_t color)
 {
     uint8_t *pen = epink_disp_buffer;
     
