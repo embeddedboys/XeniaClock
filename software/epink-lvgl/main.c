@@ -292,7 +292,7 @@ extern lv_obj_t *ui_LabelWifiName;
 static void network_config()
 {
     pr_debug("configurating network ...\n");
-    //esp01s_init(NULL);
+    esp01s_init(NULL);
     const char *data = "http://192.168.4.1";
 
     /* show a default AP name */

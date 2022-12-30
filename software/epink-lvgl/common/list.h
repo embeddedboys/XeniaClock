@@ -14,7 +14,7 @@
 #ifndef __LIST_H
 #define __LIST_H
 
-#include "common/tools.h"
+#include "tools.h"
 
 struct list_head {
 	struct list_head *next, *prev;

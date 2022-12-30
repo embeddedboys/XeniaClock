@@ -110,11 +110,16 @@ struct esp01s_connection {
     struct list_head head;
 };
 
-struct esp01s_get_response_kv {
-    char key[24];
-    char val[24];
+struct kv_node {
+    char k[24];
+    char v[24];
 
     struct list_head head;
+};
+
+struct esp01s_response_args {
+    int argc;
+    struct kv_node kv;
 };
 
 struct esp01s_handle {
@@ -123,6 +128,7 @@ struct esp01s_handle {
 
     struct esp01s_config cfg;
     struct esp01s_connection conns;
+    struct esp01s_response_args args;
 };
 
 void esp01s_init(struct esp01s_handle *handle);

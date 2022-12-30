@@ -67,7 +67,9 @@
 // #define ESP8266_CMD_AT_CWJAP(ssid,psk)     ESP8266_CMD("AT+CWJAP=" #ssid "," #psk)
 // #define ESP8266_CMD_AT_CWSAP(ssid,psk,chn,ecn)  ESP8266_CMD("AT+CWSAP=" #ssid "," #psk "," #chn "," #ecn)
 
+static void esp01s_server_process_cb();
 static inline void esp01s_rx_buf_reset();
+static inline void esp01s_rx_buf_clear();
 static void __esp01s_send_command(char *cmd);
 
 static lv_timer_t *timer_server_process;
@@ -100,38 +102,38 @@ static char g_rx_buf[GLOBAL_RX_BUF_LEN];
 static bool g_dev_requesting = false;
 static void esp01s_rx_isr()
 {
-    uart_set_irq_enables(DEFAULT_ESP8266_UART_IFACE, false, false);
-    
     while (uart_is_readable(DEFAULT_ESP8266_UART_IFACE)) {
         char ch = uart_getc(DEFAULT_ESP8266_UART_IFACE);
         g_rx_buf[g_rx_buf_index] = ch;
-        printf("%c", g_rx_buf[g_rx_buf_index]);
+        // printf("%c", g_rx_buf[g_rx_buf_index]);
         g_rx_buf_index+=1;
-        
-        // memcpy(g_tmp_buf, g_rx_buf, 256);
+
         if (!g_dev_requesting                  &&
-            // strstr(g_rx_buf, "+IPD")           &&
-            g_rx_buf[g_rx_buf_index-3] == 0x54 &&
+            strstr(g_rx_buf, "+IPD")           &&
+            // g_rx_buf[g_rx_buf_index-3] == 0x54 &&
             g_rx_buf[g_rx_buf_index-2] == 0x0d &&
             g_rx_buf[g_rx_buf_index-1] == 0x0a
         ) {
-            // g_dev_requesting = !g_dev_requesting;
+            g_dev_requesting = true;
             pr_debug("device requesting!\n");
             // pr_debug("%s\n", g_rx_buf);
             // lv_timer_resume(timer_server_process);
+            esp01s_server_process_cb();
         }
 
         /* reset buf index when the end is reached */
-        if (g_rx_buf_index == ARRAY_SIZE(g_rx_buf))
-            g_rx_buf_index = 0;
+        if (g_rx_buf_index == ARRAY_SIZE(g_rx_buf)) {
+            esp01s_rx_buf_clear();
+        }
     }
 
-    uart_set_irq_enables(DEFAULT_ESP8266_UART_IFACE, true, false);
+    // uart_set_irq_enables(DEFAULT_ESP8266_UART_IFACE, true, false);
 }
 
 static inline void esp01s_rx_buf_clear()
 {
-    memset(g_rx_buf, 0, 512);
+    g_rx_buf_index = 0;
+    memset(g_rx_buf, 0x0, GLOBAL_RX_BUF_LEN);
 }
 
 static inline void esp01s_rx_buf_reset()
@@ -271,51 +273,84 @@ void esp01s_server_stop(struct esp01s_handle *handle)
     esp01s_reset(handle);
 }
 
+static void esp01s_server_args_reset(struct esp01s_response_args *p_args)
+{
+
+}
+
+static void esp01s_server_process_args(char *kv_buf)
+{
+    // pr_debug("=== \n");
+    /* IPD,0,530:GET /?ssid=KYKJ&psk=keyifamily HTTP/1.1 */
+    // /* parsing response key,value from IPD */
+    printf("%s\n", kv_buf);
+
+    char *token, *str;
+    for (str = kv_buf;; str = NULL) {
+        token = strtok(str, "&");
+        if (token == NULL)
+            break;
+        printf("------ %s\n", token);
+        
+        // struct kv_node *kv = (struct kv_node *)malloc(sizeof(struct kv_node));
+        
+        // char *p_str = strchr(token, '=');
+        // strcpy(kv->v, (p_str+1));
+        // printf("%p %p \n", token, p_str);
+        // strncpy(kv->k, token, (p_str - token));
+        // printf("k : %s, v : %s\n", kv->k, kv->v);
+        // list_add_tail(&kv->head, &g_args.kv.head);
+    }
+}
+
 static void esp01s_server_process_cb()
 {
     /* sleep should never called in this function */
-    if (g_dev_requesting) {
-#if 0
-        pr_debug("processing rx buffer!\n");
+    if (!g_dev_requesting)
+        return;
 
-        /* parsing IPD */
-        char * p_tmp = strchr(g_rx_buf, '+');
-        // if (!p_tmp)
-            // goto handled;
-        pr_debug("============\n");
+    uart_set_irq_enables(DEFAULT_ESP8266_UART_IFACE, false, false);
+    pr_debug("processing rx buffer!\n");
 
-        // pr_debug("%s\n", p_tmp+1);
-        char ipd[48];
-        char *tmp = (p_tmp + 1);
-        int i = 0;
-        while (*tmp != '\n') {
-            ipd[i++] = *tmp++;
-        }
-        ipd[i] = '\0';
-        pr_debug("parsing : -> %s\n", ipd);
-        
-        /* parsing response key,value from IPD */
-        p_tmp = strchr(ipd, '?');
-        // pr_debug("parsing : -> %s\n", p_tmp+1);
-        char key[24];
-        tmp = (p_tmp + 1);
-        i=0;
-        while (*tmp != '=') {
-            key[i++] = *tmp++;
-        }
-        key[i] = '\0';
-        pr_debug("parsing : -> %s\n", key);
-        
-        p_tmp = strchr(p_tmp+1, '&');
-        pr_debug("parsing : -> %s\n", p_tmp+1);
-        esp01s_rx_buf_clear();
-        esp01s_rx_buf_reset();
+    /* parsing IPD */
+    char * p_tmp = strchr(g_rx_buf, '+');
+    if (!p_tmp)
+        goto error;
 
-#endif
-        /* request handled */
-        pr_debug("request handled!\n");
-        g_dev_requesting = false;
+    // pr_debug("%s\n", p_tmp+1);
+    char ipd[48];
+    char *tmp = (p_tmp + 1);
+    int i = 0;
+    while (*tmp != '\n') {
+        ipd[i++] = *tmp++;
     }
+    ipd[i] = '\0';
+    pr_debug("parsing : -> %s\n", ipd);
+
+    char kv_buf[64];
+    int kv_len = 0;
+
+    char *p_str = strchr(ipd, '?');
+
+    char *p_str_cursor = (p_str + 1);
+    while(*p_str_cursor++ != ' ')
+        kv_len++;
+    printf("kv_len :%d\n", kv_len);
+    strncpy(kv_buf, (p_str+1), kv_len);
+    kv_buf[kv_len] = '\0';
+    printf("kv_buf : %s, %d\n", kv_buf, sizeof(kv_buf));
+    esp01s_server_process_args(kv_buf);
+    esp01s_rx_buf_clear();
+    uart_set_irq_enables(DEFAULT_ESP8266_UART_IFACE, true, false);
+
+handled:
+    /* request handled */
+    printf("request handled!\n");
+    g_dev_requesting = false;
+    return;
+error:
+    printf("parse error!\n");
+    g_dev_requesting = false;
 }
 
 void esp01s_server_listen_on(struct esp01s_handle *handle,
@@ -336,11 +371,7 @@ void esp01s_server_listen_on(struct esp01s_handle *handle,
                     ESP8266_CMD_OFF, port
         );
     }
-    
-    // timer_server_process = lv_timer_create_basic();
-    // lv_timer_set_cb(timer_server_process, esp01s_server_process_cb);
-    // lv_timer_set_period(timer_server_process, 200);
-    // lv_timer_pause(timer_server_process);
+    esp01s_rx_buf_clear();
 }
 
 void esp01s_server_set_timeout(uint16_t timeout)
@@ -597,6 +628,7 @@ void esp01s_init(struct esp01s_handle *handle)
     }
     
     INIT_LIST_HEAD(&p_correct_handle->conns.head);
+    INIT_LIST_HEAD(&p_correct_handle->args.kv.head);
     
     p_correct_handle->initialized = ESP8266_STATUS_INITIALIZED;
     esp01s_run_config(p_correct_handle);

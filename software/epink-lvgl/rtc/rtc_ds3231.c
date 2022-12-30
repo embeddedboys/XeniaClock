@@ -33,26 +33,26 @@
 #include "src/widgets/lv_label.h"
 #include <stdint.h>
 
-#define DS3231_I2C_ADDR 0x68
+#define DS3231_I2C_ADDR             0x68
 
-#define DS3231_REG_CTL  0x0e
-#define DS3231_REG_STAT 0x0f
+#define DS3231_REG_CTL              0x0e
+#define DS3231_REG_STAT             0x0f
 #define DS3231_REG_AGING_OFFSET     0x10
-#define DS3231_REG_TEMP_UB  0x11
-#define DS3231_REG_TEMP_LB  0x12
+#define DS3231_REG_TEMP_UB          0x11
+#define DS3231_REG_TEMP_LB          0x12
 
 enum {
     DS1307_REG_SECONDS = 0x00,
     DS1307_REG_MINUTES = 0x01,
-    DS1307_REG_HOURS = 0x02,
-    DS1307_REG_DAY = 0x03,
-    DS1307_REG_DATE = 0x04,
-    DS1307_REG_MONTH = 0x05,
-    DS1307_REG_YEAR = 0x06,
+    DS1307_REG_HOURS   = 0x02,
+    DS1307_REG_DAY     = 0x03,
+    DS1307_REG_DATE    = 0x04,
+    DS1307_REG_MONTH   = 0x05,
+    DS1307_REG_YEAR    = 0x06,
     DS1307_REG_CONTROL = 0x07,
     //RAM 56 Bytes
-    DS1307_REG_RAM_00 = 0x08,
-    DS1307_REG_RAM_55 = 0x3F,
+    DS1307_REG_RAM_00  = 0x08,
+    DS1307_REG_RAM_55  = 0x3F,
 };
 
 extern lv_obj_t *ui_LabelTest;
