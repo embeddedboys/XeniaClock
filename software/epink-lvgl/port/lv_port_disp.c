@@ -188,7 +188,7 @@ void post_lv_port_disp_init()
     sub_disp_drv.flush_cb = sub_screen_disp_flush;
 
     sub_disp_drv.draw_buf = &draw_buf_dsc_sub_screen;
-    sub_disp_drv.full_refresh = 1;
+    // sub_disp_drv.full_refresh = 1;
 
     lv_disp_t * sub_disp = lv_disp_drv_register( &sub_disp_drv );
 

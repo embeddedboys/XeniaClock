@@ -106,7 +106,7 @@ static void ssd1306_flush()
 #endif
 
 #if SSD1306_USE_CLEAR
-static void ssd1306_clear(uint8_t color)
+static void ssd1306_clear(uint16_t color)
 {
     uint8_t page, col;
     

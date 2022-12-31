@@ -1,35 +1,36 @@
 /**
  * @file st7789v.c
  * @author IotaHydrae (writeforever@foxmail.com)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2022-12-29
- * 
+ *
  * MIT License
- * 
+ *
  * Copyright 2022 IotaHydrae(writeforever@foxmail.com)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * 
+ *
  */
 
 #include "display/epd.h"
 #include "display/display_manager.h"
+#include "pico/time.h"
 
 enum st7789v_command {
     NOP       = 0x00,   // No operation
@@ -94,22 +95,23 @@ static void st7789v_set_cursor(uint32_t x, uint32_t y)
 {
     epink_write_command(0x2A);     //Column Address Set
     epink_write_data(0x00);
-    epink_write_data((x & 0xFF));   //0
+    epink_write_data((x & 0xFF));     //0
     epink_write_data(0x00);
     epink_write_data(0xEF);   //239
     
     epink_write_command(0x2B);     //Row Address Set
     epink_write_data(0x00);
-    epink_write_data((y & 0xFF));   //0
+    epink_write_data((y & 0xFF));     //0
     epink_write_data(0x00);
     epink_write_data(0xEF);
 }
 
-static void st7789v_draw_pixel_immediately(uint32_t x, uint32_t y, uint16_t color)
+static void st7789v_draw_pixel_immediately(uint32_t x, uint32_t y,
+                                           uint16_t color)
 {
     st7789v_set_cursor(x, y);
     
-    epink_write_command(0x2C);
+    epink_write_command(0x2c);
     epink_write_data(color >> 8);
     epink_write_data(color & 0xFF);
 }
@@ -123,7 +125,7 @@ static void st7789v_device_init(uint8_t mode)
     epink_write_command(0x11);
     
     sleep_ms(120);
-
+    
     epink_write_command(0x36);
     epink_write_data(0x00);
     
@@ -224,19 +226,40 @@ static inline int st7789v_init(uint8_t mode)
     st7789v_device_init(mode);
 }
 
-static void st7789v_clear(uint8_t color)
+static void st7789v_clear(uint16_t color)
 {
-
+    for(int x = 0; x < ST7789V_HOR_RES; x++)
+        for(int y = 0; y < ST7789V_VER_RES; y++) {
+            st7789v_set_cursor(x, y);
+            epink_write_command(0x2c);
+            epink_write_data(color >> 8);
+            epink_write_data(color & 0xff);
+        }
 }
 
 static void st7789v_flush()
 {
-
+    uint8_t *cursor = epink_disp_buffer;
+    uint8_t byte;
+    for(int y = 0; y < EPINK_HEIGHT; y++) {
+        for(int page = 0; page < EPINK_WIDTH / 8; page++) {
+            byte = cursor[y * 25 + page];
+    
+            /* for bits in this byte, flush to screen */
+            for(int i = 0; i < 8; i++) {
+                if((byte << i) & 0x80)
+                    st7789v_draw_pixel_immediately(page * 8 + i + 20, y, 0xffff);
+                else
+                    st7789v_draw_pixel_immediately(page * 8 + i + 20, y, 0x0000);
+            }
+        }
+    }
 }
 
 static void st7789v_blank()
 {
     st7789v_init(0);
+    st7789v_clear(0xffff);
 }
 
 static void st7789v_set_update_mode(uint8_t mode)
@@ -246,22 +269,35 @@ static void st7789v_set_update_mode(uint8_t mode)
 
 static void st7789v_put_pixel(uint16_t x, uint16_t y, uint16_t color)
 {
-    st7789v_draw_pixel_immediately(x, y, ~color);
+#if ST7789V_BUFFER_FLUSH
+    st7789v_draw_pixel_immediately(x + 20, y + 20, ~color);
+#else
+    uint8_t *pen = epink_disp_buffer;
+    
+    if(color)
+        pen[y * 25 + (x / 8)] &= ~(0x80 >> (x % 8));
+    else
+        pen[y * 25 + (x / 8)] |= (0x80 >> (x % 8));
+    
+#endif
 }
 
 void st7789v_test(void)
 {
     // st7789v_init(1);
-
+    
     // for (int x = 0; x < ST7789V_HOR_RES; x++)
     //     for (int y = 0; y < ST7789V_VER_RES; y++)
     //         st7789v_draw_pixel_immediately(x, y, 0xffff);
     struct display_module *p_disp = request_disp_module(DRV_NAME);
     p_disp->ops.module_init(0);
-
-    for (int x = 0; x < ST7789V_HOR_RES; x++)
-        for (int y = 0; y < ST7789V_VER_RES; y++)
-            p_disp->ops.module_put_pixel(x, y, 0xffff);
+    
+    for(int x = 0; x < ST7789V_HOR_RES; x++)
+        for(int y = 0; y < ST7789V_VER_RES; y++) {
+            // p_disp->ops.module_put_pixel(x, y, 0x0);
+            st7789v_draw_pixel_immediately(x, y, 0xffff);
+            sleep_ms(1);
+        }
 }
 
 static struct display_module st7789v_module = {

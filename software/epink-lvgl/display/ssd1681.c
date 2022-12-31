@@ -143,7 +143,7 @@ static void ssd1681_update()
 }
 
 #if EPINK_USE_FLUSH
-static void ssd1681_clear(uint8_t color)
+static void ssd1681_clear(uint16_t color)
 {
     // uint8_t width, height;
     // width = ( EPINK_WIDTH % 8 == 0 ) ? ( EPINK_WIDTH / 8 ) :

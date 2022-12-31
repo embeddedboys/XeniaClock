@@ -62,7 +62,7 @@ struct display_ops {
 
     void (*module_flush)();
 
-    void (*module_clear)(uint8_t color);
+    void (*module_clear)(uint16_t color);
 
     void (*module_blank)();
 

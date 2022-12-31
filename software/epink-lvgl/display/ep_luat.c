@@ -162,7 +162,7 @@ static int ep_luat_init(uint8_t mode)
  * @param color 0xFF means white, 0x00 means black
  */
 #if EPINK_USE_CLEAR
-static void ep_luat_clear( uint8_t color )
+static void ep_luat_clear( uint16_t color )
 {
     uint8_t width, height;
     width = ( EPINK_WIDTH % 8 == 0 ) ? ( EPINK_WIDTH / 8 ) :
