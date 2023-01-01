@@ -19,6 +19,7 @@ file(GLOB_RECURSE INCLUDES "include/*.h"
                             "net/*.h"
                             "clk/*.h"
                             "spi/*.h"
+                            "power/*.h"
                             "rtc/*.h")
 
 file(GLOB_RECURSE SOURCES "lvgl/src/*.c"
@@ -31,6 +32,7 @@ file(GLOB_RECURSE SOURCES "lvgl/src/*.c"
                             "net/*.c"
                             "clk/*.c"
                             "spi/*.c"
+                            "power/*.c"
                             "rtc/*.c")
 
 # rest of your project

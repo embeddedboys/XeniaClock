@@ -109,7 +109,8 @@ static void hal_init(void)
     uart_init(uart1, DEFAULT_UART_SPEED);
     gpio_set_function(DEFAULT_ESP8266_RX_PIN, GPIO_FUNC_UART);
     gpio_set_function(DEFAULT_ESP8266_TX_PIN, GPIO_FUNC_UART);
-    bi_decl(bi_2pins_with_func(8, 9, GPIO_FUNC_UART));
+    bi_decl(bi_2pins_with_func(DEFAULT_ESP8266_RX_PIN,
+                            DEFAULT_ESP8266_TX_PIN, GPIO_FUNC_UART));
     uart_set_fifo_enabled(uart1, false);
 }
 
@@ -168,19 +169,19 @@ static bool lv_timer_roller_time_cb(struct repeating_timer *t)
 {
     lv_roller_set_selected(ui_RollerSecond, ++second, LV_ANIM_OFF);
 
-    if (60 == second) {
+    if (SECONDS_IN_MINUTE == second) {
         second = 0;     /* update first, then write back */
         lv_roller_set_selected(ui_RollerSecond, second, LV_ANIM_OFF);
         lv_roller_set_selected(ui_RollerMinute, ++minute, LV_ANIM_OFF);
     }
 
-    if (60 == minute) {
+    if (MINUTES_IN_HOUR == minute) {
         minute = 0;
         lv_roller_set_selected(ui_RollerMinute, minute, LV_ANIM_OFF);
         lv_roller_set_selected(ui_RollerHour, ++hour, LV_ANIM_OFF);
     }
 
-    if (24 == hour) {
+    if (HOURS_IN_DAY == hour) {
         hour = 0;
         lv_roller_set_selected(ui_RollerHour, hour, LV_ANIM_OFF);
     }

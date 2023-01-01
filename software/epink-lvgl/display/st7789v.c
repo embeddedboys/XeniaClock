@@ -32,6 +32,8 @@
 #include "display/display_manager.h"
 #include "pico/time.h"
 
+static struct display_module st7789v_module;
+
 enum st7789v_command {
     NOP       = 0x00,   // No operation
     SWRESET   = 0x01,   // Software reset
@@ -110,6 +112,20 @@ enum st7789v_command {
 
 
 /* TODO: port st7789v 240x240 display here */
+
+static void st7789v_panel_enter_standby(void)
+{
+    /* display off */
+
+    /* sleep in */
+}
+
+static void st7789v_panel_exit_standby(void)
+{
+    /* sleep out */
+
+    /* display on */
+}
 
 static void st7789v_set_cursor(uint32_t x, uint32_t y)
 {
@@ -224,9 +240,9 @@ static void st7789v_device_init(uint8_t mode)
     // epink_write_data(0x00);   //set gate start position
     // epink_write_data(0x00);   // whne gate isn't run out，set bit4(TMG) to 0
     
-    epink_write_command(0x21);
+    epink_write_command(INVON);
     
-    epink_write_command(0x29);
+    epink_write_command(DISPON);
     
     // epink_write_command(0x2A);     //column address Set
     // epink_write_data(0x00);
@@ -248,8 +264,8 @@ static inline int st7789v_init(uint8_t mode)
 
 static void st7789v_clear(uint16_t color)
 {
-    for(int x = 0; x < ST7789V_HOR_RES; x++)
-        for(int y = 0; y < ST7789V_VER_RES; y++) {
+    for (int x = 0; x < ST7789V_HOR_RES; x++)
+        for (int y = 0; y < ST7789V_VER_RES; y++) {
             st7789v_set_cursor(x, y);
             epink_write_command(0x2c);
             epink_write_data(color >> 8);
@@ -264,16 +280,16 @@ static void st7789v_flush()
     uint8_t *cursor_old = epink_disp_buffer_old;
     uint8_t byte;
     
-    for(int y = 0; y < EPINK_HEIGHT; y++) {
-        for(int page = 0; page < EPINK_LINE_WIDTH_IN_PAGE; page++) {
+    for (int y = 0; y < EPINK_HEIGHT; y++) {
+        for (int page = 0; page < EPINK_LINE_WIDTH_IN_PAGE; page++) {
             byte = cursor[y * EPINK_LINE_WIDTH_IN_PAGE + page];
             
             /* if this byte same with the last frame, wo don't need go futher */
-            if(byte == cursor_old[y * EPINK_LINE_WIDTH_IN_PAGE + page])
+            if (byte == cursor_old[y * EPINK_LINE_WIDTH_IN_PAGE + page])
                 continue;
                 
             /* for bits in this byte, flush to screen */
-            for(int bit = 0; bit < EPINK_PAGE_SIZE; bit++) {
+            for (int bit = 0; bit < EPINK_PAGE_SIZE; bit++) {
                 st7789v_draw_pixel_immediately(page * EPINK_PAGE_SIZE + bit + ST7789V_OFFSET_X, y,
                                             ((byte << bit) & 0x80) ? ST7789V_COLOR_BLACK : ST7789V_COLOR_WHITE);
             }
@@ -289,7 +305,7 @@ static void st7789v_flush()
 static void st7789v_blank()
 {
     st7789v_init(0);
-    st7789v_clear(0xffff);
+    st7789v_clear(ST7789V_COLOR_WHITE);
 }
 
 static void st7789v_set_update_mode(uint8_t mode)
@@ -302,12 +318,21 @@ static void st7789v_put_pixel(uint16_t x, uint16_t y, uint16_t color)
 #if ST7789V_BUFFER_FLUSH
     uint8_t *pen = epink_disp_buffer;
 
+#if 0
+    if(color)
+        pen[y * EPINK_LINE_WIDTH_IN_PAGE + (x / EPINK_PAGE_SIZE)] &= ~(0x80 >>
+                                                                       (x % EPINK_PAGE_SIZE));
+    else
+        pen[y * EPINK_LINE_WIDTH_IN_PAGE + (x / EPINK_PAGE_SIZE)] |= (0x80 >>
+                                                                      (x % EPINK_PAGE_SIZE));
+#else
     if(color)
         pen[y * EPINK_LINE_WIDTH_IN_PAGE + (x / EPINK_PAGE_SIZE)] |= (0x80 >>
                                                                        (x % EPINK_PAGE_SIZE));
     else
         pen[y * EPINK_LINE_WIDTH_IN_PAGE + (x / EPINK_PAGE_SIZE)] &= ~(0x80 >>
                                                                       (x % EPINK_PAGE_SIZE));
+#endif
 #else
     st7789v_draw_pixel_immediately(x + ST7789V_OFFSET_X, y + ST7789V_OFFSET_X, ~color);
 #endif
@@ -315,20 +340,15 @@ static void st7789v_put_pixel(uint16_t x, uint16_t y, uint16_t color)
 
 void st7789v_test(void)
 {
-    // st7789v_init(1);
-    
-    // for (int x = 0; x < ST7789V_HOR_RES; x++)
-    //     for (int y = 0; y < ST7789V_VER_RES; y++)
-    //         st7789v_draw_pixel_immediately(x, y, 0xffff);
     struct display_module *p_disp = request_disp_module(DRV_NAME);
     p_disp->ops.module_init(0);
     
     for(int x = 0; x < ST7789V_HOR_RES; x++)
         for(int y = 0; y < ST7789V_VER_RES; y++) {
-            // p_disp->ops.module_put_pixel(x, y, 0x0);
-            st7789v_draw_pixel_immediately(x, y, 0xffff);
+            p_disp->ops.module_put_pixel(x, y, ST7789V_COLOR_WHITE);
             sleep_ms(1);
         }
+    p_disp->ops.module_flush();
 }
 
 static struct display_module st7789v_module = {

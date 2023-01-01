@@ -1,9 +1,9 @@
 /**
- * @file vals.h
+ * @file pm.h
  * @author IotaHydrae (writeforever@foxmail.com)
  * @brief 
  * @version 0.1
- * @date 2022-11-21
+ * @date 2023-01-02
  * 
  * MIT License
  * 
@@ -30,31 +30,15 @@
 
 #pragma once
 
-#ifndef __VALS_H
-#define __VALS_H
+#ifndef __POWER_MANAGER_H
+#define __POWER_MANAGER_H
 
-#define DEFAULT_SYS_CLOCK   ()
-// #define DEFAULT_SPI_SPEED (50000000)    // 50MHz
-#define DEFAULT_SPI_SPEED (125000000)    // 12-125MHz
-#define DEFAULT_I2C_SPEED (400000)      // 400KHz
-#define DEFAULT_UART_SPEED (115200)
+struct pm {
+    void (*suspend)(void);
+    void (*resume)(void);
 
-#define BATTERY_PRECENT_DEAD    (0)
-#define BATTERY_PERCENT_LOW     (25)
-#define BATTERY_PERCENT_HALT    (50)
-#define BATTERY_PERCENT_GOOD    (75)
-#define BATTERY_PERCENT_FULL    (100)
+    void (*power_down)(void);
+    void (*power_on)(void);
+};
 
-#define SECOND(x)               (x)
-#define MILLISECOND(x)          (x)
-#define MICROSECOND(x)          (x)
-#define SECONDS_IN_MINUTE     (60)
-#define MINUTES_IN_HOUR       (60)
-#define HOURS_IN_DAY          (24)
-
-#define REFRESH_SPEED_FAST      (2000)
-#define REFRESH_SPEED_NORMAL    (5000)
-#define REFRESH_SPEED_SLOW      (9000)
-#define REFRESH_SPEED_USER      (0x4)
-
-#endif
+#endif  /* __POWER_MANAGER_H */

@@ -56,6 +56,7 @@ typedef enum {
 
 #define DEFAULT_ESP8266_RX_PIN      8
 #define DEFAULT_ESP8266_TX_PIN      9
+#define DEFAULT_ESP8266_EN_PIN      0
 
 #define DEFAULT_ESP8266_UART_IFACE  uart1
 #define DEFAULT_ESP8266_UART_IRQ    UART1_IRQ
