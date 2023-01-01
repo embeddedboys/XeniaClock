@@ -41,6 +41,7 @@
 #include "pico/stdlib.h"
 #include "hardware/spi.h"
 #include "display/display_manager.h"
+#include "spi/native_spi.h"
 
 #define TEST_DOC "This document describes how to write an ALSA \
 (Advanced Linux Sound Architecture) driver. The document focuses \

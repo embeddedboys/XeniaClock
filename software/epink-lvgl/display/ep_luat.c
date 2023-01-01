@@ -28,7 +28,15 @@
  * 
  */
 
+#include "display_manager.h"
 #include "epd.h"
+
+#define DRV_NAME "ep_luat"
+
+#define EP_LUAT_HOR_RES 200
+#define EP_LUAT_VER_RES 200
+#define EP_LUAT_BPP     1
+#define EP_LUAT_UPDATE_MODE EPINK_UPDATE_MODE_PART
 
 static const unsigned char EPD_1IN54_lut_full_update[] = {
     0x02, 0x02, 0x01, 0x11, 0x12, 0x12, 0x22, 0x22,
@@ -344,4 +352,22 @@ static void ep_luat_put_pixel(uint16_t x, uint16_t y, uint8_t color)
 }
 #endif
 
-DISP_MODULE_REGISTER(ep_luat);
+static struct display_module ep_luat_module =  {
+    .name = DRV_NAME,
+    .cfg = {
+        .width       = EP_LUAT_HOR_RES,
+        .height      = EP_LUAT_VER_RES,
+        .bpp         = EP_LUAT_BPP,
+        .update_mode = EP_LUAT_UPDATE_MODE,
+    },
+    .ops = {
+        .module_init            = ep_luat_init,
+        .module_blank           = ep_luat_blank,
+        .module_clear           = ep_luat_clear,
+        .module_flush           = ep_luat_flush,
+        .module_put_pixel       = ep_luat_put_pixel,
+        .module_set_update_mode = ep_luat_set_update_mode,
+    },
+};
+
+DISP_MODULE_DRIVER(ep_luat);

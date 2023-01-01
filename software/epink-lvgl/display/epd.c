@@ -91,23 +91,20 @@ inline void epink_res_clr()
 void epink_reset()
 {
     epink_res_set();
-    sleep_ms(200);
+    sleep_ms(20);
     
     epink_res_clr();
     sleep_ms(2);
     
     epink_res_set();
-    sleep_ms(200);
+    sleep_ms(20);
 }
 
 /* ========== epink I/O ========== */
 
 inline void epink_write_byte(uint8_t val)
 {
-    uint8_t buf[1] = {val};
-    cs_select();
-    spi_write_blocking(spi_default, buf, 1);
-    cs_deselect();
+    spi_write8(val, EPINK_CS_PIN);
 }
 
 void epink_write_command(uint8_t command)
@@ -161,11 +158,12 @@ void epink_init(uint8_t mode)
 {
     // epink_device_init(mode);
     // default_module = *request_disp_module("ssd1681");
-    if (default_module.ops.module_init)
-        default_module.ops.module_init(mode);
-    else
+    if (!default_module.ops.module_init) {
         EPINK_ERROR("This module [%s] doesn't exposed a {init} function!\n", default_module.name);
-        
+        return;
+    }
+
+    default_module.ops.module_init(mode);
     memset(epink_disp_buffer, EPINK_COLOR_WHITE, ARRAY_SIZE(epink_disp_buffer));
 }
 
@@ -175,10 +173,12 @@ void epink_init(uint8_t mode)
  */
 void epink_flush()
 {
-    if (default_module.ops.module_flush)
-        default_module.ops.module_flush();
-    else
+    if (!default_module.ops.module_flush) {
         EPINK_ERROR("This module [%s] doesn't exposed a {flush} function!\n", default_module.name);
+        return;
+    }
+
+    default_module.ops.module_flush();
 }
 
 /**
@@ -188,19 +188,20 @@ void epink_flush()
  */
 void epink_clear(uint8_t color)
 {
-    if (default_module.ops.module_clear)
-        default_module.ops.module_clear(color);
-    else
+    if (default_module.ops.module_clear) {
         EPINK_ERROR("This module [%s] doesn't exposed a {clear} function!\n", default_module.name);
+        return;
+    }
+
+    default_module.ops.module_clear(color);
 }
 
 void epink_blank()
 {
-    if (default_module.ops.module_blank) {
-        default_module.ops.module_blank();
-    } else {
+    if (!default_module.ops.module_blank) {
         EPINK_ERROR("This module [%s] doesn't exposed a {blank} function!\n \
                     Using a default blank ops\n", default_module.name);
+        
         epink_init(EPINK_UPDATE_MODE_FULL);
         
         /*  a global clear before drawing operations  */
@@ -215,7 +216,11 @@ void epink_blank()
         sleep_ms(200);
         epink_clear(0xFF);
         sleep_ms(200);
+
+        return;
     }
+
+    default_module.ops.module_blank();
 }
 
 /**

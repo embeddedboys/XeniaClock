@@ -31,8 +31,9 @@
 #include "native_i2c.h"
 #include "common/tools.h"
 #include "hardware/i2c.h"
-
-// static inline void i2c_transfer()
+#include "hardware/gpio.h"
+#include "common/vals.h"
+#include "pico/binary_info.h"
 
 void i2c_write_reg(uint8_t addr, uint8_t reg, uint8_t val)
 {
@@ -50,6 +51,15 @@ uint8_t i2c_read_reg(uint8_t addr, uint8_t reg)
 
 void native_i2c_init(void)
 {
+    i2c_init(i2c_default, DEFAULT_I2C_SPEED);
+    gpio_set_function(PICO_DEFAULT_I2C_SDA_PIN, GPIO_FUNC_I2C);
+    gpio_set_function(PICO_DEFAULT_I2C_SCL_PIN, GPIO_FUNC_I2C);
+    bi_decl(bi_2pins_with_func(PICO_DEFAULT_I2C_SDA_PIN,
+                            PICO_DEFAULT_I2C_SCL_PIN,
+                            GPIO_FUNC_I2C));
+    gpio_pull_up(PICO_DEFAULT_I2C_SDA_PIN);
+    gpio_pull_up(PICO_DEFAULT_I2C_SCL_PIN);
+
     pr_debug("registering native i2c function pointer\n");
     p_i2c_write_reg = i2c_write_reg;
     p_i2c_read_reg = i2c_read_reg;

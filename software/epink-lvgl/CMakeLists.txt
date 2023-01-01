@@ -18,6 +18,7 @@ file(GLOB_RECURSE INCLUDES "include/*.h"
                             "i2c/*.h"
                             "net/*.h"
                             "clk/*.h"
+                            "spi/*.h"
                             "rtc/*.h")
 
 file(GLOB_RECURSE SOURCES "lvgl/src/*.c"
@@ -29,6 +30,7 @@ file(GLOB_RECURSE SOURCES "lvgl/src/*.c"
                             "i2c/*.c"
                             "net/*.c"
                             "clk/*.c"
+                            "spi/*.c"
                             "rtc/*.c")
 
 # rest of your project
@@ -42,8 +44,8 @@ target_link_libraries(epink_desktop pico_stdlib
                             hardware_i2c
                             hardware_uart)
 
-pico_enable_stdio_usb(epink_desktop 1)
-pico_enable_stdio_uart(epink_desktop 0)
+pico_enable_stdio_usb(epink_desktop 0)
+pico_enable_stdio_uart(epink_desktop 1)
 
 pico_add_extra_outputs(epink_desktop)
 

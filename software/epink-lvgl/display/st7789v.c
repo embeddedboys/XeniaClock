@@ -334,17 +334,17 @@ void st7789v_test(void)
 static struct display_module st7789v_module = {
     .name = DRV_NAME,
     .cfg = {
-        .width = ST7789V_HOR_RES,
-        .height = ST7789V_VER_RES,
-        .bpp = ST7789V_BPP,
+        .width       = ST7789V_HOR_RES,
+        .height      = ST7789V_VER_RES,
+        .bpp         = ST7789V_BPP,
         .update_mode = 0,
     },
     .ops = {
-        .module_init      = st7789v_init,
-        .module_blank     = st7789v_blank,
-        .module_clear     = st7789v_clear,
-        .module_flush     = st7789v_flush,
-        .module_put_pixel = st7789v_put_pixel,
+        .module_init            = st7789v_init,
+        .module_blank           = st7789v_blank,
+        .module_clear           = st7789v_clear,
+        .module_flush           = st7789v_flush,
+        .module_put_pixel       = st7789v_put_pixel,
         .module_set_update_mode = st7789v_set_update_mode,
     },
 };

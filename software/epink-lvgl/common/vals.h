@@ -33,7 +33,9 @@
 #ifndef __VALS_H
 #define __VALS_H
 
-#define DEFAULT_SPI_SPEED (50000000)    // 50MHz
+#define DEFAULT_SYS_CLOCK   ()
+// #define DEFAULT_SPI_SPEED (50000000)    // 50MHz
+#define DEFAULT_SPI_SPEED (125000000)    // 12-125MHz
 #define DEFAULT_I2C_SPEED (400000)      // 400KHz
 #define DEFAULT_UART_SPEED (115200)
 

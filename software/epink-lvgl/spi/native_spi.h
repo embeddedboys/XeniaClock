@@ -33,4 +33,9 @@
 
 #include "hardware/spi.h"
 
+void native_spi_init(void);
+
+void spi_write8(uint8_t val, uint8_t cs_pin);
+void spi_write16(uint16_t val, uint8_t cs_pin);
+
 #endif

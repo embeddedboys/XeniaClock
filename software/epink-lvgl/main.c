@@ -56,6 +56,8 @@
 #include "sensors/aht10.h"
 #include "net/esp01s.h"
 #include "clk/native_clk.h"
+#include "spi/native_spi.h"
+#include "i2c/native_i2c.h"
 
 /* Header files lvgl defined */
 #include "lvgl/lvgl.h"
@@ -80,13 +82,7 @@ static void hal_init(void)
 #warning spi/bme280_spi example requires a board with SPI pins
     puts("Default SPI pins were not defined");
 #else
-    /* Useing default SPI0 at 50MHz */
-    spi_init(spi_default, DEFAULT_SPI_SPEED);
-    gpio_set_function(PICO_DEFAULT_SPI_SCK_PIN, GPIO_FUNC_SPI);
-    gpio_set_function(PICO_DEFAULT_SPI_TX_PIN, GPIO_FUNC_SPI);
-    /* could check this using `picotools` */
-    bi_decl(bi_2pins_with_func(PICO_DEFAULT_SPI_TX_PIN, PICO_DEFAULT_SPI_SCK_PIN,
-                               GPIO_FUNC_SPI));
+    native_spi_init();
 
     gpio_init(EPINK_CS_PIN);
     gpio_set_dir(EPINK_CS_PIN, GPIO_OUT);
@@ -107,19 +103,12 @@ static void hal_init(void)
 #endif
 
     /* initialize i2c host */
-    i2c_init(i2c_default, DEFAULT_I2C_SPEED);
-    gpio_set_function(PICO_DEFAULT_I2C_SDA_PIN, GPIO_FUNC_I2C);
-    gpio_set_function(PICO_DEFAULT_I2C_SCL_PIN, GPIO_FUNC_I2C);
-    bi_decl(bi_2pins_with_func(PICO_DEFAULT_I2C_SDA_PIN,
-                            PICO_DEFAULT_I2C_SCL_PIN,
-                            GPIO_FUNC_I2C));
-    gpio_pull_up(PICO_DEFAULT_I2C_SDA_PIN);
-    gpio_pull_up(PICO_DEFAULT_I2C_SCL_PIN);
+    native_i2c_init();
 
     /* initialize uart */
     uart_init(uart1, DEFAULT_UART_SPEED);
-    gpio_set_function(8, GPIO_FUNC_UART);
-    gpio_set_function(9, GPIO_FUNC_UART);
+    gpio_set_function(DEFAULT_ESP8266_RX_PIN, GPIO_FUNC_UART);
+    gpio_set_function(DEFAULT_ESP8266_TX_PIN, GPIO_FUNC_UART);
     bi_decl(bi_2pins_with_func(8, 9, GPIO_FUNC_UART));
     uart_set_fifo_enabled(uart1, false);
 }
