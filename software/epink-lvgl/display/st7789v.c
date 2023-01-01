@@ -89,6 +89,26 @@ enum st7789v_command {
 #define ST7789V_VER_RES     240
 #define ST7789V_BPP         16
 
+#define ST7789V_OFFSET_X    20
+#define ST7789V_OFFSET_Y    0
+
+#ifndef ST7789V_INVERT_MODE
+    #define ST7789V_INVERT_MODE 0
+#endif
+
+#if ST7789V_INVERT_MODE
+    #define ST7789V_COLOR_BLACK 0xffff
+    #define ST7789V_COLOR_WHITE 0x0000
+#else
+    #define ST7789V_COLOR_BLACK 0x0000
+    #define ST7789V_COLOR_WHITE 0xffff
+#endif
+
+#ifndef ST7789V_BUFFER_FLUSH
+    #define ST7789V_BUFFER_FLUSH 1
+#endif
+
+
 /* TODO: port st7789v 240x240 display here */
 
 static void st7789v_set_cursor(uint32_t x, uint32_t y)
@@ -126,11 +146,11 @@ static void st7789v_device_init(uint8_t mode)
     
     sleep_ms(120);
     
-    epink_write_command(0x36);
+    epink_write_command(MADCTL);
     epink_write_data(0x00);
     
-    epink_write_command(0x3A);
-    epink_write_data(0x05);
+    epink_write_command(COLMOD);
+    epink_write_data(0x05); /* RGB565 */
     
     epink_write_command(0xB2);
     epink_write_data(0x0C);
@@ -165,7 +185,7 @@ static void st7789v_device_init(uint8_t mode)
     epink_write_data(0xA1);
     
     // epink_write_command(0xD6);
-    // epink_write_data(0xA1);   //sleep in后，gate输出为GND
+    // epink_write_data(0xA1);   // after sleeping in，gate输出为GND
     
     epink_write_command(0xE0);
     epink_write_data(0xD0);
@@ -200,21 +220,21 @@ static void st7789v_device_init(uint8_t mode)
     epink_write_data(0x34);
     
     // epink_write_command(0xE4);
-    // epink_write_data(0x25);   //使用240根gate  (N+1)*8
-    // epink_write_data(0x00);   //设定gate起点位置
-    // epink_write_data(0x00);   //当gate没有用完时，bit4(TMG)设为0
+    // epink_write_data(0x25);   // use 240 gates (N+1)*8
+    // epink_write_data(0x00);   //set gate start position
+    // epink_write_data(0x00);   // whne gate isn't run out，set bit4(TMG) to 0
     
     epink_write_command(0x21);
     
     epink_write_command(0x29);
     
-    // epink_write_command(0x2A);     //Column Address Set
+    // epink_write_command(0x2A);     //column address Set
     // epink_write_data(0x00);
     // epink_write_data(0x00);   //0
     // epink_write_data(0x00);
     // epink_write_data(0xEF);   //239
     
-    // epink_write_command(0x2B);     //Row Address Set
+    // epink_write_command(0x2B);     //row address Set
     // epink_write_data(0x00);
     // epink_write_data(0x00);   //0
     // epink_write_data(0x00);
@@ -239,21 +259,31 @@ static void st7789v_clear(uint16_t color)
 
 static void st7789v_flush()
 {
+#if ST7789V_BUFFER_FLUSH
     uint8_t *cursor = epink_disp_buffer;
+    uint8_t *cursor_old = epink_disp_buffer_old;
     uint8_t byte;
-    for(int y = 0; y < EPINK_HEIGHT; y++) {
-        for(int page = 0; page < EPINK_WIDTH / 8; page++) {
-            byte = cursor[y * 25 + page];
     
+    for(int y = 0; y < EPINK_HEIGHT; y++) {
+        for(int page = 0; page < EPINK_LINE_WIDTH_IN_PAGE; page++) {
+            byte = cursor[y * EPINK_LINE_WIDTH_IN_PAGE + page];
+            
+            /* if this byte same with the last frame, wo don't need go futher */
+            if(byte == cursor_old[y * EPINK_LINE_WIDTH_IN_PAGE + page])
+                continue;
+                
             /* for bits in this byte, flush to screen */
-            for(int i = 0; i < 8; i++) {
-                if((byte << i) & 0x80)
-                    st7789v_draw_pixel_immediately(page * 8 + i + 20, y, 0xffff);
-                else
-                    st7789v_draw_pixel_immediately(page * 8 + i + 20, y, 0x0000);
+            for(int bit = 0; bit < EPINK_PAGE_SIZE; bit++) {
+                st7789v_draw_pixel_immediately(page * EPINK_PAGE_SIZE + bit + ST7789V_OFFSET_X, y,
+                                            ((byte << bit) & 0x80) ? ST7789V_COLOR_BLACK : ST7789V_COLOR_WHITE);
             }
         }
     }
+
+    /* save this frame to old buffer */
+    memcpy(epink_disp_buffer_old, epink_disp_buffer, EPINK_DISP_BUFFER_SIZE);
+#else
+#endif
 }
 
 static void st7789v_blank()
@@ -270,15 +300,16 @@ static void st7789v_set_update_mode(uint8_t mode)
 static void st7789v_put_pixel(uint16_t x, uint16_t y, uint16_t color)
 {
 #if ST7789V_BUFFER_FLUSH
-    st7789v_draw_pixel_immediately(x + 20, y + 20, ~color);
-#else
     uint8_t *pen = epink_disp_buffer;
-    
+
     if(color)
-        pen[y * 25 + (x / 8)] &= ~(0x80 >> (x % 8));
+        pen[y * EPINK_LINE_WIDTH_IN_PAGE + (x / EPINK_PAGE_SIZE)] |= (0x80 >>
+                                                                       (x % EPINK_PAGE_SIZE));
     else
-        pen[y * 25 + (x / 8)] |= (0x80 >> (x % 8));
-    
+        pen[y * EPINK_LINE_WIDTH_IN_PAGE + (x / EPINK_PAGE_SIZE)] &= ~(0x80 >>
+                                                                      (x % EPINK_PAGE_SIZE));
+#else
+    st7789v_draw_pixel_immediately(x + ST7789V_OFFSET_X, y + ST7789V_OFFSET_X, ~color);
 #endif
 }
 

@@ -40,6 +40,7 @@
 #include <stddef.h>
 
 uint8_t epink_disp_buffer[EPINK_DISP_BUFFER_SIZE];
+uint8_t epink_disp_buffer_old[EPINK_DISP_BUFFER_SIZE];
 // static uint8_t *pen = epink_disp_buffer;
 
 /* ========== epink pin controls ========== */

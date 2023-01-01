@@ -124,6 +124,7 @@ void epink_draw_pixel(uint8_t x, uint8_t y, uint16_t color);
 #define EPINK_USE_PUT_PIXEL         1
 
 extern uint8_t epink_disp_buffer[EPINK_DISP_BUFFER_SIZE];
+extern uint8_t epink_disp_buffer_old[EPINK_DISP_BUFFER_SIZE];
 extern unsigned char fontdata_mini_4x6[1536];
 extern unsigned char fontdata_8x16[4096];
 
