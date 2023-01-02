@@ -309,16 +309,18 @@ lv_obj_t *sub_display_label_time;
 static bool sub_display_label_flash = true;
 static inline void sub_screen_display_update_cb()
 {
-    if (sub_display_label_flash)
-        lv_label_set_text_fmt(sub_display_label_time, "%02d:%02d", hour, minute);
-    else
-        lv_label_set_text_fmt(sub_display_label_time, "%02d %02d", hour, minute);
+    lv_label_set_text_fmt(sub_display_label_time,
+                        sub_display_label_flash ? "%02d:%02d" : "%02d %02d",
+                        hour, minute);
 
     sub_display_label_flash = !sub_display_label_flash;
 }
 
 static void sub_screen_display_init()
 {
+    /* this one is called here so late because a banner should
+     * be displayed for a few seconds when deviced powered on
+     */
     post_lv_port_disp_init();
 
     /* get lvgl displays */
