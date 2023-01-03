@@ -63,10 +63,12 @@ int register_module(struct display_module *module)
         return -1;
 
     if (!g_pt_disp_module) {
-        g_pt_disp_module = (struct display_module *)malloc(sizeof(struct display_module));
+        g_pt_disp_module = module;
+        INIT_LIST_HEAD(&g_pt_disp_module->head);
+    } else {
+        module->id = g_module_id++;
+        list_add_tail(&module->head, &g_pt_disp_module->head);
     }
-
-    list_add_tail(&module->head, &g_pt_disp_module->head);
 
     return 0;
 }
