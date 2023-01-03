@@ -31,6 +31,8 @@
 #include "display_manager.h"
 #include "epd.h"
 
+#if DISPLAY_MAIN_PANEL_USE_EP_LUAT
+
 #define DRV_NAME "ep_luat"
 
 #define EP_LUAT_HOR_RES 200
@@ -371,3 +373,4 @@ static struct display_module ep_luat_module =  {
 };
 
 DISP_MODULE_DRIVER(ep_luat);
+#endif

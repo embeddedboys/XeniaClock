@@ -36,18 +36,38 @@
 #include <stdint.h>
 #include "common/list.h"
 
-#define DISPLAY_PANEL_EP_LUAT    1
-#define DISPLAY_PANEL_SSD1681    1
-#define DISPLAY_PANEL_ST7789V    1
+/* name of panels */
+#define DISPLAY_MAIN_PANEL_EP_LUAT_NAME   "ep_luat"
+#define DISPLAY_MAIN_PANEL_SSD1681_NAME   "ssd1681"
+#define DISPLAY_MAIN_PANEL_ST7789V_NAME   "st7789v"
 
-#define DISPLAY_MAIN_PANEL_EP_LUAT   0x00
-#define DISPLAY_MAIN_PANEL_SSD1681   0x01
-#define DISPLAY_MAIN_PANEL_ST7789V   0x02
+/* number of panels */
+#define DISPLAY_MAIN_PANEL_EP_LUAT  0x00
+#define DISPLAY_MAIN_PANEL_SSD1681  0x01
+#define DISPLAY_MAIN_PANEL_ST7789V  0x02
 
+/* enable/disable panels */
+#define DISPLAY_MAIN_PANEL_USE_EP_LUAT  1
+#define DISPLAY_MAIN_PANEL_USE_SSD1681  1
+#define DISPLAY_MAIN_PANEL_USE_ST7789V  1
+
+/* default panel number define */
 #ifndef DEFAULT_DISPLAY_MAIN_PANEL
     #define DEFAULT_DISPLAY_MAIN_PANEL DISPLAY_MAIN_PANEL_EP_LUAT
 #endif
 
+/* default panel name define */
+#if DEFAULT_DISPLAY_MAIN_PANEL == DISPLAY_MAIN_PANEL_EP_LUAT
+    #define DEFAULT_DISPLAY_MAIN_PANEL_NAME DISPLAY_MAIN_PANEL_EP_LUAT_NAME
+#elif DEFAULT_DISPLAY_MAIN_PANEL == DISPLAY_MAIN_PANEL_SSD1681
+    #define DEFAULT_DISPLAY_MAIN_PANEL_NAME DISPLAY_MAIN_PANEL_SSD1681_NAME
+#elif DEFAULT_DISPLAY_MAIN_PANEL == DISPLAY_MAIN_PANEL_ST7789V
+    #define DEFAULT_DISPLAY_MAIN_PANEL_NAME DISPLAY_MAIN_PANEL_ST7789V_NAME
+#else
+    #define DEFAULT_DISPLAY_MAIN_PANEL_NAME DISPLAY_MAIN_PANEL_EP_LUAT_NAME
+#endif
+
+/* define all common cfgs here */
 struct display_config {
     uint32_t width;
     uint32_t height;
@@ -56,6 +76,7 @@ struct display_config {
     uint32_t update_mode;
 };
 
+/* define all common ops here */
 struct display_ops {
 
     int (*module_init)(uint8_t mode);
@@ -88,6 +109,7 @@ struct display_module *request_disp_module(char *name);
 void disp_modules_init( void );
 void default_display_module_init(void);
 
+/* automatic define display module structure */
 #define DISP_MODULE_REGISTER(module) \
     static struct display_module module##_module = { \
         .name = #module, \
@@ -105,6 +127,7 @@ void default_display_module_init(void);
         register_module(&module##_module); \
     }
 
+/* define display module structure yourself */
 #define DISP_MODULE_DRIVER(module) \
     static void __attribute__((constructor)) module##_register(void) \
     { \

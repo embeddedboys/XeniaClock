@@ -31,6 +31,8 @@
 #include "epd.h"
 #include "pico/time.h"
 
+#if DISPLAY_MAIN_PANEL_USE_SSD1681
+
 static void ssd1681_set_window(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2)
 {
     epink_reset();
@@ -285,3 +287,4 @@ void ssd1681_test()
 }
 
 DISP_MODULE_REGISTER(ssd1681);
+#endif

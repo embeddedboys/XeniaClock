@@ -32,6 +32,8 @@
 #include "display/display_manager.h"
 #include "pico/time.h"
 
+#if DISPLAY_MAIN_PANEL_USE_ST7789V
+
 static struct display_module st7789v_module;
 
 enum st7789v_command {
@@ -370,3 +372,4 @@ static struct display_module st7789v_module = {
 };
 
 DISP_MODULE_DRIVER(st7789v);
+#endif
