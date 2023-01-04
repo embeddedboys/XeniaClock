@@ -110,8 +110,18 @@ static void hal_init(void)
     gpio_set_function(DEFAULT_ESP8266_RX_PIN, GPIO_FUNC_UART);
     gpio_set_function(DEFAULT_ESP8266_TX_PIN, GPIO_FUNC_UART);
     bi_decl(bi_2pins_with_func(DEFAULT_ESP8266_RX_PIN,
-                            DEFAULT_ESP8266_TX_PIN, GPIO_FUNC_UART));
+                               DEFAULT_ESP8266_TX_PIN, GPIO_FUNC_UART));
     uart_set_fifo_enabled(uart1, false);
+}
+
+void system_init(void)
+{
+    /* initialize clocks */
+    clk_init();
+
+    /* system up hardware init */
+    stdio_init_all();
+    hal_init();
 }
 
 extern lv_obj_t *ui_RollerHour;
@@ -134,12 +144,12 @@ static void native_rtc_init()
     rtc_device_init();
 
     /* set a test time to device */
-    t.hour = hour;    /* if i could get home earlier */
-    t.min = minute;
-    t.sec = second;
-    p_rtc_device_set_time(t);
-    pr_debug("time of rtc device has been set to %02d:%02d:%02d\n",
-             hour, minute, second);
+    // t.hour = hour;    /* if i could get home earlier */
+    // t.min = minute;
+    // t.sec = second;
+    // p_rtc_device_set_time(t);
+    // pr_debug("time of rtc device has been set to %02d:%02d:%02d\n",
+    //  hour, minute, second);
 
     /* init rtc host in mcu */
     pr_debug("initializing rtc host ...\n");
@@ -150,9 +160,9 @@ static void native_rtc_init()
     pr_debug("got time from rtc host : %02d:%02d:%02d\n",
              t.hour, t.min, t.sec);
 
-    // hour = t.hour;
-    // minute = t.min;
-    // second = t.sec;
+    hour = t.hour;
+    minute = t.min;
+    second = t.sec;
 
     /* write back to lvgl */
     pr_debug("setting lvgl time roller ...\n");
@@ -200,6 +210,7 @@ static const char *g_tips[] = {
     "Never laugh at live dragons.",
     "What are the characteristics of a person?",
     "You are not dead yet.",
+    "be happy!",
     "Cheers!",
     "Sleep seven to eight hours per night.",
     "Keep company with good people.",
@@ -310,8 +321,8 @@ static bool sub_display_label_flash = true;
 static inline void sub_screen_display_update_cb()
 {
     lv_label_set_text_fmt(sub_display_label_time,
-                        sub_display_label_flash ? "%02d:%02d" : "%02d %02d",
-                        hour, minute);
+                          sub_display_label_flash ? "%02d:%02d" : "%02d %02d",
+                          hour, minute);
 
     sub_display_label_flash = !sub_display_label_flash;
 }
@@ -320,6 +331,7 @@ static void sub_screen_display_init()
 {
     /* this one is called here so late because a banner should
      * be displayed for a few seconds when deviced powered on
+     * check ssd1306_banner();
      */
     post_lv_port_disp_init();
 
@@ -365,15 +377,11 @@ __  __          _              ____ _            _
 
 int main(void)
 {
-    /* system up hardware init */
-    stdio_init_all();
-    hal_init();
+    /* some system layer initialize ops */
+    system_init();
 
     /* some ops used to display banner to anywhere */
     launch_banner();
-
-    /* initialize clocks */
-    clk_init();
 
     /* lvgl init */
     struct repeating_timer lvgl_clock_timer;

@@ -32,6 +32,7 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include "common/list.h"
 #include "pico/time.h"
 #include "hardware/irq.h"
 #include "hardware/regs/intctrl.h"
@@ -117,8 +118,8 @@ static void esp01s_rx_isr()
             g_dev_requesting = true;
             pr_debug("device requesting!\n");
             // pr_debug("%s\n", g_rx_buf);
-            // lv_timer_resume(timer_server_process);
-            esp01s_server_process_cb();
+            lv_timer_resume(timer_server_process);
+            // esp01s_server_process_cb();
         }
 
         /* reset buf index when the end is reached */
@@ -214,6 +215,23 @@ void esp01s_change_mode(struct esp01s_handle *handle, esp8266_mode_t mode)
     handle->cfg.mode = mode;
 }
 
+/* ========== STA mode ========== */
+void esp01s_connect_wifi(struct esp01s_handle *handle, char *ssid, char *psk)
+{
+    pr_debug("\n");
+    // ESP8266_SEND_CMD(
+    //     ESP8266_CMD_AT_CWJAP \
+    //     "\"%s\",\"%s\"",
+    //     ssid, psk
+    //     // "oneplus", "12345678"
+    // );
+}
+
+void esp01s_disconnect_wifi()
+{
+
+}
+
 void esp01s_set_ap_config(struct esp01s_handle *handle, struct esp01s_config *cfg)
 {
     ESP8266_SEND_CMD(
@@ -230,18 +248,17 @@ void esp01s_set_ap_config(struct esp01s_handle *handle, struct esp01s_config *cf
 
 void esp01s_start_ap(struct esp01s_handle *handle)
 {
-    struct esp01s_config in_cfg;
-    
-    in_cfg.ap_name = DEFAULT_ESP8266_AP_NAME;
-    in_cfg.ap_psk = DEFAULT_ESP8266_AP_PSK;
-    in_cfg.ap_chn = DEFAULT_ESP8266_AP_CHANNEL;
-    in_cfg.ap_ecn = DEFAULT_ESP8266_AP_ECN;
+    handle->cfg.ap_name = DEFAULT_ESP8266_AP_NAME;
+    handle->cfg.ap_psk = DEFAULT_ESP8266_AP_PSK;
+    handle->cfg.ap_chn = DEFAULT_ESP8266_AP_CHANNEL;
+    handle->cfg.ap_ecn = DEFAULT_ESP8266_AP_ECN;
     
     // ESP8266_SEND_CMD_NO_PARAM(ESP8266_CMD_AT_RST);
-    esp01s_change_mode(handle, ESP8266_SOFT_AP_MODE);
-    handle->cfg.mode = ESP8266_SOFT_AP_MODE;
-    
-    esp01s_set_ap_config(handle, &in_cfg);
+    // handle->cfg.mode = ESP8266_SOFT_AP_MODE;
+    handle->cfg.mode = ESP8266_SOFT_AP_STATION_MODE;
+    esp01s_change_mode(handle, handle->cfg.mode);
+
+    esp01s_set_ap_config(handle, &handle->cfg);
 }
 
 void esp01s_stop_ap(struct esp01s_handle *handle)
@@ -273,34 +290,80 @@ void esp01s_server_stop(struct esp01s_handle *handle)
     esp01s_reset(handle);
 }
 
+static void esp01s_server_fsm(struct esp01s_response_args *p_args)
+{
+    struct kv_node *np;
+
+    list_for_each_entry(np, &p_args->kv.head, head) {
+        if (0 == strcmp(np->k, "ssid")) {
+            /* the client is configuring network */
+            pr_debug("network\n");
+            p_correct_handle->cfg.ssid = np->k;
+            p_correct_handle->cfg.psk = np->v;
+
+            /* try to connect to the WiFi */
+            esp01s_connect_wifi(p_correct_handle,
+                            p_correct_handle->cfg.ssid,
+                            p_correct_handle->cfg.psk);
+        } else if (0 == strcmp(np->k, "light")) {
+            /* the client is wanting to control the light */
+            pr_debug("light\n");
+        } else {
+
+        }
+    }
+}
+
 static void esp01s_server_args_reset(struct esp01s_response_args *p_args)
 {
+    struct kv_node *np;
+    struct list_head *pos, *next;
 
+    list_for_each_safe(pos, next, &p_args->kv.head) {
+        np = list_entry(pos, struct kv_node, head);
+        list_del(pos);
+        free(np);
+    }
 }
 
 static void esp01s_server_process_args(char *kv_buf)
 {
+    /* reset args list */
+    esp01s_server_args_reset(&p_correct_handle->args);
+
     // pr_debug("=== \n");
     /* IPD,0,530:GET /?ssid=KYKJ&psk=keyifamily HTTP/1.1 */
     // /* parsing response key,value from IPD */
+    int argc;
     printf("%s\n", kv_buf);
 
     char *token, *str;
-    for (str = kv_buf;; str = NULL) {
+    for (argc=0,str = kv_buf;; str = NULL,argc++) {
         token = strtok(str, "&");
         if (token == NULL)
             break;
-        printf("------ %s\n", token);
-        
-        // struct kv_node *kv = (struct kv_node *)malloc(sizeof(struct kv_node));
-        
+        // printf("%s\n", token);
+
+        struct kv_node *np = (struct kv_node *)malloc(sizeof(struct kv_node));
+        memset(np->k, 0x0, ARRAY_SIZE(np->k));
+        memset(np->v, 0x0, ARRAY_SIZE(np->v));
+
         // char *p_str = strchr(token, '=');
-        // strcpy(kv->v, (p_str+1));
+        // char *tmp = strcpy(np->v, (p_str+1));
+        // while(*tmp++);
+        // *tmp = '\0';
         // printf("%p %p \n", token, p_str);
-        // strncpy(kv->k, token, (p_str - token));
-        // printf("k : %s, v : %s\n", kv->k, kv->v);
-        // list_add_tail(&kv->head, &g_args.kv.head);
+        // tmp = strncpy(np->k, token, (p_str - token));
+        // while(*tmp++);
+        // *tmp = '\0';
+        // printf("k : %s, v : %s\n", np->k, np->v);
+        char *p_str = strchr(token, '=');
+        strcpy(np->v, (p_str+1));
+        strncpy(np->k, token, (p_str - token));
+        list_add_tail(&np->head, &p_correct_handle->args.kv.head);
     }
+
+    p_correct_handle->args.argc = argc;
 }
 
 static void esp01s_server_process_cb()
@@ -315,7 +378,7 @@ static void esp01s_server_process_cb()
     /* parsing IPD */
     char * p_tmp = strchr(g_rx_buf, '+');
     if (!p_tmp)
-        goto error;
+        goto handled;
 
     // pr_debug("%s\n", p_tmp+1);
     char ipd[48];
@@ -327,30 +390,36 @@ static void esp01s_server_process_cb()
     ipd[i] = '\0';
     pr_debug("parsing : -> %s\n", ipd);
 
+    /* parse kv buf and send it to args process */
     char kv_buf[64];
     int kv_len = 0;
 
     char *p_str = strchr(ipd, '?');
+    if (!p_str) {
+        pr_debug("got nothing about kv, bye\n");
+        goto handled;
+    }
 
     char *p_str_cursor = (p_str + 1);
     while(*p_str_cursor++ != ' ')
         kv_len++;
-    printf("kv_len :%d\n", kv_len);
+    // printf("kv_len :%d\n", kv_len);
     strncpy(kv_buf, (p_str+1), kv_len);
     kv_buf[kv_len] = '\0';
-    printf("kv_buf : %s, %d\n", kv_buf, sizeof(kv_buf));
+    // printf("kv_buf : %s, %d\n", kv_buf, sizeof(kv_buf));
     esp01s_server_process_args(kv_buf);
-    esp01s_rx_buf_clear();
-    uart_set_irq_enables(DEFAULT_ESP8266_UART_IFACE, true, false);
+
+    /* process done, call fsm */
+    esp01s_server_fsm(&p_correct_handle->args);
 
 handled:
     /* request handled */
     printf("request handled!\n");
+    lv_timer_pause(timer_server_process);
     g_dev_requesting = false;
+    esp01s_rx_buf_clear();
+    uart_set_irq_enables(DEFAULT_ESP8266_UART_IFACE, true, false);
     return;
-error:
-    printf("parse error!\n");
-    g_dev_requesting = false;
 }
 
 void esp01s_server_listen_on(struct esp01s_handle *handle,
@@ -372,6 +441,9 @@ void esp01s_server_listen_on(struct esp01s_handle *handle,
         );
     }
     esp01s_rx_buf_clear();
+
+    timer_server_process = lv_timer_create(esp01s_server_process_cb, 200, NULL);
+    lv_timer_pause(timer_server_process);
 }
 
 void esp01s_server_set_timeout(uint16_t timeout)
@@ -571,17 +643,6 @@ void esp01s_server_broadcast(struct esp01s_handle *handle,
     }
 }
 
-/* ========== STA mode ========== */
-void esp01s_connect_wifi()
-{
-
-}
-
-void esp01s_disconnect_wifi()
-{
-
-}
-
 /* ========== Common ========== */
 void esp01s_get_ip()
 {
@@ -597,7 +658,7 @@ void esp01s_run_config(struct esp01s_handle *handle)
 {
     esp01s_set_echo_enabled(handle, false);
     esp01s_server_start(handle);
-    esp01s_server_listen_on(handle, 80, true);
+    esp01s_server_listen_on(handle, DEFAULT_ESP8266_SERVER_PORT, true);
 
     /* send content */
     esp01s_server_broadcast(handle,
