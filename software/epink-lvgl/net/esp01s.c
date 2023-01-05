@@ -33,6 +33,7 @@
 #include <stdlib.h>
 
 #include "common/list.h"
+#include "hardware/timer.h"
 #include "pico/time.h"
 #include "hardware/irq.h"
 #include "hardware/regs/intctrl.h"
@@ -68,10 +69,15 @@
 // #define ESP8266_CMD_AT_CWJAP(ssid,psk)     ESP8266_CMD("AT+CWJAP=" #ssid "," #psk)
 // #define ESP8266_CMD_AT_CWSAP(ssid,psk,chn,ecn)  ESP8266_CMD("AT+CWSAP=" #ssid "," #psk "," #chn "," #ecn)
 
-static void esp01s_server_process_cb();
+static int64_t esp01s_server_process_cb(alarm_id_t id, void *user_data);
 static inline void esp01s_rx_buf_reset();
 static inline void esp01s_rx_buf_clear();
 static void __esp01s_send_command(char *cmd);
+static void __esp01s_send_command_wait(char *cmd, uint32_t wait_ms);
+static void __esp01s_send_command_nonwait(char *cmd);
+
+struct esp01s_connection esp01s_server_status(struct esp01s_handle *handle);
+static void esp01s_server_send_index(struct esp01s_handle *handle);
 
 static lv_timer_t *timer_server_process;
 
@@ -86,6 +92,18 @@ static struct esp01s_handle *p_correct_handle = &g_esp01s_handle;
         char at_cmd[48];    \
         sprintf(at_cmd, ESP8266_CMD(cmd), __VA_ARGS__);   \
         __esp01s_send_command(at_cmd);  \
+    } while(0);
+
+#define ESP8266_SEND_CMD_WAIT(ms, cmd, ...) do { \
+        char at_cmd[48];    \
+        sprintf(at_cmd, ESP8266_CMD(cmd), __VA_ARGS__);   \
+        __esp01s_send_command_wait(at_cmd, ms);  \
+    } while(0);
+
+#define ESP8266_SEND_CMD_NONWAIT(cmd, ...) do { \
+        char at_cmd[48];    \
+        sprintf(at_cmd, ESP8266_CMD(cmd), __VA_ARGS__);   \
+        __esp01s_send_command_nonwait(at_cmd);  \
     } while(0);
 
 static struct esp01s_config cfg = {
@@ -118,7 +136,8 @@ static void esp01s_rx_isr()
             g_dev_requesting = true;
             pr_debug("device requesting!\n");
             // pr_debug("%s\n", g_rx_buf);
-            lv_timer_resume(timer_server_process);
+            // lv_timer_resume(timer_server_process);
+            add_alarm_in_ms(50, esp01s_server_process_cb, NULL, false);
             // esp01s_server_process_cb();
         }
 
@@ -153,9 +172,37 @@ static void __esp01s_send(char *buf, uint32_t delay_ms)
     esp01s_rx_buf_reset();
 }
 
+static void __esp01s_send_nonsleep(char *buf)
+{
+    uart_puts(DEFAULT_ESP8266_UART_IFACE, buf);
+
+    /* append terminate ch '\0' to the end of buf and reset buf index */
+    esp01s_rx_buf_reset();
+}
+
+/* TODO: finsh this busy wait support */
+static void __esp01s_send_wait_for_busy(char *buf)
+{
+    esp01s_rx_buf_clear();
+
+    uart_puts(DEFAULT_ESP8266_UART_IFACE, buf);
+
+    /* spin here if device is busy */
+}
+
 static void __esp01s_send_command(char *cmd)
 {
     __esp01s_send(cmd, 100);
+}
+
+static void __esp01s_send_command_wait(char *cmd, uint32_t wait_ms)
+{
+    __esp01s_send(cmd, wait_ms);
+}
+
+static void __esp01s_send_command_nonwait(char *cmd)
+{
+    __esp01s_send_nonsleep(cmd);
 }
 
 static void __esp01s_send_data(char *data)
@@ -219,12 +266,19 @@ void esp01s_change_mode(struct esp01s_handle *handle, esp8266_mode_t mode)
 void esp01s_connect_wifi(struct esp01s_handle *handle, char *ssid, char *psk)
 {
     pr_debug("\n");
-    // ESP8266_SEND_CMD(
+    /* This could cost seconds time */
+    // ESP8266_SEND_CMD_WAIT(
+    //     2000,
     //     ESP8266_CMD_AT_CWJAP \
     //     "\"%s\",\"%s\"",
-    //     ssid, psk
-    //     // "oneplus", "12345678"
+    //     // ssid, psk
+    //     "oneplus", "12345678"
     // );
+    char at_cmd[48];
+    sprintf(at_cmd, "AT+CWJAP=\"%s\",\"%s\"\r\n", "oneplus", "12345678");
+    __esp01s_send_command_nonwait(at_cmd);
+    
+    /* TODO: then query the connection stat, just to be sure */
 }
 
 void esp01s_disconnect_wifi()
@@ -290,9 +344,16 @@ void esp01s_server_stop(struct esp01s_handle *handle)
     esp01s_reset(handle);
 }
 
-static void esp01s_server_fsm(struct esp01s_response_args *p_args)
+// static int64_t esp01s_server_fsm(alarm_id_t id, void *user_data)
+    // struct esp01s_response_args *p_args = (struct esp01s_response_args *)user_data;
+static int64_t esp01s_server_fsm(struct esp01s_response_args *p_args)
 {
     struct kv_node *np;
+
+    if(list_empty(&p_args->kv.head)) {
+        esp01s_server_send_index(p_correct_handle);
+        goto fsm_handled;
+    }
 
     list_for_each_entry(np, &p_args->kv.head, head) {
         if (0 == strcmp(np->k, "ssid")) {
@@ -309,9 +370,12 @@ static void esp01s_server_fsm(struct esp01s_response_args *p_args)
             /* the client is wanting to control the light */
             pr_debug("light\n");
         } else {
-
+            /* requests we don't support yet */
         }
     }
+
+fsm_handled:
+    return 0;
 }
 
 static void esp01s_server_args_reset(struct esp01s_response_args *p_args)
@@ -322,6 +386,7 @@ static void esp01s_server_args_reset(struct esp01s_response_args *p_args)
     list_for_each_safe(pos, next, &p_args->kv.head) {
         np = list_entry(pos, struct kv_node, head);
         list_del(pos);
+        pr_debug("freeing node %p ...\n", np);
         free(np);
     }
 }
@@ -366,11 +431,11 @@ static void esp01s_server_process_args(char *kv_buf)
     p_correct_handle->args.argc = argc;
 }
 
-static void esp01s_server_process_cb()
+static int64_t esp01s_server_process_cb(alarm_id_t id, void *user_data)
 {
     /* sleep should never called in this function */
     if (!g_dev_requesting)
-        return;
+        return -1;
 
     uart_set_irq_enables(DEFAULT_ESP8266_UART_IFACE, false, false);
     pr_debug("processing rx buffer!\n");
@@ -396,7 +461,7 @@ static void esp01s_server_process_cb()
 
     char *p_str = strchr(ipd, '?');
     if (!p_str) {
-        pr_debug("got nothing about kv, bye\n");
+        // pr_debug("got nothing about kv, bye\n");
         goto handled;
     }
 
@@ -409,17 +474,19 @@ static void esp01s_server_process_cb()
     // printf("kv_buf : %s, %d\n", kv_buf, sizeof(kv_buf));
     esp01s_server_process_args(kv_buf);
 
-    /* process done, call fsm */
-    esp01s_server_fsm(&p_correct_handle->args);
 
 handled:
-    /* request handled */
     printf("request handled!\n");
-    lv_timer_pause(timer_server_process);
+
+    /* process done, call fsm */
+    esp01s_server_fsm(&p_correct_handle->args);
+    /* request handled */
+    // add_alarm_in_ms(100, esp01s_server_fsm, &p_correct_handle->args, false);
     g_dev_requesting = false;
     esp01s_rx_buf_clear();
     uart_set_irq_enables(DEFAULT_ESP8266_UART_IFACE, true, false);
-    return;
+
+    return 0;
 }
 
 void esp01s_server_listen_on(struct esp01s_handle *handle,
@@ -442,8 +509,8 @@ void esp01s_server_listen_on(struct esp01s_handle *handle,
     }
     esp01s_rx_buf_clear();
 
-    timer_server_process = lv_timer_create(esp01s_server_process_cb, 200, NULL);
-    lv_timer_pause(timer_server_process);
+    // timer_server_process = lv_timer_create(esp01s_server_process_cb, 200, NULL);
+    // lv_timer_pause(timer_server_process);
 }
 
 void esp01s_server_set_timeout(uint16_t timeout)
@@ -484,10 +551,14 @@ struct esp01s_connection esp01s_server_status(struct esp01s_handle *handle)
     }
     
     /* send AT command CIPSTATUS */
-    ESP8266_SEND_CMD_NO_PARAM(
-                ESP8266_CMD_AT_CIPSTATUS
-    );
-    
+    // ESP8266_SEND_CMD_NO_PARAM(
+    //             ESP8266_CMD_AT_CIPSTATUS
+    // );
+    char buf[] = ESP8266_CMD(ESP8266_CMD_AT_CIPSTATUS);
+    uart_puts(DEFAULT_ESP8266_UART_IFACE, buf);
+    busy_wait_ms(100);
+    esp01s_rx_buf_reset();
+
     /* process rx buf */
     uint8_t len = 0;
     uint8_t pass_echo_count = 2;
@@ -521,14 +592,6 @@ struct esp01s_connection esp01s_server_status(struct esp01s_handle *handle)
         memset(conn, 0x00, sizeof(struct esp01s_connection));
         pr_debug("node address : %p\n", conn);
         conn->id = len;
-        /* TODO: fix this parse process */
-        // sscanf(token, "CIPSTATUS:%d,\"%s\",\"%s\",%d,%d,%d",
-        //        &conn->id,
-        //        conn->type,
-        //        conn->addr,
-        //        &conn->remote_port,
-        //        &conn->local_port,
-        //        &conn->tetype);
         
         /* parse connection id */
         char *p = strchr(token, ':');
@@ -617,6 +680,28 @@ void esp01s_server_tcp_send(struct esp01s_handle *handle,
     }
 }
 
+static void esp01s_server_send_index(struct esp01s_handle *handle)
+{
+    esp01s_server_status(handle);
+
+    if (!list_empty(&handle->conns.head)) {
+        pr_debug("there are some connections to send data\n");
+        struct esp01s_connection *p_tmp_conn;
+        list_for_each_entry(p_tmp_conn, &handle->conns.head, head) {
+            pr_debug("%p, sending content to conn->id : %d\n", p_tmp_conn, p_tmp_conn->id);
+            ESP8266_SEND_CMD_NONWAIT(
+                        ESP8266_CMD_AT_CIPSEND \
+                        "%d,%d",
+                        p_tmp_conn->id, strlen(INDEX_HTML_CONTENT)
+            );
+
+            busy_wait_ms(100);
+
+            __esp01s_send_command_nonwait(INDEX_HTML_CONTENT);
+        }
+    }
+}
+
 void esp01s_server_broadcast(struct esp01s_handle *handle,
                             uint16_t length,
                             char *content)
@@ -656,14 +741,15 @@ void esp01s_ping(char *ip)
 
 void esp01s_run_config(struct esp01s_handle *handle)
 {
+    // esp01s_reset(handle);
     esp01s_set_echo_enabled(handle, false);
     esp01s_server_start(handle);
     esp01s_server_listen_on(handle, DEFAULT_ESP8266_SERVER_PORT, true);
-
+    uart_set_irq_enables(DEFAULT_ESP8266_UART_IFACE, true, false);
     /* send content */
-    esp01s_server_broadcast(handle,
-                           strlen(INDEX_HTML_CONTENT),
-                           INDEX_HTML_CONTENT);
+    // esp01s_server_broadcast(handle,
+    //                        strlen(INDEX_HTML_CONTENT),
+    //                        INDEX_HTML_CONTENT);
     // esp01s_server_status(handle);
 }
 
@@ -680,8 +766,7 @@ void esp01s_init(struct esp01s_handle *handle)
      */
     irq_set_exclusive_handler(DEFAULT_ESP8266_UART_IRQ, esp01s_rx_isr);
     irq_set_enabled(DEFAULT_ESP8266_UART_IRQ, true);
-    uart_set_irq_enables(DEFAULT_ESP8266_UART_IFACE, true, false);
-    
+
     /* if user given a handle, then we replaced with it */
     if (handle != NULL) {
         pr_debug("using user given esp01s handle\n");

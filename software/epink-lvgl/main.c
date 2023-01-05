@@ -307,6 +307,11 @@ static void network_config()
     lv_qrcode_update(qr_code, data, strlen(data));
     lv_disp_load_scr(ui_ScreenEpinkConfig);
 
+    /* wait here because we are testing esp01s */
+    // while (1) {
+    //     tight_loop_contents();
+    // }
+
     /* lol, pretending we are configuring device */
     sleep_ms(3000);
     pr_debug("network has been sucessfully configured!\n");
