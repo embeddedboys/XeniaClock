@@ -7,10 +7,10 @@
 
 
 Offical Site :
-[`https://embeddedboys.github.io/HamsterBear`](https://embeddedboys.github.io/HamsterBear)
+[`https://embeddedboys.github.io/XeniaClock`](https://embeddedboys.github.io/XeniaClock)
 
 Repository at :
-[`https://github.com/embeddedboys/HamsterBear`](https://github.com/embeddedboys/HamsterBear)
+[`https://github.com/embeddedboys/XeniaClock`](https://github.com/embeddedboys/XeniaClock)
 
 
 Inside
