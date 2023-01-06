@@ -47,7 +47,8 @@ int main(int argc, char *argv[]) {
     struct sockaddr_in addr_in;
 
     int fd_sock, status;
-    char buf[] = "GET / HTTP/1.1\r\nHost: %s\r\nConnection: close\r\n\r\n";
+    char buf[] = "GET / HTTP/1.1\r\nHost: www.baidu.com\r\nConnection: close\r\n\r\n";
+    char buffer[1024];
 
     fd_sock = socket(AF_INET, SOCK_STREAM, 0);
     if (fd_sock == -1) {
@@ -66,6 +67,12 @@ int main(int argc, char *argv[]) {
     if (connect(fd_sock, (struct sockaddr *)&addr_in, sizeof(struct sockaddr_in)) == -1) {
         printf("connect failed\n");
         exit(EXIT_FAILURE);
+    }
+    
+    write(fd_sock, buf, strlen(buf));
+    
+    while(read(fd_sock, buffer, sizeof(buffer)) != 0) {
+        fprintf(stderr, "%s", buffer);
     }
 
     close(fd_sock);
