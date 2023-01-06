@@ -1,0 +1,23 @@
+site_name: Xenia Clock
+site_url: https://embeddedboys.github.io/XeniaClock/
+site_description: offical site of project Xenia Clock
+site_author: nothing yet
+
+repo_url: https://github.com/embeddedboys/XeniaClock
+theme:
+  name: null
+  custom_dir: 'cinder'
+  locale: en
+
+nav:
+    - Home: index.md
+    - Get Started: getstarted.md
+    - Documentations:
+      - 'hardware': hardware/index.md
+      - 'software': software/index.md
+    - About:
+        - 'Credits': credits.md
+        - 'License': license.md
+        - 'Release Notes': releasenote.md
+        - 'FAQs': FAQs.md
+    - Thanks: thanks.md
