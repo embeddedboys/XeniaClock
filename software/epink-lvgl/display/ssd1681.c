@@ -76,7 +76,7 @@ static void ssd1681_device_init(uint8_t mode)
     epink_write_command(0x01);
     epink_write_data(0xc7);
     epink_write_data(0x00);
-    epink_write_data(0x01);
+    epink_write_data(0x00);
     
     epink_write_command(0x11);
     epink_write_data(0x01);
@@ -91,23 +91,23 @@ static void ssd1681_device_init(uint8_t mode)
     epink_write_data(0x00);
     epink_write_data(0x00);
 
-    epink_write_command(0x37);
-    epink_write_data(0x00);
-    epink_write_data(0xff);
-    epink_write_data(0xff);
-    epink_write_data(0xff);
-    epink_write_data(0xff);
-    epink_write_data(0x4f); /* Enable RAM ping-pong mode */
-    epink_write_data(0x00);
-    epink_write_data(0x00);
-    epink_write_data(0x00);
-    epink_write_data(0x00);
+    // epink_write_command(0x37);
+    // epink_write_data(0x00);
+    // epink_write_data(0xff);
+    // epink_write_data(0xff);
+    // epink_write_data(0xff);
+    // epink_write_data(0xff);
+    // epink_write_data(0x4f); /* Enable RAM ping-pong mode */
+    // epink_write_data(0x00);
+    // epink_write_data(0x00);
+    // epink_write_data(0x00);
+    // epink_write_data(0x00);
 
     epink_write_command(0x3c);
     epink_write_data(0x05);
     
-    // epink_write_command(0x18);
-    // epink_write_data(0x80);
+    epink_write_command(0x18);
+    epink_write_data(0x80);
     
     epink_write_command(0x4e);
     epink_write_data(0x00);
@@ -116,11 +116,11 @@ static void ssd1681_device_init(uint8_t mode)
     epink_write_data(0x00);
     epink_wait_busy();
     
-    epink_write_command(0x22);
-    if (mode == EPINK_UPDATE_MODE_FULL)
-        epink_write_data(0xf7);
-    else
-        epink_write_data(0xff);
+    // epink_write_command(0x22);
+    // if (mode == EPINK_UPDATE_MODE_FULL)
+    //     epink_write_data(0xf7);
+    // else
+    //     epink_write_data(0xff);
 }
 
 static int ssd1681_init(uint8_t mode)
@@ -170,7 +170,7 @@ static void ssd1681_clear(uint16_t color)
     //     epink_write_data(0xff);
     // }
     epink_write_command(0x24);
-    for (uint16_t i = 0; i < 200 * 25; i++) {
+    for (uint16_t i = 0; i < EPINK_DISP_BUFFER_SIZE; i++) {
         epink_write_data(color);
     }
     
@@ -183,37 +183,34 @@ static void ssd1681_clear(uint8_t color)
 }
 #endif
 
+static void ssd1681_part_flush(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2)
+{
+
+}
+
 /**
  * @brief Flush each byte in display buffer to screen
- *
  */
 #if EPINK_USE_FLUSH
 static void ssd1681_flush()
 {
     uint8_t *pen = epink_disp_buffer;
-    
-    // uint8_t width, height;
-    // width = ( EPINK_WIDTH % 8 == 0 ) ? ( EPINK_WIDTH / 8 ) :
-    //         ( EPINK_WIDTH / 8 + 1 );
-    // height = EPINK_HEIGHT;
-    
-    // ssd1681_set_window( 0, 0, EPINK_WIDTH, EPINK_HEIGHT );
-    // epink_write_command( 0x24 );
-    
-    // for( uint16_t i = 0; i < height; i++ ) {
-    //     ssd1681_set_cursor( 0, i );
-    
-    //     for( uint16_t j = 0; j < width; j++ ) {
-    //         epink_write_data( pen[j + i * 25] );
-    //     }
-    // }
+    // uint8_t *pen_old = epink_disp_buffer_old;
+
+    // epink_reset();
+
+    epink_write_command(0x3c);
+    epink_write_data(0x80);
 
     epink_write_command(0x24);
-    for (uint16_t i = 0; i < 200 * 25; i++) {
+    for (uint16_t i = 0; i < EPINK_DISP_BUFFER_SIZE; i++) {
+        // if (pen[i] == pen_old[i])
+        //     continue;
         epink_write_data(pen[i]);
     }
     
     ssd1681_update();
+    // memcpy(epink_disp_buffer_old, epink_disp_buffer, EPINK_DISP_BUFFER_SIZE);
 }
 #else
 static void ssd1681_flush()

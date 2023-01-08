@@ -63,6 +63,10 @@
 #include "lvgl/lvgl.h"
 #include "lvgl/src/extra/libs/qrcode/lv_qrcode.h"
 #include "port/lv_port_disp.h"
+#include "src/core/lv_disp.h"
+#include "src/core/lv_obj_pos.h"
+#include "src/core/lv_obj_tree.h"
+#include "src/extra/themes/basic/lv_theme_basic.h"
 #include "ui/ui.h"
 #include "ui/ui_comp.h"
 
@@ -313,7 +317,7 @@ static void network_config()
     // }
 
     /* lol, pretending we are configuring device */
-    sleep_ms(3000);
+    sleep_ms(1000);
     pr_debug("network has been sucessfully configured!\n");
 
     /* if network configuration is okay, switch to home */
@@ -323,6 +327,12 @@ static void network_config()
 
 lv_obj_t *sub_display_label_time;
 static bool sub_display_label_flash = true;
+
+static void anim_x_cb(void *var, int32_t x)
+{
+    lv_obj_set_x(var, x);
+}
+
 static inline void sub_screen_display_update_cb()
 {
     lv_label_set_text_fmt(sub_display_label_time,
@@ -351,11 +361,27 @@ static void sub_screen_display_init()
 
     /* set default disp to sub screen */
     lv_disp_set_default(sub_disp);
+    lv_theme_t *th = lv_theme_mono_init(sub_disp, 0, &ui_font_FiraCodeSemiBold12);
+    lv_disp_set_theme(sub_disp, th);
+
+    lv_obj_t *btn = lv_btn_create(lv_scr_act());
+    lv_obj_set_style_radius(btn, 5, 0);
+    lv_obj_set_style_pad_all(btn, 5, 0);
+    lv_obj_t *label = lv_label_create(btn);
+    lv_label_set_text(label, "Xenia Clock");
+    lv_obj_center(btn);
+
+    sleep_ms(1000);
+
+    lv_obj_del(btn);
+    th  = lv_theme_basic_init(sub_disp);
+    lv_disp_set_theme(sub_disp, th);
 
     sub_display_label_time = lv_label_create(lv_scr_act());
     lv_label_set_text_fmt(sub_display_label_time, "%02d:%02d", hour, minute);
     lv_obj_set_style_text_font(sub_display_label_time, &ui_font_FiraCodeSemiBold40, 0);
-    lv_obj_align(sub_display_label_time, LV_ALIGN_CENTER, 0, 0);
+    // lv_obj_align(sub_display_label_time, LV_ALIGN_CENTER, 0, 0);
+    lv_obj_center(sub_display_label_time);
 
     /* add a time refresh timer */
     pr_debug("adding sub screen refresh timer ...\n");
@@ -411,10 +437,10 @@ int main(void)
     /* initialize sub screen lvgl display */
     sub_screen_display_init();
 
-    pr_debug("going to loop\n");
-    while (1) {
-        tight_loop_contents();
-    }
+    // pr_debug("going to loop\n");
+    // while (1) {
+    //     tight_loop_contents();
+    // }
 
     while (1) {
         tight_loop_contents();

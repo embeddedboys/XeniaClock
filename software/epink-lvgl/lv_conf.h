@@ -551,7 +551,7 @@
 #define LV_USE_THEME_BASIC 1
 
 /*A theme designed for monochrome displays*/
-#define LV_USE_THEME_MONO 0
+#define LV_USE_THEME_MONO 1
 
 /*-----------
  * Layouts

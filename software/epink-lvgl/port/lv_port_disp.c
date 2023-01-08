@@ -194,6 +194,8 @@ void post_lv_port_disp_init()
 
     /* set default disp */
     lv_disp_set_default(g_default_disp);
+
+    g_sub_disp_m->ops.module_init(EPINK_UPDATE_MODE_PART);
 }
 
 /**********************
