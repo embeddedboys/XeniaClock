@@ -76,7 +76,7 @@ static void ssd1681_device_init(uint8_t mode)
     epink_write_command(0x01);
     epink_write_data(0xc7);
     epink_write_data(0x00);
-    epink_write_data(0x00);
+    epink_write_data(0x01);
     
     epink_write_command(0x11);
     epink_write_data(0x01);
