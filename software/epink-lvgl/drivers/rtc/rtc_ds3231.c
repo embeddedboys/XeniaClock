@@ -29,8 +29,7 @@
  */
 
 #include "i2c/native_i2c.h"
-#include "native_rtc.h"
-#include "src/widgets/lv_label.h"
+#include "rtc/native_rtc.h"
 #include <stdint.h>
 
 #define DS3231_I2C_ADDR             0x68

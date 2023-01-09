@@ -36,7 +36,7 @@
  *
  */
 
-#include "epd.h"
+#include "video/epd.h"
 #include <stddef.h>
 
 uint8_t epink_disp_buffer[EPINK_DISP_BUFFER_SIZE];

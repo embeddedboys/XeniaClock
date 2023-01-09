@@ -28,7 +28,7 @@
  * 
  */
 
-#include "native_rtc.h"
+#include "rtc/native_rtc.h"
 #include "pico/types.h"
 
 void rtc_host_set_datetime(datetime_t *time)

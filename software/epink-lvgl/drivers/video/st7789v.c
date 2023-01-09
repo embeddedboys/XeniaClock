@@ -28,8 +28,8 @@
  *
  */
 
-#include "display/epd.h"
-#include "display/display_manager.h"
+#include "video/epd.h"
+#include "video/display_manager.h"
 #include "pico/time.h"
 
 #if DISPLAY_MAIN_PANEL_USE_ST7789V

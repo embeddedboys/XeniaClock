@@ -40,7 +40,7 @@
 #include "common/tools.h"
 #include "pico/stdlib.h"
 #include "hardware/spi.h"
-#include "display/display_manager.h"
+#include "display_manager.h"
 #include "spi/native_spi.h"
 
 #define TEST_DOC "This document describes how to write an ALSA \

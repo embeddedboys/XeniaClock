@@ -28,7 +28,7 @@
  *
  */
 
-#include "aht10.h"
+#include "i2c/sensors/aht10.h"
 #include "common/tools.h"
 
 int aht10_reset(void)

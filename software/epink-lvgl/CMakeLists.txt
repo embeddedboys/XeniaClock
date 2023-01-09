@@ -13,32 +13,32 @@ pico_sdk_init()
 file(GLOB_RECURSE INCLUDES "include/*.h"
                             "port/*.h"
                             "ui/*.h"
-                            "display/*.h"
-                            "sensors/*.h"
-                            "i2c/*.h"
                             "net/*.h"
-                            "clk/*.h"
-                            "spi/*.h"
-                            "power/*.h"
-                            "rtc/*.h")
+                            "drivers/video/*.h"
+                            "drivers/sensors/*.h"
+                            "drivers/i2c/*.h"
+                            "drivers/clk/*.h"
+                            "drivers/spi/*.h"
+                            "drivers/power/*.h"
+                            "drivers/rtc/*.h")
 
 file(GLOB_RECURSE SOURCES "lvgl/src/*.c"
                             "font/*.c"
                             "port/*.c"
                             "ui/*.c"
-                            "display/*.c"
-                            "sensors/*.c"
-                            "i2c/*.c"
                             "net/*.c"
-                            "clk/*.c"
-                            "spi/*.c"
-                            "power/*.c"
-                            "rtc/*.c")
+                            "drivers/video/*.c"
+                            "drivers/sensors/*.c"
+                            "drivers/i2c/*.c"
+                            "drivers/clk/*.c"
+                            "drivers/spi/*.c"
+                            "drivers/power/*.c"
+                            "drivers/rtc/*.c")
 
 # rest of your project
 add_executable(xenia_clock main.c ${INCLUDES} ${SOURCES})
 
-target_include_directories(xenia_clock PUBLIC . "lvgl")
+target_include_directories(xenia_clock PUBLIC . "include" "lvgl")
 target_link_libraries(xenia_clock pico_stdlib
                             hardware_clocks
                             hardware_spi

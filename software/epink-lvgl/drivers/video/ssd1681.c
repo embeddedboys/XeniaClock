@@ -28,8 +28,8 @@
  *
  */
 
-#include "display/display_manager.h"
-#include "epd.h"
+#include "video/display_manager.h"
+#include "video/epd.h"
 #include "hardware/timer.h"
 #include "pico/time.h"
 

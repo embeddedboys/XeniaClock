@@ -7,8 +7,8 @@
 
 #include "common/list.h"
 #include "common/tools.h"
-#include "display/epd.h"
-#include "display/display_manager.h"
+#include "video/epd.h"
+#include "video/display_manager.h"
 
 static struct display_module *g_pt_disp_module = NULL;
 static uint32_t g_module_id = 0;

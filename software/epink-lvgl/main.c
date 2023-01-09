@@ -50,10 +50,10 @@
 /* Header files we defined */
 #include "common/tools.h"
 #include "common/vals.h"
-#include "display/epd.h"
-#include "display/ssd1306.h"
+#include "video/epd.h"
+#include "video/ssd1306.h"
 #include "rtc/native_rtc.h"
-#include "sensors/aht10.h"
+#include "i2c/sensors/aht10.h"
 #include "net/esp01s.h"
 #include "clk/native_clk.h"
 #include "spi/native_spi.h"

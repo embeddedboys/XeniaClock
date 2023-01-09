@@ -31,8 +31,8 @@
 #include <string.h>
 
 #include "i2c/native_i2c.h"
-#include "display/epd.h"
-#include "display/ssd1306.h"
+#include "video/epd.h"
+#include "video/ssd1306.h"
 #include "common/tools.h"
 #include "pico/time.h"
 

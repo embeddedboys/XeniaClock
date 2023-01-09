@@ -4,9 +4,9 @@
  */
 
 /*Copy this file as "lv_port_disp.c" and set this value to "1" to enable content*/
-#include "display/epd.h"
+#include "video/epd.h"
 #include "common/tools.h"
-#include "display/ssd1306.h"
+#include "video/ssd1306.h"
 #include "src/hal/lv_hal_disp.h"
 #if 1
 
@@ -28,8 +28,8 @@
 
 #include "../lvgl/lvgl.h"
 #include "lv_port_disp.h"
-#include "display/epd.h"
-#include "display/ssd1306.h"
+#include "video/epd.h"
+#include "video/ssd1306.h"
 
 /*********************
  *      DEFINES

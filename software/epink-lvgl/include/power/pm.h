@@ -1,9 +1,9 @@
 /**
- * @file native_i2c.c
+ * @file pm.h
  * @author IotaHydrae (writeforever@foxmail.com)
  * @brief 
  * @version 0.1
- * @date 2022-11-18
+ * @date 2023-01-02
  * 
  * MIT License
  * 
@@ -28,39 +28,18 @@
  * 
  */
 
-#include "native_i2c.h"
-#include "common/tools.h"
-#include "hardware/i2c.h"
-#include "hardware/gpio.h"
-#include "common/vals.h"
-#include "pico/binary_info.h"
+#pragma once
 
-void i2c_write_reg(uint8_t addr, uint8_t reg, uint8_t val)
-{
-    uint8_t buf[2] = {reg, val};
-    i2c_write_blocking(i2c_default, addr, buf, 2, false);
-}
+#ifndef __POWER_MANAGER_H
+#define __POWER_MANAGER_H
 
-uint8_t i2c_read_reg(uint8_t addr, uint8_t reg)
-{
-    uint8_t wbuf[1] = {reg}, rbuf[1];
-    i2c_write_blocking(i2c_default, addr, wbuf, 1, true);
-    i2c_read_blocking(i2c_default, addr, rbuf, 1, false);
-    return rbuf[0];
-}
+#include "common/list.h"
 
-void native_i2c_init(void)
-{
-    i2c_init(i2c_default, DEFAULT_I2C_SPEED);
-    gpio_set_function(PICO_DEFAULT_I2C_SDA_PIN, GPIO_FUNC_I2C);
-    gpio_set_function(PICO_DEFAULT_I2C_SCL_PIN, GPIO_FUNC_I2C);
-    bi_decl(bi_2pins_with_func(PICO_DEFAULT_I2C_SDA_PIN,
-                            PICO_DEFAULT_I2C_SCL_PIN,
-                            GPIO_FUNC_I2C));
-    gpio_pull_up(PICO_DEFAULT_I2C_SDA_PIN);
-    gpio_pull_up(PICO_DEFAULT_I2C_SCL_PIN);
+struct dev_pm_ops {
+    void (*suspend)(void);
+    void (*resume)(void);
 
-    pr_debug("registering native i2c function pointer\n");
-    p_i2c_write_reg = i2c_write_reg;
-    p_i2c_read_reg = i2c_read_reg;
-}
+    void (*poweroff)(void);
+};
+
+#endif  /* __POWER_MANAGER_H */

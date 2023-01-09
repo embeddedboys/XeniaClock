@@ -28,8 +28,8 @@
  * 
  */
 
-#include "display_manager.h"
-#include "epd.h"
+#include "video/display_manager.h"
+#include "video/epd.h"
 
 #if DISPLAY_MAIN_PANEL_USE_EP_LUAT
 
