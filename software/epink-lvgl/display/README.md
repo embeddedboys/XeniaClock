@@ -30,5 +30,3 @@ project
 - ssd1681
 
     This module is a replacement of the epd module we just talked above, it almost have  all features of 'epd', there just some differences in software
-
-    It's made by `Zhong Jing Yuan electronics`, thanks a lot!

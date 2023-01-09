@@ -290,7 +290,7 @@ static void post_timers_init()
     lv_timer_t *timer_temp_humid = lv_timer_create_basic();
     timer_temp_humid->timer_cb = lv_timer_temp_humid_cb;
     timer_temp_humid->period = REFRESH_SPEED_FAST;
-    lv_timer_pause(timer_temp_humid);
+    // lv_timer_pause(timer_temp_humid);
 }
 
 extern lv_obj_t *ui_LabelWifiName;

@@ -91,13 +91,13 @@ inline void epink_res_clr()
 void epink_reset()
 {
     epink_res_set();
-    sleep_ms(20);
+    busy_wait_ms(20);
     
     epink_res_clr();
-    sleep_ms(2);
+    busy_wait_ms(2);
     
     epink_res_set();
-    sleep_ms(20);
+    busy_wait_ms(20);
 }
 
 /* ========== epink I/O ========== */
@@ -132,7 +132,7 @@ static void epink_wait_busy_timeout(uint32_t timeout)
             EPINK_DEBUG("epink_wait_busy timeout\n");
             break;
         } else {
-            sleep_ms(100);
+            busy_wait_ms(100);
         }
     }
     
