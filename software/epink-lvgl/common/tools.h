@@ -35,6 +35,9 @@
 #include <stdint.h>
 #include <stddef.h>
 
+#include "types.h"
+#include "bitops.h"
+
 #define DEBUG 1
 
 #if DEBUG
@@ -67,5 +70,7 @@
         const typeof(((type *)0)->member) * __mptr = (ptr); \
         (type *)((char *)__mptr - offsetof(type, member)); })
 #endif
+
+#define DIV_ROUND_UP(n,d) (((n) + (d) - 1) / (d))
 
 #endif

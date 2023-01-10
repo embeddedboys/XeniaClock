@@ -1,62 +1,83 @@
 /**
- * @file types.h
+ * @file input.h
  * @author IotaHydrae (writeforever@foxmail.com)
- * @brief
+ * @brief 
  * @version 0.1
- * @date 2022-12-20
- *
+ * @date 2023-01-10
+ * 
  * MIT License
- *
+ * 
  * Copyright 2022 IotaHydrae(writeforever@foxmail.com)
- *
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * 
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- *
+ * 
  */
 
 #pragma once
 
-#ifndef __TYPES_H
-#define __TYPES_H
+#ifndef __INPUT_H
+#define __INPUT_H
 
-#ifndef u8
-    typedef unsigned char u8;
-#endif
+#include "uapi/input-event-codes.h"
+#include "common/list.h"
+#include "common/bitops.h"
 
-#ifndef u16
-    typedef unsigned short u16;
-#endif
+#define INPUT_DEFAULT_MAX_VALS    5
 
-#ifndef u32
-    typedef unsigned int u32;
-#endif
+/**
+ * struct input_value - input value representation
+ * @type: type of value (EV_KEY, EV_ABS, etc)
+ * @code: the value code
+ * @value: the value
+ */
+struct input_value {
+    __u16 type;
+    __u16 code;
+    __s32 value;
+};
 
-#ifndef u64
-    typedef unsigned long u64;
-#endif
+struct input_dev {
+    const char *name;
+    
+    unsigned long evbit[BITS_TO_LONGS(EV_CNT)];
+    
+    struct list_head h_list;
+    struct list_head node;
+    
+    unsigned int num_vals;
+    unsigned int max_vals;
+    struct input_value *vals;
+};
 
-typedef unsigned char   __u8;
-typedef unsigned short  __u16;
-typedef unsigned int    __u32;
-typedef  unsigned long long __u64;
+struct input_handle;
 
-typedef signed char  __s8;
-typedef signed short __s16;
-typedef signed int   __s32;
-typedef signed long long __s64;
+struct input_handler {
+    void (*event)(struct input_handle *handle);
+};
 
-#endif  /* __TYPES_H */
+struct input_handle {
+    void *private;
+    
+    int open;
+    const char *name;
+    
+    struct input_dev *dev;
+    struct input_handler *handler;
+};
+
+#endif  /* __INPUT_H */

@@ -141,5 +141,6 @@ int main(int argc, char **argv)
     //                 &conn->tetype);
     // sscanf(sample, "STATUS:%d\r\n+CIPSTATUS:%d", &status,&id);
     // printf("status : %d\n", status);
+    printf("long : %d\n", sizeof(long));
     return 0;
 }

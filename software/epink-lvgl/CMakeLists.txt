@@ -20,6 +20,7 @@ file(GLOB_RECURSE INCLUDES "include/*.h"
                             "drivers/clk/*.h"
                             "drivers/spi/*.h"
                             "drivers/power/*.h"
+                            "drivers/input/*.h"
                             "drivers/rtc/*.h")
 
 file(GLOB_RECURSE SOURCES "lvgl/src/*.c"
@@ -33,6 +34,7 @@ file(GLOB_RECURSE SOURCES "lvgl/src/*.c"
                             "drivers/clk/*.c"
                             "drivers/spi/*.c"
                             "drivers/power/*.c"
+                            "drivers/input/*.c"
                             "drivers/rtc/*.c")
 
 # rest of your project
@@ -46,7 +48,7 @@ target_link_libraries(xenia_clock pico_stdlib
                             hardware_i2c
                             hardware_uart)
 
-pico_enable_stdio_usb(xenia_clock 0)
+pico_enable_stdio_usb(xenia_clock 1)
 pico_enable_stdio_uart(xenia_clock 1)
 
 pico_add_extra_outputs(xenia_clock)
