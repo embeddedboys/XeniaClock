@@ -28,6 +28,8 @@
  * 
  */
 
+#include <common/init.h>
+
 #include "i2c/native_i2c.h"
 #include "common/tools.h"
 #include "hardware/i2c.h"
@@ -49,7 +51,7 @@ uint8_t i2c_read_reg(uint8_t addr, uint8_t reg)
     return rbuf[0];
 }
 
-void native_i2c_init(void)
+static int native_i2c_init(void)
 {
     i2c_init(i2c_default, DEFAULT_I2C_SPEED);
     gpio_set_function(PICO_DEFAULT_I2C_SDA_PIN, GPIO_FUNC_I2C);
@@ -60,7 +62,7 @@ void native_i2c_init(void)
     gpio_pull_up(PICO_DEFAULT_I2C_SDA_PIN);
     gpio_pull_up(PICO_DEFAULT_I2C_SCL_PIN);
 
-    pr_debug("registering native i2c function pointer\n");
-    p_i2c_write_reg = i2c_write_reg;
-    p_i2c_read_reg = i2c_read_reg;
+    return 0;
 }
+
+subsys_initcall(native_i2c_init);

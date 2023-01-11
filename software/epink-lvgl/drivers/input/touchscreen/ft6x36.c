@@ -47,6 +47,7 @@ void ft6x36_write_reg(__u8 addr, __u8 reg, __u8 val)
 
 static int ft6x36_init(void)
 {
+    
     return 0;
 }
 
@@ -56,3 +57,4 @@ static void ft6x36_exit(void)
 }
 
 module_init(ft6x36_init);
+module_exit(ft6x36_exit);

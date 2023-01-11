@@ -87,7 +87,8 @@ static void hal_init(void)
 #warning spi/bme280_spi example requires a board with SPI pins
     puts("Default SPI pins were not defined");
 #else
-    native_spi_init();
+    /* changed to called by subsys_initcall */
+    // native_spi_init();
 
     gpio_init(EPINK_CS_PIN);
     gpio_set_dir(EPINK_CS_PIN, GPIO_OUT);
@@ -107,8 +108,8 @@ static void hal_init(void)
     bi_decl(bi_1pin_with_name(EPINK_CS_PIN, "EPINK BUSY"));
 #endif
 
-    /* initialize i2c host */
-    native_i2c_init();
+    /* changed to called by subsys_initcall */
+    // native_i2c_init();
 
     /* initialize uart */
     uart_init(uart1, DEFAULT_UART_SPEED);

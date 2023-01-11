@@ -28,6 +28,8 @@
  * 
  */
 
+#include <common/init.h>
+
 #include "hardware/spi.h"
 #include "pico/stdlib.h"
 #include "spi/native_spi.h"
@@ -65,7 +67,7 @@ void spi_write16(uint16_t val, uint8_t cs_pin)
     spi_cs_deselect(cs_pin);
 }
 
-void native_spi_init(void)
+static int native_spi_init(void)
 {
     spi_init(spi_default, DEFAULT_SPI_SPEED);
     gpio_set_function(PICO_DEFAULT_SPI_SCK_PIN, GPIO_FUNC_SPI);
@@ -73,5 +75,7 @@ void native_spi_init(void)
     /* could check this using `picotools` */
     bi_decl(bi_2pins_with_func(PICO_DEFAULT_SPI_TX_PIN, PICO_DEFAULT_SPI_SCK_PIN,
                                GPIO_FUNC_SPI));
-
+    return 0;
 }
+
+subsys_initcall(native_spi_init);
