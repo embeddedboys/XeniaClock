@@ -38,18 +38,19 @@
 
 #include <stdio.h>
 #include <string.h>
-#include "hardware/uart.h"
 #include "pico/stdio.h"
 #include "pico/stdlib.h"
 #include "pico/time.h"
 #include "pico/types.h"
 #include "pico/platform.h"
 #include "pico/binary_info.h"
+#include "hardware/uart.h"
 #include "hardware/gpio.h"
 
 /* Header files we defined */
 #include "common/tools.h"
 #include "common/vals.h"
+#include "src/misc/lv_timer.h"
 #include "video/epd.h"
 #include "video/ssd1306.h"
 #include "rtc/native_rtc.h"
@@ -64,9 +65,6 @@
 #include "lvgl/src/extra/libs/qrcode/lv_qrcode.h"
 #include "port/lv_port_disp.h"
 #include "port/lv_port_indev.h"
-#include "src/core/lv_disp.h"
-#include "src/core/lv_obj_pos.h"
-#include "src/core/lv_obj_tree.h"
 #include "src/extra/themes/basic/lv_theme_basic.h"
 #include "ui/ui.h"
 #include "ui/ui_comp.h"
@@ -205,6 +203,25 @@ static bool lv_timer_roller_time_cb(struct repeating_timer *t)
     return true;
 }
 
+static inline void lv_timer_time_sync_cb(struct _lv_timer_t *t)
+{
+    /* 1. trying to get time from network though NTP */
+
+    /* ON SYNC OKAY */
+    /* 2. if ntp sync is OKAY, save it to rtc device, and set this synced time */
+
+    /* ON SYNC FAILED */
+    /* 3. if ntp sync is FAILED, just read from rtc device */
+    datetime_t t_rtc = p_rtc_device_get_time();
+
+    /* 4. set synced time */
+    hour = t_rtc.hour;
+    minute = t_rtc.min;
+    second = t_rtc.sec;
+
+    pr_debug("syncing time to %02d:%02d:%02d ...\n", hour, minute, second);
+}
+
 /* TODO: These tips should get from network */
 static const char *g_tips[] = {
     "be nice.",
@@ -274,6 +291,10 @@ static void post_timers_init()
     pr_debug("registering time roller timer ...\n");
     struct repeating_timer roller_timer;
     add_repeating_timer_ms(MILLISECOND(1000), lv_timer_roller_time_cb, NULL, &roller_timer);
+    
+    lv_timer_t *timer_time_sync = lv_timer_create_basic();
+    timer_time_sync->timer_cb = lv_timer_time_sync_cb;
+    timer_time_sync->period = TIME_SYNC_PERIOD;
 
     /* timer for updating daily tips, should requst tips from internet */
     pr_debug("registering tips timer ...\n");
