@@ -36,6 +36,7 @@
 #include <i2c/native_i2c.h>
 
 #include <common/types.h>
+#include <common/bitops.h>
 
 #define FT6X36_ADDRESS                  0x38
 
@@ -125,6 +126,16 @@ static inline __u8 ft6x36_read_p1_xl(void)
     return ft6x36_read_reg(FT6X36_ADDRESS, FT6X36_REG_P1_XL);
 }
 
+static inline __u8 ft6x36_read_1st_event_flag(void)
+{
+    return (ft6x36_read_p1_xh() & GENMASK(7, 6)) >> 6;
+}
+
+static inline __s16 ft6x36_read_p1_x(void)
+{
+    return ((ft6x36_read_p1_xh() & 0x7) << 8) | ft6x36_read_p1_xl();
+}
+
 static inline __u8 ft6x36_read_p1_yh(void)
 {
     return ft6x36_read_reg(FT6X36_ADDRESS, FT6X36_REG_P1_YH);
@@ -133,6 +144,16 @@ static inline __u8 ft6x36_read_p1_yh(void)
 static inline __u8 ft6x36_read_p1_yl(void)
 {
     return ft6x36_read_reg(FT6X36_ADDRESS, FT6X36_REG_P1_YL);
+}
+
+static inline __u8 ft6x36_read_1st_touch_id(void)
+{
+    return (ft6x36_read_p1_yh() & GENMASK(7, 4)) >> 4;
+}
+
+static inline __s16 ft6x36_read_p1_y(void)
+{
+    return ((ft6x36_read_p1_yh() & 0x7) << 8) | ft6x36_read_p1_yl();
 }
 
 static inline __u8 ft6x36_read_p1_weight(void)
@@ -155,6 +176,16 @@ static inline __u8 ft6x36_read_p2_xl(void)
     return ft6x36_read_reg(FT6X36_ADDRESS, FT6X36_REG_P2_XL);
 }
 
+static inline __u8 ft6x36_read_2st_event_flag(void)
+{
+    return (ft6x36_read_p2_xh() & GENMASK(7, 6)) >> 6;
+}
+
+static inline __s16 ft6x36_read_p2_x(void)
+{
+    return ((ft6x36_read_p2_xh() & 0x7) << 8) | ft6x36_read_p2_xl();
+}
+
 static inline __u8 ft6x36_read_p2_yh(void)
 {
     return ft6x36_read_reg(FT6X36_ADDRESS, FT6X36_REG_P2_YH);
@@ -163,6 +194,11 @@ static inline __u8 ft6x36_read_p2_yh(void)
 static inline __u8 ft6x36_read_p2_yl(void)
 {
     return ft6x36_read_reg(FT6X36_ADDRESS, FT6X36_REG_P2_YL);
+}
+
+static inline __s16 ft6x36_read_p2_y(void)
+{
+    return ((ft6x36_read_p2_yh() & 0x7) << 8) | ft6x36_read_p2_yl();
 }
 
 static inline __u8 ft6x36_read_p2_weight(void)

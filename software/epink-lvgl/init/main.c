@@ -50,7 +50,6 @@
 /* Header files we defined */
 #include "common/tools.h"
 #include "common/vals.h"
-#include "src/misc/lv_timer.h"
 #include "video/epd.h"
 #include "video/ssd1306.h"
 #include "rtc/native_rtc.h"
@@ -317,6 +316,7 @@ static void post_timers_init()
 }
 
 extern lv_obj_t *ui_LabelWifiName;
+
 static void network_config()
 {
     pr_debug("configurating network ...\n");
@@ -411,6 +411,23 @@ static void sub_screen_display_init()
     lv_timer_t *sub_screen_display_timer = lv_timer_create_basic();
     sub_screen_display_timer->timer_cb = sub_screen_display_update_cb;
     sub_screen_display_timer->period = MICROSECOND(500);
+
+    // lv_disp_set_default(disp);
+}
+
+static void simple_obj_event_cb(lv_event_t *event)
+{
+    switch (event->code) {
+    case LV_EVENT_PRESSED:
+        printf("obj has been Pressed!\n");
+        break;
+    case LV_EVENT_LONG_PRESSED:
+        printf("obj has been Long Pressed!\n");
+        break;
+    case LV_EVENT_LONG_PRESSED_REPEAT:
+        printf("obj has been Long Pressed Repeat!\n");
+        break;
+    }
 }
 
 static void launch_banner()
@@ -433,6 +450,7 @@ int main(void)
 {
     /* some system layer initialize ops */
     system_init();
+    // while(1);
 
     /* some ops used to display banner to anywhere */
     launch_banner();
@@ -465,22 +483,19 @@ int main(void)
     // while (1) {
     //     tight_loop_contents();
     // }
+    lv_obj_add_event_cb(ui_RollerSecond, simple_obj_event_cb, LV_EVENT_PRESSED, NULL);
+    lv_obj_add_event_cb(ui_RollerSecond, simple_obj_event_cb, LV_EVENT_LONG_PRESSED, NULL);
+    lv_obj_add_event_cb(ui_RollerSecond, simple_obj_event_cb, LV_EVENT_LONG_PRESSED_REPEAT, NULL);
+
+    sleep_ms(3000);
+    lv_disp_load_scr(ui_ScreenSleep);
+
+    sleep_ms(3000);
+    lv_disp_load_scr(ui_ScreenEpinkHome);
 
     while (1) {
         tight_loop_contents();
-
-        sleep_ms(3000);
-        lv_disp_load_scr(ui_ScreenSleep);
-        break;
     }
-
-    while (1) {
-        tight_loop_contents();
-
-        sleep_ms(3000);
-        lv_disp_load_scr(ui_ScreenEpinkHome);
-    }
-
 
     return 0;
 }

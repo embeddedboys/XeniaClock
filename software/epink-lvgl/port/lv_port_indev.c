@@ -4,6 +4,8 @@
  */
 
  /*Copy this file as "lv_port_indev.c" and set this value to "1" to enable content*/
+#include "hardware/gpio.h"
+#include <stdbool.h>
 #if 1
 
 /*********************
@@ -11,6 +13,8 @@
  *********************/
 #include "lv_port_indev.h"
 #include "../lvgl/lvgl.h"
+
+#include <input/touchscreen/ft6x36.h>
 
 /*********************
  *      DEFINES
@@ -67,6 +71,8 @@ static lv_indev_state_t encoder_state;
  *   GLOBAL FUNCTIONS
  **********************/
 
+extern lv_disp_t *g_default_disp;
+
 void lv_port_indev_init(void)
 {
     /**
@@ -95,7 +101,7 @@ void lv_port_indev_init(void)
     indev_drv.type = LV_INDEV_TYPE_POINTER;
     indev_drv.read_cb = touchpad_read;
     indev_touchpad = lv_indev_drv_register(&indev_drv);
-
+    indev_drv.disp = g_default_disp;
     /*------------------
      * Mouse
      * -----------------*/
@@ -178,11 +184,15 @@ void lv_port_indev_init(void)
 /*------------------
  * Touchpad
  * -----------------*/
-
+extern void ft6x36_test(void);
 /*Initialize your touchpad*/
 static void touchpad_init(void)
 {
     /*Your code comes here*/
+    // ft6x36_test();
+    
+    gpio_init(3);
+    gpio_set_dir(3, GPIO_IN);
 }
 
 /*Will be called by the library to read the touchpad*/
@@ -202,12 +212,19 @@ static void touchpad_read(lv_indev_drv_t * indev_drv, lv_indev_data_t * data)
     /*Set the last pressed coordinates*/
     data->point.x = last_x;
     data->point.y = last_y;
+    // printf("x : %d, y : %d\n", data->point.x, data->point.y);
 }
 
 /*Return true is the touchpad is pressed*/
 static bool touchpad_is_pressed(void)
 {
-    /*Your code comes here*/
+    /* simply do query pin state by now */
+    bool state = gpio_get(3);
+    // printf("%d\n", state);
+    if (!state)
+        return true;
+    else
+        return false;
 
     return false;
 }
@@ -215,10 +232,18 @@ static bool touchpad_is_pressed(void)
 /*Get the x and y coordinates if the touchpad is pressed*/
 static void touchpad_get_xy(lv_coord_t * x, lv_coord_t * y)
 {
-    /*Your code comes here*/
+    /* read number of points */
+    __u8 val = ft6x36_read_td_status();
+    // printf("val : %d\n", val);
+    if (val == 1 ) {
+        *x = ft6x36_read_p1_x();
+        *y = ft6x36_read_p1_y();
+    } else if (val == 2) {
 
-    (*x) = 0;
-    (*y) = 0;
+    } else {
+        *x = 0;
+        *y = 0;
+    }
 }
 
 /*------------------

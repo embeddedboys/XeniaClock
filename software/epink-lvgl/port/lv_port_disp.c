@@ -81,7 +81,7 @@ uint8_t *pen = epink_disp_buffer;
 extern void epink_buffer_clear();
 extern void epink_flush();
 
-static lv_disp_t *g_default_disp = NULL;
+lv_disp_t *g_default_disp = NULL;
 static struct display_module *g_sub_disp_m = NULL;
 
 void lv_port_disp_init(void)

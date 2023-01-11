@@ -1,7 +1,7 @@
 /**
  * @file init.h
  * @author IotaHydrae (writeforever@foxmail.com)
- * @brief 
+ * @brief this file is based on kernel init.h
  * @version 0.1
  * @date 2023-01-11
  * 

@@ -1,73 +1,38 @@
 /**
- * @file FT6X36.c
+ * @file native_uart.c
  * @author IotaHydrae (writeforever@foxmail.com)
- * @brief FocalTech FT6X36U Self-Capacitive Touch Panel Controller
+ * @brief 
  * @version 0.1
- * @date 2023-01-10
- *
+ * @date 2023-01-11
+ * 
  * MIT License
- *
+ * 
  * Copyright 2022 IotaHydrae(writeforever@foxmail.com)
- *
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- *
+ * 
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- *
+ * 
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- *
+ * 
  */
 
-#include <common/module.h>
+#include <common/init.h>
 
-#include <i2c/native_i2c.h>
-#include <input/input.h>
-
-#include <input/touchscreen/ft6x36.h>
-
-__u8 ft6x36_read_reg(__u8 addr, __u8 reg)
+static int native_uart_init(void)
 {
-    return i2c_read_reg(addr, reg);
-}
-
-void ft6x36_write_reg(__u8 addr, __u8 reg, __u8 val)
-{
-    i2c_write_reg(addr, reg, val);
-}
-
-void ft6x36_is_pressed()
-{
-
-}
-
-static int ft6x36_init(void)
-{
-    ft6x36_set_g_mode(0x00);
     return 0;
 }
 
-static void ft6x36_exit(void)
-{
-
-}
-
-void ft6x36_test(void)
-{
-    __u8 id = ft6x36_read_focaltech_id();
-    pr_debug("focaltech id : %02x\n", id);
-    
-    ft6x36_set_g_mode(0x00);
-}
-
-module_init(ft6x36_init);
-// module_exit(ft6x36_exit);
+subsys_initcall(native_uart_init);

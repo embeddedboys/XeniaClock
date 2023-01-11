@@ -19,9 +19,8 @@ function do_compile() {
     #     mkdir build
     # fi
     mkdir -p ${WORKDIR}/build && cd build
-    ls
-    cmake .. -DCMAKE_EXPORT_COMPILE_COMMANDS=1 -GNinja
-    ninja
+    cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=1 -DCMAKE_BUILD_TYPE=Release ..
+    time make -j
 
     cd -
 }
@@ -35,6 +34,12 @@ function do_flash() {
     ${WORKDIR}/../tools/dapp ./${BIN}
 }
 
+function do_clean() {
+    mkdir -p ${WORKDIR}/build && cd build
+    make clean
+    cd -
+}
+
 do_configure
 do_compile
 do_install
@@ -42,8 +47,13 @@ do_install
 case $1 in
 
     "-p")
-        echo "do a flash ops"
+        echo "do a flash job"
         do_flash
+        ;;
+
+    "-c")
+        echo "do a clean job"
+        do_clean
         ;;
 
 esac

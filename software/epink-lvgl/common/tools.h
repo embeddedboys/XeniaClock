@@ -50,9 +50,9 @@
     #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
 #endif
 
-#ifndef BIT
-    #define BIT(x) (1 << x)
-#endif
+// #ifndef BIT
+//     #define BIT(x) (1 << x)
+// #endif
 
 #ifndef BITMASK
     #define BITMASK(x)  (~(1 << x))
