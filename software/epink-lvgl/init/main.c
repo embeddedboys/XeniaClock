@@ -63,6 +63,7 @@
 #include "lvgl/lvgl.h"
 #include "lvgl/src/extra/libs/qrcode/lv_qrcode.h"
 #include "port/lv_port_disp.h"
+#include "port/lv_port_indev.h"
 #include "src/core/lv_disp.h"
 #include "src/core/lv_obj_pos.h"
 #include "src/core/lv_obj_tree.h"
@@ -418,6 +419,7 @@ int main(void)
     struct repeating_timer lvgl_clock_timer;
     lv_init();
     lv_port_disp_init();
+    lv_port_indev_init();
 
     /* start a native timer for lvgl clock */
     add_repeating_timer_us(MICROSECOND(5000), lvgl_clock_cb, NULL, &lvgl_clock_timer);
