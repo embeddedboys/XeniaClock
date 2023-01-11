@@ -1,7 +1,7 @@
 /**
  * @file input.c
  * @author IotaHydrae (writeforever@foxmail.com)
- * @brief The Input event manager
+ * @brief The Input event manager, based on kernel input subsystem
  * @version 0.1
  * @date 2023-01-10
  * 
@@ -40,6 +40,33 @@ static LIST_HEAD(input_handler_list);
 
 static const struct input_value input_value_sync = { EV_SYN, SYN_REPORT, 1 };
 
+#define INPUT_IGNORE_EVENT	0
+#define INPUT_PASS_TO_HANDLERS	1
+#define INPUT_PASS_TO_DEVICE	2
+#define INPUT_SLOT		4
+#define INPUT_FLUSH		8
+#define INPUT_PASS_TO_ALL	(INPUT_PASS_TO_HANDLERS | INPUT_PASS_TO_DEVICE)
+
+static int input_get_disposition(struct input_dev *dev,
+                unsigned int type, unsigned int code, int *pval)
+{
+    int disposition = INPUT_IGNORE_EVENT;
+}
+
+static void input_handle_event(struct input_dev *dev,
+                    unsigned int type, unsigned int code, int value)
+{
+    if (!dev->vals)
+        return;
+    
+}
+
+void input_event(struct input_dev *dev,
+        unsigned int type, unsigned int code, int value)
+{
+    input_handle_event(dev, type, code, value);
+}
+
 struct input_dev *input_alloc_device(void)
 {
     struct input_dev *dev;
@@ -53,6 +80,12 @@ struct input_dev *input_alloc_device(void)
     }
     
     return dev;
+}
+
+static void input_match_device(struct input_handler *handler, struct input_dev *dev)
+{
+    /* we do simple name match */
+    
 }
 
 static int input_attach_handler(struct input_dev *dev, struct input_handler *handler)
@@ -81,3 +114,29 @@ int input_register_device(struct input_dev *dev)
 
     return 0;
 }
+
+void input_unregister_device(struct input_dev *dev)
+{
+
+}
+
+int input_register_handler(struct input_handler *handler)
+{
+
+}
+
+void input_unregister_handler(struct input_handler *handler)
+{
+
+}
+
+int input_register_handle(struct input_handle *handle)
+{
+
+}
+
+void input_unregister_handle(struct input_handle *handle)
+{
+
+}
+

@@ -38,7 +38,7 @@ file(GLOB_RECURSE SOURCES "lvgl/src/*.c"
                             "drivers/rtc/*.c")
 
 # rest of your project
-add_executable(xenia_clock main.c ${INCLUDES} ${SOURCES})
+add_executable(xenia_clock init/main.c ${INCLUDES} ${SOURCES})
 
 target_include_directories(xenia_clock PUBLIC . "include" "lvgl")
 target_link_libraries(xenia_clock pico_stdlib

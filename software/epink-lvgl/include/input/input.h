@@ -33,6 +33,8 @@
 #ifndef __INPUT_H
 #define __INPUT_H
 
+#include <stdbool.h>
+
 #include "uapi/input-event-codes.h"
 #include "common/list.h"
 #include "common/bitops.h"
@@ -67,10 +69,23 @@ struct input_dev {
 struct input_handle;
 
 struct input_handler {
-    void (*event)(struct input_handle *handle);
+    void *private;
+
+    void (*event)(struct input_handle *handle, unsigned int type, unsigned int code, int value);
+    void (*events)(struct input_handle *handle, struct input_value *vals, unsigned int count);
+    bool (*match)(struct input_handler *handler, struct input_dev *dev);
+    int (*connect)(struct input_handler *handler, struct input_dev *dev);
+    void (*disconnect)(struct input_handle *handle);
+    void (*start)(struct input_handle *handle);
+
+    const char *name;
+
+    struct list_head    h_list;
+    struct list_head    node;
 };
 
 struct input_handle {
+
     void *private;
     
     int open;
@@ -78,6 +93,56 @@ struct input_handle {
     
     struct input_dev *dev;
     struct input_handler *handler;
+    
+    struct list_head    d_node;
+    struct list_head    n_node;
 };
+
+struct input_dev *input_alloc_device(void);
+
+int input_register_device(struct input_dev *);
+void input_unregister_device(struct input_dev *);
+
+
+int input_register_handler(struct input_handler *);
+void input_unregister_handler(struct input_handler *);
+
+int input_register_handle(struct input_handle *);
+void input_unregister_handle(struct input_handle *);
+
+void input_event(struct input_dev *dev, unsigned int type, unsigned int code, int value);
+
+static inline void input_report_key(struct input_dev *dev, unsigned int code, int value)
+{
+	input_event(dev, EV_KEY, code, !!value);
+}
+
+static inline void input_report_rel(struct input_dev *dev, unsigned int code, int value)
+{
+	input_event(dev, EV_REL, code, value);
+}
+
+static inline void input_report_abs(struct input_dev *dev, unsigned int code, int value)
+{
+	input_event(dev, EV_ABS, code, value);
+}
+
+static inline void input_report_switch(struct input_dev *dev, unsigned int code, int value)
+{
+	input_event(dev, EV_SW, code, !!value);
+}
+
+static inline void input_sync(struct input_dev *dev)
+{
+	input_event(dev, EV_SYN, SYN_REPORT, 0);
+}
+
+static inline void input_mt_sync(struct input_dev *dev)
+{
+	input_event(dev, EV_SYN, SYN_MT_REPORT, 0);
+}
+
+void input_set_capability(struct input_dev *dev, unsigned int type, unsigned int code);
+
 
 #endif  /* __INPUT_H */
