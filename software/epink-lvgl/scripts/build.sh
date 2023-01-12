@@ -8,6 +8,34 @@ BUILDDIR=${WORKDIR}/build
 
 BIN="xenia_clock.elf"
 
+function do_banner() {
+cat << "EOF" >> /dev/tty
+__  __          _              ____ _            _
+\ \/ /___ _ __ (_) __ _       / ___| | ___   ___| | __
+ \  // _ \ '_ \| |/ _` |     | |   | |/ _ \ / __| |/ /
+ /  \  __/ | | | | (_| |     | |___| | (_) | (__|   <
+/_/\_\___|_| |_|_|\__,_|      \____|_|\___/ \___|_|\_\
+
+EOF
+
+}
+
+function do_usage() {
+cat << "EOF" >> /dev/tty
+
+./build.sh [-h|-c|-p]
+
+    If no parameter is provided, will do a normal build process
+
+    -h      print this usage
+
+    -c      do a make clean job
+
+    -p      do a chip flash program job
+
+EOF
+}
+
 function do_configure() {
     echo "do configuring ..."
     cd .. && source tools/envsetup.sh && cd ${WORKDIR}
@@ -19,8 +47,8 @@ function do_compile() {
     #     mkdir build
     # fi
     mkdir -p ${WORKDIR}/build && cd build
-    cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=1 -DCMAKE_BUILD_TYPE=Release ..
-    time make -j
+    cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=1 -DCMAKE_BUILD_TYPE=Release -GNinja ..
+    time ninja
 
     cd -
 }
@@ -36,24 +64,38 @@ function do_flash() {
 
 function do_clean() {
     mkdir -p ${WORKDIR}/build && cd build
-    make clean
+    ninja clean
     cd -
 }
 
-do_configure
-do_compile
-do_install
-
 case $1 in
 
+    "-h")
+        echo "Printing Usage ..."
+        do_banner
+        do_usage
+        exit 0
+        ;;
+
     "-p")
-        echo "do a flash job"
+        echo "will do a flash job"
+        do_banner
         do_flash
+        exit 0
         ;;
 
     "-c")
         echo "do a clean job"
+        do_banner
         do_clean
+        exit 0
         ;;
 
 esac
+
+do_banner
+do_configure
+do_compile
+do_install
+
+exit 0

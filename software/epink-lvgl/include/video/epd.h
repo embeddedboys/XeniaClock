@@ -110,6 +110,7 @@ void epink_write_byte(uint8_t val);
 void epink_write_command(uint8_t command);
 void epink_write_data(uint8_t data);
 void epink_wait_busy();
+void epink_wait_busy_timeout(uint32_t timeout_ms);
 
 void epink_init(uint8_t mode);
 // void epink_clear(uint8_t color);

@@ -66,6 +66,8 @@ static lv_indev_state_t encoder_state;
 /**********************
  *      MACROS
  **********************/
+#define TOUCHPAD_X_OFFSET -10
+#define TOUCHPAD_Y_OFFSET -5
 
 /**********************
  *   GLOBAL FUNCTIONS
@@ -184,15 +186,11 @@ void lv_port_indev_init(void)
 /*------------------
  * Touchpad
  * -----------------*/
-extern void ft6x36_test(void);
+extern bool ft6x36_is_pressed();
 /*Initialize your touchpad*/
 static void touchpad_init(void)
 {
     /*Your code comes here*/
-    // ft6x36_test();
-    
-    gpio_init(3);
-    gpio_set_dir(3, GPIO_IN);
 }
 
 /*Will be called by the library to read the touchpad*/
@@ -219,31 +217,26 @@ static void touchpad_read(lv_indev_drv_t * indev_drv, lv_indev_data_t * data)
 static bool touchpad_is_pressed(void)
 {
     /* simply do query pin state by now */
-    bool state = gpio_get(3);
-    // printf("%d\n", state);
-    if (!state)
-        return true;
-    else
-        return false;
-
-    return false;
+    return ft6x36_is_pressed();
 }
 
 /*Get the x and y coordinates if the touchpad is pressed*/
 static void touchpad_get_xy(lv_coord_t * x, lv_coord_t * y)
 {
     /* read number of points */
-    __u8 val = ft6x36_read_td_status();
-    // printf("val : %d\n", val);
-    if (val == 1 ) {
-        *x = ft6x36_read_p1_x();
-        *y = ft6x36_read_p1_y();
-    } else if (val == 2) {
+    // __u8 val = ft6x36_read_td_status();
+    // // printf("val : %d\n", val);
+    // if (val == 1 ) {
+    //     *x = ft6x36_read_p1_x();
+    //     *y = ft6x36_read_p1_y();
+    // } else if (val == 2) {
 
-    } else {
-        *x = 0;
-        *y = 0;
-    }
+    // } else {
+    //     *x = 0;
+    //     *y = 0;
+    // }
+    *x = ft6x36_read_p1_x() + TOUCHPAD_X_OFFSET;
+    *y = ft6x36_read_p1_y() + TOUCHPAD_Y_OFFSET;
 }
 
 /*------------------

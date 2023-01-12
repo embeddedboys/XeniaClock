@@ -30,6 +30,7 @@
 
 #include <common/module.h>
 
+#include <hardware/gpio.h>
 #include <i2c/native_i2c.h>
 #include <input/input.h>
 
@@ -45,14 +46,50 @@ void ft6x36_write_reg(__u8 addr, __u8 reg, __u8 val)
     i2c_write_reg(addr, reg, val);
 }
 
-void ft6x36_is_pressed()
+static void ft6x36_hw_init(void)
 {
+    /* interrupt gpio initialize */
+    gpio_init(FT6X36_INT_PIN);
+    gpio_set_dir(FT6X36_INT_PIN, GPIO_IN);
 
+    /* reset gpio initialize */
+    gpio_init(FT6X36_RST_PIN);
+    gpio_set_dir(FT6X36_RST_PIN, GPIO_OUT);
+    gpio_put(FT6X36_RST_PIN, 1);
+
+    /* make a device reset */
+    gpio_put(FT6X36_RST_PIN, 0);
+    busy_wait_ms(2);
+    gpio_put(FT6X36_RST_PIN, 1);
+
+    /* set to working mode */
+    ft6x36_set_device_mode(0x00);
+
+    /* threshold setting */
+    ft6x36_set_threshold_group(0x16);
+
+    /* set control mode to Keeping Active Mode */
+    ft6x36_set_ctrl_mode(0x00);
+
+    /* set to polling mode */
+    ft6x36_set_g_mode(0x00);
+
+    /* set report rate in active mode */
+    ft6x36_set_period_active(0x01);
+}
+
+bool ft6x36_is_pressed()
+{
+    /* only used in polling mode, this int pin will going to low
+     * if there a touch data comes and keep high when it's finished */
+    return !gpio_get(FT6X36_INT_PIN);
 }
 
 static int ft6x36_init(void)
 {
-    ft6x36_set_g_mode(0x00);
+    /* hardware initialize */
+    ft6x36_hw_init();
+
     return 0;
 }
 
@@ -70,4 +107,4 @@ void ft6x36_test(void)
 }
 
 module_init(ft6x36_init);
-// module_exit(ft6x36_exit);
+module_exit(ft6x36_exit);

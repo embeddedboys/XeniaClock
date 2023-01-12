@@ -65,6 +65,15 @@ $ ninja
 5) after flash done, device will auto restart
 ```
 
+Attention for developers
+-----------------------------------
+
+Here some tips you should known before starting develop
+
+1. sleep function like `sleep_ms` should never called in lvgl timer callback so did in interrupt , it cause system to crash, considering replace it with `busy_wait_ms`.
+
+2. the period of seconds bit of time updating shouldn't be too fast, it cause display panel going flash, I suggested set it's period to 5s at least.
+
 More
 -----------------------------------
 nothing yet

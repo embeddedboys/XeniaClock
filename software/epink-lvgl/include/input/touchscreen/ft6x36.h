@@ -93,6 +93,9 @@
 
 #define FT6X36_DEFAULT_THRESHOLD        0x16
 
+#define FT6X36_INT_PIN  3
+#define FT6X36_RST_PIN  2
+
 __u8 ft6x36_read_reg(__u8 addr, __u8 reg);
 void ft6x36_write_reg(__u8 addr, __u8 reg, __u8 val);
 

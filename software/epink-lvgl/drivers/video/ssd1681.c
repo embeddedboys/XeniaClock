@@ -33,6 +33,8 @@
 #include "hardware/timer.h"
 #include "pico/time.h"
 
+#include "../../lv_conf.h"
+
 #if DISPLAY_MAIN_PANEL_USE_SSD1681
 
 const unsigned char gImage_1[5000] = { /* 0X01,0X01,0XC8,0X00,0XC8,0X00, */
@@ -1029,8 +1031,17 @@ static void ssd1681_update_fast()
     epink_wait_busy();
 }
 
+void ssd1681_update_part_timeout()
+{
+    epink_write_command(0x22);
+    epink_write_data(0xff);
+    epink_write_command(0x20);
+    epink_wait_busy_timeout(LV_INDEV_DEF_READ_PERIOD*2);
+}
+
 void ssd1681_update_part()
 {
+    // epink_write_data(0x7f);
     epink_write_command(0x22);
     epink_write_data(0xff);
     epink_write_command(0x20);
@@ -1313,6 +1324,10 @@ static void ssd1681_flush()
 {
     uint8_t *pen = epink_disp_buffer;
     uint8_t *pen_old = epink_disp_buffer_old;
+    uint16_t diff = 0;
+
+    static uint32_t frame_count = 0;
+    void(*update_method)(void);
 
     epink_reset();
 
@@ -1329,24 +1344,48 @@ static void ssd1681_flush()
     epink_write_data(0x00);
     epink_write_data(0x00);
 
-    // for (uint8_t row = 0; row < 200; row++) {
-    //     for (uint8_t col_in_byte = 0; col_in_byte < 25; col_in_byte++) {
-    //     /* flush each line in buffer */
-    //         if (pen[row + col_in_byte * 25] == pen_old[row + col_in_byte * 25])
-    //             continue;
+#if 0
+    for (uint8_t row = 0; row < 200; row++) {
+        for (uint8_t col_in_byte = 0; col_in_byte < 25; col_in_byte++) {
+        /* flush each line in buffer */
+            if (pen[row + col_in_byte * 25] == pen_old[row + col_in_byte * 25])
+                continue;
 
-    //         ssd1681_set_cursor(col_in_byte, row);
-    //         epink_write_command(0x24);
-    //         epink_write_data(pen[row + col_in_byte * 25]);
-    //     }
-    // }
+            epink_write_command(0x4e);
+            epink_write_data((col_in_byte) & 0x3f);
 
+            /* set address counter of y in ram */
+            epink_write_command(0x4f);
+            epink_write_data((200 - row) & 0xff);
+            epink_write_data(((200 - row) >> 8) & 0x01);
+
+            epink_write_command(0x24);
+            epink_write_data(pen[row + col_in_byte * 25]);
+        }
+    }
+#else
     epink_write_command(0x24);
     for (uint16_t i = 0; i < EPINK_DISP_BUFFER_SIZE; i++) {
+        if (pen[i] != pen_old[i])
+            diff++;
         epink_write_data(pen[i]);
     }
+#endif
 
-    ssd1681_update_part();
+    // if ((++frame_count % 5) == 0) {
+    //     update_method = ssd1681_update_full;
+    // }
+
+    /* if  */
+    if (diff < (EPINK_DISP_BUFFER_SIZE / 5)) {
+        update_method = ssd1681_update_part_timeout;
+    }
+    else {
+        update_method = ssd1681_update_part;
+    }
+
+    update_method();
+
     memcpy(epink_disp_buffer_old, epink_disp_buffer, EPINK_DISP_BUFFER_SIZE);
 }
 #else

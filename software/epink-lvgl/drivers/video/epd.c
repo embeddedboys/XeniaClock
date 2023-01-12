@@ -91,13 +91,13 @@ inline void epink_res_clr()
 void epink_reset()
 {
     epink_res_set();
-    busy_wait_ms(20);
+    // busy_wait_ms(20);
     
     epink_res_clr();
     busy_wait_ms(2);
     
     epink_res_set();
-    busy_wait_ms(20);
+    // busy_wait_ms(20);
 }
 
 /* ========== epink I/O ========== */
@@ -125,18 +125,17 @@ void epink_write_data(uint8_t data)
  *
  * @param timeout
  */
-static void epink_wait_busy_timeout(uint32_t timeout)
+void epink_wait_busy_timeout(uint32_t timeout_ms)
 {
     while (gpio_get(EPINK_BUSY_PIN)) {
-        if (timeout-- == 0) {
-            EPINK_DEBUG("epink_wait_busy timeout\n");
+        if (timeout_ms-- == 0) {
+            // EPINK_DEBUG("epink_wait_busy timeout\n");
             break;
         } else {
-            busy_wait_ms(100);
+            busy_wait_ms(1);
         }
     }
-    
-    EPINK_DEBUG("epink_wait_busy_timeout ok\n");
+    // EPINK_DEBUG("epink_wait_busy_timeout ok\n");
 }
 
 /**

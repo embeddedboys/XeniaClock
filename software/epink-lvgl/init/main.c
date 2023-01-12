@@ -180,7 +180,8 @@ static void native_rtc_init()
  */
 static bool lv_timer_roller_time_cb(struct repeating_timer *t)
 {
-    lv_roller_set_selected(ui_RollerSecond, ++second, LV_ANIM_OFF);
+    if ((++second % SECOND_UPDATE_STEP) == 0)
+        lv_roller_set_selected(ui_RollerSecond, second, LV_ANIM_OFF);
 
     if (SECONDS_IN_MINUTE == second) {
         second = 0;     /* update first, then write back */
@@ -213,12 +214,18 @@ static inline void lv_timer_time_sync_cb(struct _lv_timer_t *t)
     /* 3. if ntp sync is FAILED, just read from rtc device */
     datetime_t t_rtc = p_rtc_device_get_time();
 
+    /* write back to host rtc */
+    rtc_host_set_datetime(&t_rtc);
+
     /* 4. set synced time */
     hour = t_rtc.hour;
     minute = t_rtc.min;
     second = t_rtc.sec;
 
     pr_debug("syncing time to %02d:%02d:%02d ...\n", hour, minute, second);
+    lv_roller_set_selected(ui_RollerHour, hour, LV_ANIM_OFF);
+    lv_roller_set_selected(ui_RollerMinute, minute, LV_ANIM_OFF);
+    lv_roller_set_selected(ui_RollerSecond, second, LV_ANIM_OFF);
 }
 
 /* TODO: These tips should get from network */

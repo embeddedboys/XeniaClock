@@ -48,6 +48,7 @@
 #define SECOND(x)               (x)
 #define MILLISECOND(x)          (x)
 #define MICROSECOND(x)          (x)
+#define SECOND_UPDATE_STEP    (5)
 #define SECONDS_IN_MINUTE     (60)
 #define MINUTES_IN_HOUR       (60)
 #define HOURS_IN_DAY          (24)
