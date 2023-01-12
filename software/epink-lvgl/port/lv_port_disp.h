@@ -36,6 +36,8 @@ extern "C" {
  **********************/
 void lv_port_disp_init( void );
 void post_lv_port_disp_init();
+
+void lv_port_disp_main_screen_set_flush_state(bool enabled);
 /**********************
  *      MACROS
  **********************/

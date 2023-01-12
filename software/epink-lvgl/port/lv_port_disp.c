@@ -83,6 +83,7 @@ extern void epink_flush();
 
 lv_disp_t *g_default_disp = NULL;
 static struct display_module *g_sub_disp_m = NULL;
+bool g_default_disp_flush_enabled = true;
 
 void lv_port_disp_init(void)
 {
@@ -171,8 +172,6 @@ void lv_port_disp_init(void)
     
     // lv_disp_set_rotation(disp, LV_DISP_ROT_90);
     /* set a mono theme */
-    // lv_theme_t *th = lv_theme_mono_init(disp, 1, &lv_font_montserrat_10);
-    // lv_disp_set_theme(disp, th);
 }
 
 void post_lv_port_disp_init()
@@ -280,6 +279,11 @@ static void main_screen_disp_flush_part(lv_disp_drv_t *disp_drv, const lv_area_t
     /* 4. write to RAM and call part refresh */
 }
 
+inline void lv_port_disp_main_screen_set_flush_state(bool enabled)
+{
+    g_default_disp_flush_enabled = enabled;
+}
+
 /*Flush the content of the internal buffer the specific area on the display
  *You can use DMA or any hardware acceleration to do this operation in the background but
  *'lv_disp_flush_ready()' has to be called when finished.*/
@@ -308,7 +312,11 @@ static void main_screen_disp_flush(lv_disp_drv_t *disp_drv, const lv_area_t *are
     // printf("\n");
     // printf("pixel count:%d\n", pixel_count);
     // pixel_count=0;
-    
+    if (!g_default_disp_flush_enabled) {
+        lv_disp_flush_ready(disp_drv);
+        return;
+    }
+
     epink_flush();
     /*IMPORTANT!!!
      *Inform the graphics library that you are ready with the flushing*/

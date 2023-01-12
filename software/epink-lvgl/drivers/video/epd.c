@@ -35,7 +35,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  *
  */
-
+#include "port/lv_port_disp.h"
 #include "video/epd.h"
 #include <stddef.h>
 
@@ -138,6 +138,13 @@ void epink_wait_busy_timeout(uint32_t timeout_ms)
     // EPINK_DEBUG("epink_wait_busy_timeout ok\n");
 }
 
+
+// static int64_t epink_wait_busy_timer_cb(alarm_id_t id, void *user_data)
+// {
+//     while (gpio_get(EPINK_BUSY_PIN));
+//     lv_port_disp_main_screen_set_flush_state(true);
+// }
+
 /**
  * @brief Read the "busy" state pin to know if controller was busy
  *
@@ -145,6 +152,9 @@ void epink_wait_busy_timeout(uint32_t timeout_ms)
 void epink_wait_busy()
 {
     while (gpio_get(EPINK_BUSY_PIN));
+    
+    // lv_port_disp_main_screen_set_flush_state(false);
+    // add_alarm_in_ms(50, epink_wait_busy_timer_cb, NULL, false);
 }
 
 /**

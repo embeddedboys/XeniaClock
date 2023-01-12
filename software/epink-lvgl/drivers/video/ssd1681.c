@@ -1319,7 +1319,6 @@ void ssd1681_update_part_timeout()
 
 void ssd1681_update_part()
 {
-    // epink_write_data(0x7f);
     epink_write_command(0x22);
     epink_write_data(0xff);
     epink_write_command(0x20);
@@ -1449,7 +1448,8 @@ static void ssd1681_flush()
      * invoke a timeouted update job, maybe caused
      * some error pixels keeping on the screen */
     if (diff < (EPINK_DISP_BUFFER_SIZE / FULL_REFRESH_FACTOR)) {
-        update_method = ssd1681_update_part_timeout;
+        // update_method = ssd1681_update_part_timeout;
+        update_method = ssd1681_update_part;
     } else {
         update_method = ssd1681_update_part;
     }

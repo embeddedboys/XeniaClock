@@ -127,6 +127,84 @@ void system_init(void)
     hal_init();
 }
 
+static void lv_main_disp_scr_home_gesture_event_cb(lv_event_t *event)
+{
+    lv_obj_t *scr = lv_event_get_current_target(event);
+    lv_dir_t dir = lv_indev_get_gesture_dir(lv_indev_get_act());
+
+    switch (dir) {
+    case LV_DIR_TOP:
+        pr_debug("moving top gesture detected!\n");
+        break;
+    case LV_DIR_BOTTOM:
+        pr_debug("moving bottom gesture detected!\n");
+        break;
+    case LV_DIR_LEFT:
+        pr_debug("moving left gesture detected!\n");
+        break;
+    case LV_DIR_RIGHT:
+        pr_debug("moving right gesture detected!\n");
+        break;
+    default:
+        break;
+    }
+}
+
+static void lv_main_disp_scr_sleep_gesture_event_cb(lv_event_t *event)
+{
+    lv_obj_t *scr = lv_event_get_current_target(event);
+    lv_dir_t dir = lv_indev_get_gesture_dir(lv_indev_get_act());
+
+    switch (dir) {
+    case LV_DIR_TOP:
+    case LV_DIR_BOTTOM:
+    case LV_DIR_LEFT:
+    case LV_DIR_RIGHT:
+        pr_debug("exiting sleep mode!\n");
+        break;
+    default:
+        break;
+    }
+}
+
+static void lv_main_disp_scr_home_roller_time_set_event_cb(lv_event_t *e)
+{
+    lv_obj_t * obj = lv_event_get_current_target(e);
+    pr_debug("Button %s clicked\n", lv_msgbox_get_active_btn_text(obj));
+}
+
+static void roller_time_set_msgbox_event_cb(lv_event_t *event)
+{
+    printf("obj has been Long Pressed!\n");
+    static const char *msgbox_time_set_btns[] = {"Yes", "No", ""};
+    lv_obj_t *msgbox_time_set = lv_msgbox_create(ui_ScreenEpinkHome, "Attention",
+                                                "Are you want to configure time?",
+                                                msgbox_time_set_btns, true);
+    lv_obj_set_size(msgbox_time_set, 160, 100);
+    lv_obj_center(msgbox_time_set);
+    lv_obj_add_event_cb(msgbox_time_set, lv_main_disp_scr_home_roller_time_set_event_cb,
+                        LV_EVENT_VALUE_CHANGED, NULL);
+}
+
+static void lv_event_setup(void)
+{
+    lv_obj_add_event_cb(ui_ScreenEpinkHome, lv_main_disp_scr_home_gesture_event_cb,
+                        LV_EVENT_GESTURE, NULL);
+    lv_obj_add_event_cb(ui_ScreenSleep, lv_main_disp_scr_sleep_gesture_event_cb,
+                        LV_EVENT_GESTURE, NULL);
+
+    lv_obj_add_event_cb(ui_RollerHour, roller_time_set_msgbox_event_cb, LV_EVENT_LONG_PRESSED, NULL);
+    lv_obj_add_event_cb(ui_RollerMinute, roller_time_set_msgbox_event_cb, LV_EVENT_LONG_PRESSED, NULL);
+    lv_obj_add_event_cb(ui_RollerSecond, roller_time_set_msgbox_event_cb, LV_EVENT_LONG_PRESSED, NULL);
+}
+
+static void lv_theme_setup(void)
+{
+    lv_disp_t *disp = lv_disp_get_default();
+    lv_theme_t *th = lv_theme_mono_init(disp, 0, &lv_font_montserrat_14);
+    lv_disp_set_theme(disp, th);
+}
+
 extern lv_obj_t *ui_RollerHour;
 extern lv_obj_t *ui_RollerMinute;
 extern lv_obj_t *ui_RollerHour;
@@ -199,6 +277,12 @@ static bool lv_timer_roller_time_cb(struct repeating_timer *t)
         hour = 0;
         lv_roller_set_selected(ui_RollerHour, hour, LV_ANIM_OFF);
     }
+
+    /* we deleted refresh timer of lvgl, and repalce it with timer of mcu,
+     * bacause there some blocked function in display flush method, this
+     * cause lvgl timer blocked too, so we call display refesh maunally
+     * in every 1 second */
+    _lv_disp_refr_timer(NULL);
 
     return true;
 }
@@ -294,10 +378,14 @@ static inline bool lvgl_clock_cb(struct repeating_timer *t)
 
 static void post_timers_init()
 {
+    lv_disp_t *disp = lv_disp_get_default();
+    lv_timer_del(disp->refr_timer);
+    disp->refr_timer = NULL;
+
     pr_debug("registering time roller timer ...\n");
     struct repeating_timer roller_timer;
     add_repeating_timer_ms(MILLISECOND(1000), lv_timer_roller_time_cb, NULL, &roller_timer);
-    
+
     lv_timer_t *timer_time_sync = lv_timer_create_basic();
     timer_time_sync->timer_cb = lv_timer_time_sync_cb;
     timer_time_sync->period = TIME_SYNC_PERIOD;
@@ -419,22 +507,7 @@ static void sub_screen_display_init()
     sub_screen_display_timer->timer_cb = sub_screen_display_update_cb;
     sub_screen_display_timer->period = MICROSECOND(500);
 
-    // lv_disp_set_default(disp);
-}
-
-static void simple_obj_event_cb(lv_event_t *event)
-{
-    switch (event->code) {
-    case LV_EVENT_PRESSED:
-        printf("obj has been Pressed!\n");
-        break;
-    case LV_EVENT_LONG_PRESSED:
-        printf("obj has been Long Pressed!\n");
-        break;
-    case LV_EVENT_LONG_PRESSED_REPEAT:
-        printf("obj has been Long Pressed Repeat!\n");
-        break;
-    }
+    lv_disp_set_default(disp);
 }
 
 static void launch_banner()
@@ -474,6 +547,9 @@ int main(void)
     /* call squareline project initialization process */
     ui_init();
 
+    lv_event_setup();
+    lv_theme_setup();
+
     /* initialize network */
     network_config();
 
@@ -486,13 +562,10 @@ int main(void)
     /* initialize sub screen lvgl display */
     sub_screen_display_init();
 
-    // pr_debug("going to loop\n");
-    // while (1) {
-    //     tight_loop_contents();
-    // }
-    lv_obj_add_event_cb(ui_RollerSecond, simple_obj_event_cb, LV_EVENT_PRESSED, NULL);
-    lv_obj_add_event_cb(ui_RollerSecond, simple_obj_event_cb, LV_EVENT_LONG_PRESSED, NULL);
-    lv_obj_add_event_cb(ui_RollerSecond, simple_obj_event_cb, LV_EVENT_LONG_PRESSED_REPEAT, NULL);
+    pr_debug("going to loop\n");
+    while (1) {
+        tight_loop_contents();
+    }
 
     sleep_ms(3000);
     lv_disp_load_scr(ui_ScreenSleep);

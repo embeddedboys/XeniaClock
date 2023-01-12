@@ -66,7 +66,7 @@ static lv_indev_state_t encoder_state;
 /**********************
  *      MACROS
  **********************/
-#define TOUCHPAD_X_OFFSET -10
+#define TOUCHPAD_X_OFFSET -5
 #define TOUCHPAD_Y_OFFSET -5
 
 /**********************
