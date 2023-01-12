@@ -39,6 +39,7 @@
 
 #if DISPLAY_MAIN_PANEL_USE_SSD1681
 
+#if 0
 const unsigned char gImage_1[5000] = { /* 0X01,0X01,0XC8,0X00,0XC8,0X00, */
     0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF,
     0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF,
@@ -1098,6 +1099,66 @@ void EPD_Dis_Part_myself(unsigned int x_startA, unsigned int y_startA,
 }
 
 
+void ssd1681_test()
+{
+
+    ssd1681_device_init_fast();
+    // epink_write_command(0x24);
+    // for (uint16_t i = 0; i < 5000; i++) {
+    //     epink_write_data(0x0);
+    // }
+    // ssd1681_update_full();
+    // ssd1681_blank();
+
+    // for (int x = 0, y = 0; x < 200; x++, y++) {
+    //     ssd1681_put_pixel(x, y, EPINK_COLOR_WHITE);
+    //     ssd1681_put_pixel(x + 1, y, EPINK_COLOR_BLACK);
+    //     ssd1681_put_pixel(x + 2, y, EPINK_COLOR_BLACK);
+    //     ssd1681_put_pixel(x + 3, y, EPINK_COLOR_BLACK);
+    // }
+
+    /* fast flush */
+    epink_write_command(0x24);
+    for (uint16_t i = 0; i < 5000; i++) {
+        epink_write_data(gImage_1[i]);
+    }
+    ssd1681_update_fast();
+    ssd1681_deepsleep();
+    // busy_wait_ms(2000);
+
+    /* flush a basemap */
+    ssd1681_device_init(0);
+    epink_write_command(0x24);
+    for (uint16_t i = 0; i < 5000; i++) {
+        epink_write_data(gImage_basemap[i]);
+    }
+    ssd1681_update_full();
+
+    /* part refresh */
+    unsigned char fen_L, fen_H, miao_L, miao_H;
+    for (fen_H = 0; fen_H < 6; fen_H++) {
+        for (fen_L = 0; fen_L < 10; fen_L++) {
+            for (miao_H = 0; miao_H < 6; miao_H++) {
+                for (miao_L = 0; miao_L < 10; miao_L++) {
+                    EPD_Dis_Part_myself(64, 40, Num[miao_L],       //x-A,y-A,DATA-A
+                                        64, 72, Num[miao_H],       //x-B,y-B,DATA-B
+                                        64, 112, gImage_numdot,     //x-C,y-C,DATA-C
+                                        64, 154, Num[fen_L],       //x-D,y-D,DATA-D
+                                        64, 186, Num[fen_H], 32, 64); //x-E,y-E,DATA-E,Resolution 32*64
+
+                    if ((fen_L == 0) && (miao_H == 0) && (miao_L == 5))
+                        goto Clear;
+                }
+            }
+        }
+
+    }
+Clear:
+    ssd1681_deepsleep();
+    // busy_wait_ms(2000);
+}
+#endif
+
 #define DRV_NAME "ssd1681"
 
 void ssd1681_set_window(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2)
@@ -1149,7 +1210,7 @@ static void ssd1681_device_init(uint8_t mode)
 {
     epink_reset();
 
-    epink_write_command(0x12);
+    epink_write_command(0x12);  /* software reset */
     epink_wait_busy();
 
     epink_write_command(0x01);
@@ -1328,7 +1389,7 @@ static void ssd1681_flush()
 {
     uint8_t *pen = epink_disp_buffer;
     uint8_t *pen_old = epink_disp_buffer_old;
-    uint16_t diff = 0;
+    uint16_t diff = 0;  /* counter of different  pixel */
 
     static uint32_t flush_count = 0;
     void(*update_method)(void);
@@ -1459,65 +1520,6 @@ static void ssd1681_put_pixel(uint16_t x, uint16_t y, uint8_t color)
 
 }
 #endif
-
-void ssd1681_test()
-{
-
-    ssd1681_device_init_fast();
-    // epink_write_command(0x24);
-    // for (uint16_t i = 0; i < 5000; i++) {
-    //     epink_write_data(0x0);
-    // }
-    // ssd1681_update_full();
-    // ssd1681_blank();
-
-    // for (int x = 0, y = 0; x < 200; x++, y++) {
-    //     ssd1681_put_pixel(x, y, EPINK_COLOR_WHITE);
-    //     ssd1681_put_pixel(x + 1, y, EPINK_COLOR_BLACK);
-    //     ssd1681_put_pixel(x + 2, y, EPINK_COLOR_BLACK);
-    //     ssd1681_put_pixel(x + 3, y, EPINK_COLOR_BLACK);
-    // }
-
-    /* fast flush */
-    epink_write_command(0x24);
-    for (uint16_t i = 0; i < 5000; i++) {
-        epink_write_data(gImage_1[i]);
-    }
-    ssd1681_update_fast();
-    ssd1681_deepsleep();
-    // busy_wait_ms(2000);
-
-    /* flush a basemap */
-    ssd1681_device_init(0);
-    epink_write_command(0x24);
-    for (uint16_t i = 0; i < 5000; i++) {
-        epink_write_data(gImage_basemap[i]);
-    }
-    ssd1681_update_full();
-
-    /* part refresh */
-    unsigned char fen_L, fen_H, miao_L, miao_H;
-    for (fen_H = 0; fen_H < 6; fen_H++) {
-        for (fen_L = 0; fen_L < 10; fen_L++) {
-            for (miao_H = 0; miao_H < 6; miao_H++) {
-                for (miao_L = 0; miao_L < 10; miao_L++) {
-                    EPD_Dis_Part_myself(64, 40, Num[miao_L],       //x-A,y-A,DATA-A
-                                        64, 72, Num[miao_H],       //x-B,y-B,DATA-B
-                                        64, 112, gImage_numdot,     //x-C,y-C,DATA-C
-                                        64, 154, Num[fen_L],       //x-D,y-D,DATA-D
-                                        64, 186, Num[fen_H], 32, 64); //x-E,y-E,DATA-E,Resolution 32*64
-
-                    if ((fen_L == 0) && (miao_H == 0) && (miao_L == 5))
-                        goto Clear;
-                }
-            }
-        }
-
-    }
-Clear:
-    ssd1681_deepsleep();
-    // busy_wait_ms(2000);
-}
 
 static struct display_module ssd1681_module = {
     .name = DRV_NAME,

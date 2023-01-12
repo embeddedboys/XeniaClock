@@ -4,7 +4,7 @@
 WORKDIR=$(pwd)
 echo "working dir is ${WORKDIR}"
 
-BUILDDIR=${WORKDIR}/build
+BUILDDIR=${WORKDIR}/dir_build
 
 BIN="xenia_clock.elf"
 
@@ -46,16 +46,20 @@ function do_compile() {
     # if [ ! -d "${WORKDIR}/build" ]; then
     #     mkdir build
     # fi
-    mkdir -p ${WORKDIR}/build && cd build
+    mkdir -p ${BUILDDIR} && cd ${BUILDDIR}
     cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=1 -DCMAKE_BUILD_TYPE=Release -GNinja ..
     time ninja
+
+    # symol link compile_commands.json on WORKDIR
+
+    ln -sf ${BUILDDIR}/compile_commands.json ${WORKDIR}
 
     cd -
 }
 
 function do_install() {
     echo "do installing ..."
-    cp build/${BIN} .
+    cp ${BUILDDIR}/${BIN} .
 }
 
 function do_flash() {
@@ -63,7 +67,7 @@ function do_flash() {
 }
 
 function do_clean() {
-    mkdir -p ${WORKDIR}/build && cd build
+    mkdir -p ${BUILDDIR} && cd ${BUILDDIR}
     ninja clean
     cd -
 }
