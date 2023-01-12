@@ -1314,7 +1314,7 @@ void ssd1681_update_part_timeout()
     epink_write_command(0x22);
     epink_write_data(0xff);
     epink_write_command(0x20);
-    epink_wait_busy_timeout(LV_INDEV_DEF_READ_PERIOD*2);
+    epink_wait_busy_timeout(LV_INDEV_DEF_READ_PERIOD * 2);
 }
 
 void ssd1681_update_part()
@@ -1392,14 +1392,16 @@ static void ssd1681_flush()
     uint16_t diff = 0;  /* counter of different  pixel */
 
     static uint32_t flush_count = 0;
-    void(*update_method)(void);
+    void(*update_method)(void) = ssd1681_update_part;
 
     epink_reset();
 
+    /* BorderWavefrom */
     epink_write_command(0x3c);
     epink_write_data(0x80);
 
     // ssd1681_set_window(0, 0, 25, 200);
+    /* update window settings */
     epink_write_command(0x44);
     epink_write_data(0x00);
     epink_write_data(0x18);
@@ -1412,7 +1414,7 @@ static void ssd1681_flush()
 #if 0
     for (uint8_t row = 0; row < 200; row++) {
         for (uint8_t col_in_byte = 0; col_in_byte < 25; col_in_byte++) {
-        /* flush each line in buffer */
+            /* flush each line in buffer */
             if (pen[row + col_in_byte * 25] == pen_old[row + col_in_byte * 25])
                 continue;
 
@@ -1440,18 +1442,19 @@ static void ssd1681_flush()
     /* every `period` frame, make a global refresh */
     if ((++flush_count % GLOBAL_REFRESH_PERIOD) == 0) {
         update_method = ssd1681_update_full;
-        pr_debug("a full update will be called\n");
+        // pr_debug("a full update will be called\n");
     }
 
     /* if there pixels doesn't updated too much,
      * invoke a timeouted update job, maybe caused
      * some error pixels keeping on the screen */
-    if (diff < (EPINK_DISP_BUFFER_SIZE / 5)) {
+    if (diff < (EPINK_DISP_BUFFER_SIZE / FULL_REFRESH_FACTOR)) {
         update_method = ssd1681_update_part_timeout;
     } else {
         update_method = ssd1681_update_part;
     }
 
+    /* invoke target update method */
     update_method();
 
     memcpy(epink_disp_buffer_old, epink_disp_buffer, EPINK_DISP_BUFFER_SIZE);
@@ -1510,9 +1513,11 @@ static void ssd1681_put_pixel(uint16_t x, uint16_t y, uint16_t color)
     uint8_t *pen = epink_disp_buffer;
 
     if (color)
-        pen[y * 25 + (x / 8)] &= ~(0x80 >> (x % 8));
+        pen[y * EPINK_LINE_WIDTH_IN_PAGE + (x / EPINK_PAGE_SIZE)] &= ~(0x80 >>
+                                                                       (x % EPINK_PAGE_SIZE));
     else
-        pen[y * 25 + (x / 8)] |= (0x80 >> (x % 8));
+        pen[y * EPINK_LINE_WIDTH_IN_PAGE + (x / EPINK_PAGE_SIZE)] |= (0x80 >>
+                                                                      (x % EPINK_PAGE_SIZE));
 }
 #else
 static void ssd1681_put_pixel(uint16_t x, uint16_t y, uint8_t color)

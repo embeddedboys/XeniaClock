@@ -62,5 +62,6 @@
 /* time in millisecond to call a sync clock, make it default to 10 minutes */
 #define TIME_SYNC_PERIOD        (10 * 60 * 1000) /* in ms */
 #define GLOBAL_REFRESH_PERIOD   (60) /* in frame count */
+#define FULL_REFRESH_FACTOR     (5)
 
 #endif
