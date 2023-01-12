@@ -48,6 +48,7 @@
 #define SECOND(x)               (x)
 #define MILLISECOND(x)          (x)
 #define MICROSECOND(x)          (x)
+
 #define SECOND_UPDATE_STEP    (5)
 #define SECONDS_IN_MINUTE     (60)
 #define MINUTES_IN_HOUR       (60)
@@ -59,6 +60,7 @@
 #define REFRESH_SPEED_USER      (0x4)
 
 /* time in millisecond to call a sync clock, make it default to 10 minutes */
-#define TIME_SYNC_PERIOD        (10 * 60 * 1000)
+#define TIME_SYNC_PERIOD        (10 * 60 * 1000) /* in ms */
+#define GLOBAL_REFRESH_PERIOD   (60) /* in frame count */
 
 #endif

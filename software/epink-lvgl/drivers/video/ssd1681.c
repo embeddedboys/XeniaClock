@@ -28,6 +28,8 @@
  *
  */
 
+#include <common/vals.h>
+
 #include "video/display_manager.h"
 #include "video/epd.h"
 #include "hardware/timer.h"
@@ -881,6 +883,221 @@ const unsigned char gImage_numdot[256] = { /* 0X01,0X01,0X20,0X00,0X40,0X00, */
     0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF, 0XFF,
 };
 
+
+void EPD_Dis_Part_myself(unsigned int x_startA, unsigned int y_startA,
+                         const unsigned char *datasA,
+                         unsigned int x_startB, unsigned int y_startB, const unsigned char *datasB,
+                         unsigned int x_startC, unsigned int y_startC, const unsigned char *datasC,
+                         unsigned int x_startD, unsigned int y_startD, const unsigned char *datasD,
+                         unsigned int x_startE, unsigned int y_startE, const unsigned char *datasE,
+                         unsigned int PART_COLUMN, unsigned int PART_LINE
+                        )
+{
+    unsigned int i;
+    unsigned int x_end, y_start1, y_start2, y_end1, y_end2;
+
+    //Data A////////////////////////////
+    x_startA = x_startA / 8; //Convert to byte
+    x_end = x_startA + PART_LINE / 8 - 1;
+
+    y_start1 = 0;
+    y_start2 = y_startA - 1;
+    if (y_startA >= 256) {
+        y_start1 = y_start2 / 256;
+        y_start2 = y_start2 % 256;
+    }
+    y_end1 = 0;
+    y_end2 = y_startA + PART_COLUMN - 1;
+    if (y_end2 >= 256) {
+        y_end1 = y_end2 / 256;
+        y_end2 = y_end2 % 256;
+    }
+    //Reset
+    epink_reset();
+
+    epink_write_command(0x3C); //BorderWavefrom
+    epink_write_data(0x80);
+    //
+    epink_write_command(0x44);       // set RAM x address start/end, in page 35
+    epink_write_data(x_startA);    // RAM x address start at 00h;
+    epink_write_data(x_end);    // RAM x address end at 0fh(15+1)*8->128
+    epink_write_command(0x45);       // set RAM y address start/end, in page 35
+    epink_write_data(y_start2);    // RAM y address start at 0127h;
+    epink_write_data(y_start1);    // RAM y address start at 0127h;
+    epink_write_data(y_end2);    // RAM y address end at 00h;
+    epink_write_data(y_end1);
+
+
+    epink_write_command(0x4E);   // set RAM x address count to 0;
+    epink_write_data(x_startA);
+    epink_write_command(0x4F);   // set RAM y address count to 0X127;
+    epink_write_data(y_start2);
+    epink_write_data(y_start1);
+
+
+    epink_write_command(0x24);   //Write Black and White image to RAM
+    for (i = 0; i < PART_COLUMN * PART_LINE / 8; i++) {
+        epink_write_data(datasA[i]);
+    }
+    //Data B/////////////////////////////////////
+    x_startB = x_startB / 8; //Convert to byte
+    x_end = x_startB + PART_LINE / 8 - 1;
+
+    y_start1 = 0;
+    y_start2 = y_startB - 1;
+    if (y_startB >= 256) {
+        y_start1 = y_start2 / 256;
+        y_start2 = y_start2 % 256;
+    }
+    y_end1 = 0;
+    y_end2 = y_startB + PART_COLUMN - 1;
+    if (y_end2 >= 256) {
+        y_end1 = y_end2 / 256;
+        y_end2 = y_end2 % 256;
+    }
+
+    epink_write_command(0x44);       // set RAM x address start/end, in page 35
+    epink_write_data(x_startB);    // RAM x address start at 00h;
+    epink_write_data(x_end);    // RAM x address end at 0fh(15+1)*8->128
+    epink_write_command(0x45);       // set RAM y address start/end, in page 35
+    epink_write_data(y_start2);    // RAM y address start at 0127h;
+    epink_write_data(y_start1);    // RAM y address start at 0127h;
+    epink_write_data(y_end2);    // RAM y address end at 00h;
+    epink_write_data(y_end1);
+
+
+    epink_write_command(0x4E);   // set RAM x address count to 0;
+    epink_write_data(x_startB);
+    epink_write_command(0x4F);   // set RAM y address count to 0X127;
+    epink_write_data(y_start2);
+    epink_write_data(y_start1);
+
+
+    epink_write_command(0x24);   //Write Black and White image to RAM
+    for (i = 0; i < PART_COLUMN * PART_LINE / 8; i++) {
+        epink_write_data(datasB[i]);
+    }
+
+    //Data C//////////////////////////////////////
+    x_startC = x_startC / 8; //Convert to byte
+    x_end = x_startC + PART_LINE / 8 - 1;
+
+    y_start1 = 0;
+    y_start2 = y_startC - 1;
+    if (y_startC >= 256) {
+        y_start1 = y_start2 / 256;
+        y_start2 = y_start2 % 256;
+    }
+    y_end1 = 0;
+    y_end2 = y_startC + PART_COLUMN - 1;
+    if (y_end2 >= 256) {
+        y_end1 = y_end2 / 256;
+        y_end2 = y_end2 % 256;
+    }
+
+    epink_write_command(0x44);       // set RAM x address start/end, in page 35
+    epink_write_data(x_startC);    // RAM x address start at 00h;
+    epink_write_data(x_end);    // RAM x address end at 0fh(15+1)*8->128
+    epink_write_command(0x45);       // set RAM y address start/end, in page 35
+    epink_write_data(y_start2);    // RAM y address start at 0127h;
+    epink_write_data(y_start1);    // RAM y address start at 0127h;
+    epink_write_data(y_end2);    // RAM y address end at 00h;
+    epink_write_data(y_end1);
+
+
+    epink_write_command(0x4E);   // set RAM x address count to 0;
+    epink_write_data(x_startC);
+    epink_write_command(0x4F);   // set RAM y address count to 0X127;
+    epink_write_data(y_start2);
+    epink_write_data(y_start1);
+
+
+    epink_write_command(0x24);   //Write Black and White image to RAM
+    for (i = 0; i < PART_COLUMN * PART_LINE / 8; i++) {
+        epink_write_data(datasC[i]);
+    }
+
+    //Data D//////////////////////////////////////
+    x_startD = x_startD / 8; //Convert to byte
+    x_end = x_startD + PART_LINE / 8 - 1;
+
+    y_start1 = 0;
+    y_start2 = y_startD - 1;
+    if (y_startD >= 256) {
+        y_start1 = y_start2 / 256;
+        y_start2 = y_start2 % 256;
+    }
+    y_end1 = 0;
+    y_end2 = y_startD + PART_COLUMN - 1;
+    if (y_end2 >= 256) {
+        y_end1 = y_end2 / 256;
+        y_end2 = y_end2 % 256;
+    }
+
+    epink_write_command(0x44);       // set RAM x address start/end, in page 35
+    epink_write_data(x_startD);    // RAM x address start at 00h;
+    epink_write_data(x_end);        // RAM x address end at 0fh(15+1)*8->128
+    epink_write_command(0x45);       // set RAM y address start/end, in page 35
+    epink_write_data(y_start2);    // RAM y address start at 0127h;
+    epink_write_data(y_start1);    // RAM y address start at 0127h;
+    epink_write_data(y_end2);    // RAM y address end at 00h;
+    epink_write_data(y_end1);
+
+
+    epink_write_command(0x4E);   // set RAM x address count to 0;
+    epink_write_data(x_startD);
+    epink_write_command(0x4F);   // set RAM y address count to 0X127;
+    epink_write_data(y_start2);
+    epink_write_data(y_start1);
+
+
+    epink_write_command(0x24);   //Write Black and White image to RAM
+    for (i = 0; i < PART_COLUMN * PART_LINE / 8; i++) {
+        epink_write_data(datasD[i]);
+    }
+    //Data E//////////////////////////////////////
+    x_startE = x_startE / 8; //Convert to byte
+    x_end = x_startE + PART_LINE / 8 - 1;
+
+    y_start1 = 0;
+    y_start2 = y_startE - 1;
+    if (y_startE >= 256) {
+        y_start1 = y_start2 / 256;
+        y_start2 = y_start2 % 256;
+    }
+    y_end1 = 0;
+    y_end2 = y_startE + PART_COLUMN - 1;
+    if (y_end2 >= 256) {
+        y_end1 = y_end2 / 256;
+        y_end2 = y_end2 % 256;
+    }
+
+    epink_write_command(0x44);       // set RAM x address start/end, in page 35
+    epink_write_data(x_startE);    // RAM x address start at 00h;
+    epink_write_data(x_end);    // RAM x address end at 0fh(15+1)*8->128
+    epink_write_command(0x45);       // set RAM y address start/end, in page 35
+    epink_write_data(y_start2);    // RAM y address start at 0127h;
+    epink_write_data(y_start1);    // RAM y address start at 0127h;
+    epink_write_data(y_end2);    // RAM y address end at 00h;
+    epink_write_data(y_end1);
+
+
+    epink_write_command(0x4E);   // set RAM x address count to 0;
+    epink_write_data(x_startE);
+    epink_write_command(0x4F);   // set RAM y address count to 0X127;
+    epink_write_data(y_start2);
+    epink_write_data(y_start1);
+
+
+    epink_write_command(0x24);   //Write Black and White image to RAM
+    for (i = 0; i < PART_COLUMN * PART_LINE / 8; i++) {
+        epink_write_data(datasE[i]);
+    }
+
+    ssd1681_update_part();
+}
+
+
 #define DRV_NAME "ssd1681"
 
 void ssd1681_set_window(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2)
@@ -1103,219 +1320,6 @@ static void ssd1681_clear(uint8_t color)
 }
 #endif
 
-void EPD_Dis_Part_myself(unsigned int x_startA, unsigned int y_startA,
-                         const unsigned char *datasA,
-                         unsigned int x_startB, unsigned int y_startB, const unsigned char *datasB,
-                         unsigned int x_startC, unsigned int y_startC, const unsigned char *datasC,
-                         unsigned int x_startD, unsigned int y_startD, const unsigned char *datasD,
-                         unsigned int x_startE, unsigned int y_startE, const unsigned char *datasE,
-                         unsigned int PART_COLUMN, unsigned int PART_LINE
-                        )
-{
-    unsigned int i;
-    unsigned int x_end, y_start1, y_start2, y_end1, y_end2;
-
-    //Data A////////////////////////////
-    x_startA = x_startA / 8; //Convert to byte
-    x_end = x_startA + PART_LINE / 8 - 1;
-
-    y_start1 = 0;
-    y_start2 = y_startA - 1;
-    if (y_startA >= 256) {
-        y_start1 = y_start2 / 256;
-        y_start2 = y_start2 % 256;
-    }
-    y_end1 = 0;
-    y_end2 = y_startA + PART_COLUMN - 1;
-    if (y_end2 >= 256) {
-        y_end1 = y_end2 / 256;
-        y_end2 = y_end2 % 256;
-    }
-    //Reset
-    epink_reset();
-
-    epink_write_command(0x3C); //BorderWavefrom
-    epink_write_data(0x80);
-    //
-    epink_write_command(0x44);       // set RAM x address start/end, in page 35
-    epink_write_data(x_startA);    // RAM x address start at 00h;
-    epink_write_data(x_end);    // RAM x address end at 0fh(15+1)*8->128
-    epink_write_command(0x45);       // set RAM y address start/end, in page 35
-    epink_write_data(y_start2);    // RAM y address start at 0127h;
-    epink_write_data(y_start1);    // RAM y address start at 0127h;
-    epink_write_data(y_end2);    // RAM y address end at 00h;
-    epink_write_data(y_end1);
-
-
-    epink_write_command(0x4E);   // set RAM x address count to 0;
-    epink_write_data(x_startA);
-    epink_write_command(0x4F);   // set RAM y address count to 0X127;
-    epink_write_data(y_start2);
-    epink_write_data(y_start1);
-
-
-    epink_write_command(0x24);   //Write Black and White image to RAM
-    for (i = 0; i < PART_COLUMN * PART_LINE / 8; i++) {
-        epink_write_data(datasA[i]);
-    }
-    //Data B/////////////////////////////////////
-    x_startB = x_startB / 8; //Convert to byte
-    x_end = x_startB + PART_LINE / 8 - 1;
-
-    y_start1 = 0;
-    y_start2 = y_startB - 1;
-    if (y_startB >= 256) {
-        y_start1 = y_start2 / 256;
-        y_start2 = y_start2 % 256;
-    }
-    y_end1 = 0;
-    y_end2 = y_startB + PART_COLUMN - 1;
-    if (y_end2 >= 256) {
-        y_end1 = y_end2 / 256;
-        y_end2 = y_end2 % 256;
-    }
-
-    epink_write_command(0x44);       // set RAM x address start/end, in page 35
-    epink_write_data(x_startB);    // RAM x address start at 00h;
-    epink_write_data(x_end);    // RAM x address end at 0fh(15+1)*8->128
-    epink_write_command(0x45);       // set RAM y address start/end, in page 35
-    epink_write_data(y_start2);    // RAM y address start at 0127h;
-    epink_write_data(y_start1);    // RAM y address start at 0127h;
-    epink_write_data(y_end2);    // RAM y address end at 00h;
-    epink_write_data(y_end1);
-
-
-    epink_write_command(0x4E);   // set RAM x address count to 0;
-    epink_write_data(x_startB);
-    epink_write_command(0x4F);   // set RAM y address count to 0X127;
-    epink_write_data(y_start2);
-    epink_write_data(y_start1);
-
-
-    epink_write_command(0x24);   //Write Black and White image to RAM
-    for (i = 0; i < PART_COLUMN * PART_LINE / 8; i++) {
-        epink_write_data(datasB[i]);
-    }
-
-    //Data C//////////////////////////////////////
-    x_startC = x_startC / 8; //Convert to byte
-    x_end = x_startC + PART_LINE / 8 - 1;
-
-    y_start1 = 0;
-    y_start2 = y_startC - 1;
-    if (y_startC >= 256) {
-        y_start1 = y_start2 / 256;
-        y_start2 = y_start2 % 256;
-    }
-    y_end1 = 0;
-    y_end2 = y_startC + PART_COLUMN - 1;
-    if (y_end2 >= 256) {
-        y_end1 = y_end2 / 256;
-        y_end2 = y_end2 % 256;
-    }
-
-    epink_write_command(0x44);       // set RAM x address start/end, in page 35
-    epink_write_data(x_startC);    // RAM x address start at 00h;
-    epink_write_data(x_end);    // RAM x address end at 0fh(15+1)*8->128
-    epink_write_command(0x45);       // set RAM y address start/end, in page 35
-    epink_write_data(y_start2);    // RAM y address start at 0127h;
-    epink_write_data(y_start1);    // RAM y address start at 0127h;
-    epink_write_data(y_end2);    // RAM y address end at 00h;
-    epink_write_data(y_end1);
-
-
-    epink_write_command(0x4E);   // set RAM x address count to 0;
-    epink_write_data(x_startC);
-    epink_write_command(0x4F);   // set RAM y address count to 0X127;
-    epink_write_data(y_start2);
-    epink_write_data(y_start1);
-
-
-    epink_write_command(0x24);   //Write Black and White image to RAM
-    for (i = 0; i < PART_COLUMN * PART_LINE / 8; i++) {
-        epink_write_data(datasC[i]);
-    }
-
-    //Data D//////////////////////////////////////
-    x_startD = x_startD / 8; //Convert to byte
-    x_end = x_startD + PART_LINE / 8 - 1;
-
-    y_start1 = 0;
-    y_start2 = y_startD - 1;
-    if (y_startD >= 256) {
-        y_start1 = y_start2 / 256;
-        y_start2 = y_start2 % 256;
-    }
-    y_end1 = 0;
-    y_end2 = y_startD + PART_COLUMN - 1;
-    if (y_end2 >= 256) {
-        y_end1 = y_end2 / 256;
-        y_end2 = y_end2 % 256;
-    }
-
-    epink_write_command(0x44);       // set RAM x address start/end, in page 35
-    epink_write_data(x_startD);    // RAM x address start at 00h;
-    epink_write_data(x_end);        // RAM x address end at 0fh(15+1)*8->128
-    epink_write_command(0x45);       // set RAM y address start/end, in page 35
-    epink_write_data(y_start2);    // RAM y address start at 0127h;
-    epink_write_data(y_start1);    // RAM y address start at 0127h;
-    epink_write_data(y_end2);    // RAM y address end at 00h;
-    epink_write_data(y_end1);
-
-
-    epink_write_command(0x4E);   // set RAM x address count to 0;
-    epink_write_data(x_startD);
-    epink_write_command(0x4F);   // set RAM y address count to 0X127;
-    epink_write_data(y_start2);
-    epink_write_data(y_start1);
-
-
-    epink_write_command(0x24);   //Write Black and White image to RAM
-    for (i = 0; i < PART_COLUMN * PART_LINE / 8; i++) {
-        epink_write_data(datasD[i]);
-    }
-    //Data E//////////////////////////////////////
-    x_startE = x_startE / 8; //Convert to byte
-    x_end = x_startE + PART_LINE / 8 - 1;
-
-    y_start1 = 0;
-    y_start2 = y_startE - 1;
-    if (y_startE >= 256) {
-        y_start1 = y_start2 / 256;
-        y_start2 = y_start2 % 256;
-    }
-    y_end1 = 0;
-    y_end2 = y_startE + PART_COLUMN - 1;
-    if (y_end2 >= 256) {
-        y_end1 = y_end2 / 256;
-        y_end2 = y_end2 % 256;
-    }
-
-    epink_write_command(0x44);       // set RAM x address start/end, in page 35
-    epink_write_data(x_startE);    // RAM x address start at 00h;
-    epink_write_data(x_end);    // RAM x address end at 0fh(15+1)*8->128
-    epink_write_command(0x45);       // set RAM y address start/end, in page 35
-    epink_write_data(y_start2);    // RAM y address start at 0127h;
-    epink_write_data(y_start1);    // RAM y address start at 0127h;
-    epink_write_data(y_end2);    // RAM y address end at 00h;
-    epink_write_data(y_end1);
-
-
-    epink_write_command(0x4E);   // set RAM x address count to 0;
-    epink_write_data(x_startE);
-    epink_write_command(0x4F);   // set RAM y address count to 0X127;
-    epink_write_data(y_start2);
-    epink_write_data(y_start1);
-
-
-    epink_write_command(0x24);   //Write Black and White image to RAM
-    for (i = 0; i < PART_COLUMN * PART_LINE / 8; i++) {
-        epink_write_data(datasE[i]);
-    }
-
-    ssd1681_update_part();
-}
-
 /**
  * @brief Flush each byte in display buffer to screen
  */
@@ -1326,7 +1330,7 @@ static void ssd1681_flush()
     uint8_t *pen_old = epink_disp_buffer_old;
     uint16_t diff = 0;
 
-    static uint32_t frame_count = 0;
+    static uint32_t flush_count = 0;
     void(*update_method)(void);
 
     epink_reset();
@@ -1372,15 +1376,18 @@ static void ssd1681_flush()
     }
 #endif
 
-    // if ((++frame_count % 5) == 0) {
-    //     update_method = ssd1681_update_full;
-    // }
+    /* every `period` frame, make a global refresh */
+    if ((++flush_count % GLOBAL_REFRESH_PERIOD) == 0) {
+        update_method = ssd1681_update_full;
+        pr_debug("a full update will be called\n");
+    }
 
-    /* if  */
+    /* if there pixels doesn't updated too much,
+     * invoke a timeouted update job, maybe caused
+     * some error pixels keeping on the screen */
     if (diff < (EPINK_DISP_BUFFER_SIZE / 5)) {
         update_method = ssd1681_update_part_timeout;
-    }
-    else {
+    } else {
         update_method = ssd1681_update_part;
     }
 
