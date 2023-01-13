@@ -24,12 +24,19 @@ lv_obj_t * ui_Image5;
 lv_obj_t * ui_LabelTips;
 lv_obj_t * ui_LabelTest;
 lv_obj_t * ui_PanelStatusBar;
+lv_obj_t * ui_LabelGreeting;
 lv_obj_t * ui_ScreenEpinkConfig;
 lv_obj_t * ui_PanelStatusBarConfig;
 lv_obj_t * ui_PanelWidgetsConfig;
 lv_obj_t * ui_LabelWifiName;
 lv_obj_t * ui_ScreenSleep;
 lv_obj_t * ui_ImageSleep;
+lv_obj_t * ui_ScreenEpinkApps;
+lv_obj_t * ui_PanelStatusBar1;
+lv_obj_t * ui_ButtonApp1;
+lv_obj_t * ui_ButtonApp2;
+lv_obj_t * ui_ButtonApp3;
+lv_obj_t * ui_ButtonApp4;
 
 ///////////////////// TEST LVGL SETTINGS ////////////////////
 #if LV_COLOR_DEPTH != 8
@@ -252,6 +259,17 @@ void ui_ScreenEpinkHome_screen_init(void)
     lv_obj_set_style_text_font(ui_comp_get_child(ui_PanelStatusBar, UI_COMP_PANELSTATUSBAR_LABELBATTERY),
                                &ui_font_NeverMindSemiSerifBold12, LV_PART_MAIN | LV_STATE_DEFAULT);
 
+    ui_LabelGreeting = lv_label_create(ui_ScreenEpinkHome);
+    lv_obj_set_width(ui_LabelGreeting, LV_SIZE_CONTENT);   /// 200
+    lv_obj_set_height(ui_LabelGreeting, LV_SIZE_CONTENT);    /// 40
+    lv_obj_set_x(ui_LabelGreeting, 0);
+    lv_obj_set_y(ui_LabelGreeting, -60);
+    lv_obj_set_align(ui_LabelGreeting, LV_ALIGN_CENTER);
+    lv_label_set_text(ui_LabelGreeting, "Good night, iotahydrae");
+    lv_obj_set_style_text_color(ui_LabelGreeting, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_opa(ui_LabelGreeting, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_font(ui_LabelGreeting, &ui_font_FiraCodeSemiBold12, LV_PART_MAIN | LV_STATE_DEFAULT);
+
 }
 void ui_ScreenEpinkConfig_screen_init(void)
 {
@@ -318,6 +336,77 @@ void ui_ScreenSleep_screen_init(void)
     lv_obj_clear_flag(ui_ImageSleep, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
 
 }
+void ui_ScreenEpinkApps_screen_init(void)
+{
+    ui_ScreenEpinkApps = lv_obj_create(NULL);
+    lv_obj_clear_flag(ui_ScreenEpinkApps, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
+
+    ui_PanelStatusBar1 = ui_PanelStatusBar_create(ui_ScreenEpinkApps);
+    lv_obj_set_x(ui_PanelStatusBar1, 0);
+    lv_obj_set_y(ui_PanelStatusBar1, 5);
+    lv_obj_clear_flag(ui_PanelStatusBar1, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
+    lv_obj_set_style_bg_color(ui_PanelStatusBar1, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(ui_PanelStatusBar1, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    lv_obj_set_style_text_color(ui_comp_get_child(ui_PanelStatusBar1, UI_COMP_PANELSTATUSBAR_LABELDATE),
+                                lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_opa(ui_comp_get_child(ui_PanelStatusBar1, UI_COMP_PANELSTATUSBAR_LABELDATE), 255,
+                              LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_font(ui_comp_get_child(ui_PanelStatusBar1, UI_COMP_PANELSTATUSBAR_LABELDATE),
+                               &ui_font_NeverMindSemiSerifBold12, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    lv_obj_set_style_text_color(ui_comp_get_child(ui_PanelStatusBar1, UI_COMP_PANELSTATUSBAR_LABELBATTERY),
+                                lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_opa(ui_comp_get_child(ui_PanelStatusBar1, UI_COMP_PANELSTATUSBAR_LABELBATTERY), 255,
+                              LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_font(ui_comp_get_child(ui_PanelStatusBar1, UI_COMP_PANELSTATUSBAR_LABELBATTERY),
+                               &ui_font_NeverMindSemiSerifBold12, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    ui_ButtonApp1 = lv_btn_create(ui_ScreenEpinkApps);
+    lv_obj_set_width(ui_ButtonApp1, 70);
+    lv_obj_set_height(ui_ButtonApp1, 70);
+    lv_obj_set_x(ui_ButtonApp1, -45);
+    lv_obj_set_y(ui_ButtonApp1, -25);
+    lv_obj_set_align(ui_ButtonApp1, LV_ALIGN_CENTER);
+    lv_obj_add_flag(ui_ButtonApp1, LV_OBJ_FLAG_SCROLL_ON_FOCUS);     /// Flags
+    lv_obj_clear_flag(ui_ButtonApp1, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
+    lv_obj_set_style_bg_color(ui_ButtonApp1, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(ui_ButtonApp1, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    ui_ButtonApp2 = lv_btn_create(ui_ScreenEpinkApps);
+    lv_obj_set_width(ui_ButtonApp2, 70);
+    lv_obj_set_height(ui_ButtonApp2, 70);
+    lv_obj_set_x(ui_ButtonApp2, 45);
+    lv_obj_set_y(ui_ButtonApp2, 55);
+    lv_obj_set_align(ui_ButtonApp2, LV_ALIGN_CENTER);
+    lv_obj_add_flag(ui_ButtonApp2, LV_OBJ_FLAG_SCROLL_ON_FOCUS);     /// Flags
+    lv_obj_clear_flag(ui_ButtonApp2, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
+    lv_obj_set_style_bg_color(ui_ButtonApp2, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(ui_ButtonApp2, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    ui_ButtonApp3 = lv_btn_create(ui_ScreenEpinkApps);
+    lv_obj_set_width(ui_ButtonApp3, 70);
+    lv_obj_set_height(ui_ButtonApp3, 70);
+    lv_obj_set_x(ui_ButtonApp3, -45);
+    lv_obj_set_y(ui_ButtonApp3, 55);
+    lv_obj_set_align(ui_ButtonApp3, LV_ALIGN_CENTER);
+    lv_obj_add_flag(ui_ButtonApp3, LV_OBJ_FLAG_SCROLL_ON_FOCUS);     /// Flags
+    lv_obj_clear_flag(ui_ButtonApp3, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
+    lv_obj_set_style_bg_color(ui_ButtonApp3, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(ui_ButtonApp3, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    ui_ButtonApp4 = lv_btn_create(ui_ScreenEpinkApps);
+    lv_obj_set_width(ui_ButtonApp4, 70);
+    lv_obj_set_height(ui_ButtonApp4, 70);
+    lv_obj_set_x(ui_ButtonApp4, 45);
+    lv_obj_set_y(ui_ButtonApp4, -25);
+    lv_obj_set_align(ui_ButtonApp4, LV_ALIGN_CENTER);
+    lv_obj_add_flag(ui_ButtonApp4, LV_OBJ_FLAG_SCROLL_ON_FOCUS);     /// Flags
+    lv_obj_clear_flag(ui_ButtonApp4, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
+    lv_obj_set_style_bg_color(ui_ButtonApp4, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(ui_ButtonApp4, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+}
 
 void ui_init(void)
 {
@@ -329,5 +418,6 @@ void ui_init(void)
     ui_ScreenEpinkHome_screen_init();
     ui_ScreenEpinkConfig_screen_init();
     ui_ScreenSleep_screen_init();
+    ui_ScreenEpinkApps_screen_init();
     lv_disp_load_scr(ui_ScreenEpinkHome);
 }
