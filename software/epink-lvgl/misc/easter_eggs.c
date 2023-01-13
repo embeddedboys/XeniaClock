@@ -28,3 +28,8 @@
  * 
  */
 
+#include "common/tools.h"
+
+#include "../lvgl/lvgl.h"
+#include "../ui/ui.h"
+#include "../ui/ui_comp.h"
