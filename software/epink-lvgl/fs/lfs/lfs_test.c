@@ -27,6 +27,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  *
  */
+#if 0
 
 #include <stdlib.h>
 
@@ -121,3 +122,4 @@ void lfs_test(void)
     
     lfs_unmount(&lfs);
 }
+#endif

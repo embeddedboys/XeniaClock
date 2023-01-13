@@ -36,7 +36,7 @@
 #include "common/init.h"
 
 #include "fs/lfs/lfs.h"
-#include "fs/hal/lfs_rambd.h"
+#include "fs/lfs/hal/lfs_rambd.h"
 
 #define LFS_READ_SIZE   16
 #define LFS_PROG_SIZE   16

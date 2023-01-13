@@ -1,7 +1,7 @@
 /**
- * @file lfs_flashbd.c
+ * @file lfs_sdcardbd.c
  * @author IotaHydrae (writeforever@foxmail.com)
- * @brief lfs hal implementation of flash like w25qxx
+ * @brief 
  * @version 0.1
  * @date 2023-01-13
  * 
@@ -28,11 +28,11 @@
  * 
  */
 
-#include "fs/hal/implementation.h"
+#include "fs/lfs/hal/implementation.h"
 
-#if DEFAULT_LFS_PORT_DEVICE == LFS_PORT_DEVICE_FLASH
+#if DEFAULT_LFS_PORT_DEVICE == LFS_PORT_DEVICE_SDCARD
 
-struct xc_mtd_flash_device {
+struct xc_block_sdcard_device {
 
 };
 

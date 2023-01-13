@@ -27,7 +27,7 @@
 #include <inttypes.h>
 
 // Different device need different marco, defined it here
-#include "fs/hal/implementation.h"
+#include "fs/lfs/hal/implementation.h"
 
 #ifndef LFS_NO_MALLOC
 #include <stdlib.h>

@@ -6,11 +6,11 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-#include "fs/hal/implementation.h"
+#include "fs/lfs/hal/implementation.h"
 
 #if DEFAULT_LFS_PORT_DEVICE == LFS_PORT_DEVICE_RAM
 
-#include "fs/hal/lfs_rambd.h"
+#include "fs/lfs/hal/lfs_rambd.h"
 
 int lfs_rambd_createcfg(const struct lfs_config *cfg,
         const struct lfs_rambd_config *bdcfg) {
