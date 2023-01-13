@@ -35,7 +35,9 @@
 #include "common/vals.h"
 #include "i2c/sensors/aht10.h"
 #include "rtc/native_rtc.h"
+#include "port/lv_port_disp.h"
 
+#include "../lv_conf.h"
 #include "../lvgl/lvgl.h"
 #include "../ui/ui.h"
 #include "../ui/ui_comp.h"
@@ -56,6 +58,7 @@ static uint8_t g_roller_minute = 30;
 static uint8_t g_roller_second = 0;
 
 static struct repeating_timer g_roller_timer;
+static struct repeating_timer g_refresh_timer;
 
 uint8_t xc_get_roller_time_hour()
 {
@@ -99,6 +102,23 @@ void xc_update_roller_time(uint8_t hour, uint8_t min, uint8_t sec)
         xc_set_roller_time_second(sec);
 }
 
+static int64_t xc_disp_manunally_refesh_cb(alarm_id_t id, void *user_data)
+{
+    _lv_disp_refr_timer(NULL);
+}
+
+static bool xc_repeating_timer_refresh_cb(struct repeating_timer *t)
+{
+    /* we deleted refresh timer of lvgl, and repalce it with timer of mcu,
+     * bacause there some blocked function in display flush method, this
+     * cause lvgl timer blocked too, so we call display refesh maunally
+     * in every 1 second */
+
+    // pr_debug("refeshing display ...\n");
+    _lv_disp_refr_timer(NULL);
+    // pr_debug("display refreshed\n");
+}
+
 /* This logic should never modified unless have a better idea
  * This callback must be use a  high-res timer to handle
  * Be sure to use a monospaced font */
@@ -123,12 +143,6 @@ static bool xc_timer_roller_time_cb(struct repeating_timer *t)
         g_roller_hour = 0;
         lv_roller_set_selected(ui_RollerHour, g_roller_hour, LV_ANIM_OFF);
     }
-
-    /* we deleted refresh timer of lvgl, and repalce it with timer of mcu,
-     * bacause there some blocked function in display flush method, this
-     * cause lvgl timer blocked too, so we call display refesh maunally
-     * in every 1 second */
-    _lv_disp_refr_timer(NULL);
 
     return true;
 }
@@ -226,6 +240,7 @@ void xc_post_timers_init(void)
     pr_debug("registering time roller timer ...\n");
 
     add_repeating_timer_ms(MILLISECOND(1000), xc_timer_roller_time_cb, NULL, &g_roller_timer);
+    add_repeating_timer_ms(MILLISECOND(LV_DISP_DEF_REFR_PERIOD), xc_repeating_timer_refresh_cb, NULL, &g_refresh_timer);
 
     lv_timer_t *timer_time_sync = lv_timer_create_basic();
     timer_time_sync->timer_cb = xc_timer_time_sync_cb;
@@ -235,18 +250,18 @@ void xc_post_timers_init(void)
     pr_debug("registering tips timer ...\n");
     lv_timer_t *timer_tips = lv_timer_create_basic();
     timer_tips->timer_cb = xc_timer_label_tips_cb;
-    timer_tips->period = REFRESH_SPEED_NORMAL;
+    timer_tips->period = REFRESH_SPEED_NORMAL * 5;
 
     /* timer for updating battery percent, just a demo for now */
     pr_debug("registering battery percent timer ...\n");
     lv_timer_t *timer_battery = lv_timer_create_basic();
     timer_battery->timer_cb = xc_timer_battery_cb;
-    timer_battery->period = REFRESH_SPEED_SLOW;
+    timer_battery->period = REFRESH_SPEED_SLOW * 2;
 
     /* timer for updating temperture and humidity */
     pr_debug("registering temperture and humidity timer ...\n");
     lv_timer_t *timer_temp_humid = lv_timer_create_basic();
     timer_temp_humid->timer_cb = xc_timer_temp_humid_cb;
-    timer_temp_humid->period = REFRESH_SPEED_FAST;
+    timer_temp_humid->period = REFRESH_SPEED_FAST * 9;
     // lv_timer_pause(timer_temp_humid);
 }

@@ -203,12 +203,6 @@ static void network_config()
 
 lv_obj_t *sub_display_label_time;
 static bool sub_display_label_flash = true;
-
-static void anim_x_cb(void *var, int32_t x)
-{
-    lv_obj_set_x(var, x);
-}
-
 static inline void sub_screen_display_update_cb()
 {
     uint8_t hour, minute;

@@ -44,6 +44,7 @@ add_executable(xenia_clock init/main.c ${INCLUDES} ${SOURCES})
 
 target_include_directories(xenia_clock PUBLIC . "include" "lvgl")
 target_link_libraries(xenia_clock pico_stdlib
+                            pico_multicore
                             hardware_clocks
                             hardware_spi
                             hardware_rtc

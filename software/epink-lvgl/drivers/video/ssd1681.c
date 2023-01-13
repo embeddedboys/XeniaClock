@@ -34,6 +34,7 @@
 #include "video/epd.h"
 #include "hardware/timer.h"
 #include "pico/time.h"
+#include "pico/multicore.h"
 
 #include "../../lv_conf.h"
 
@@ -1290,6 +1291,7 @@ static void ssd1681_device_init_fast(void)
 
 static int ssd1681_init(uint8_t mode)
 {
+    multicore_reset_core1();
     ssd1681_device_init(mode);
 
     return 0;
@@ -1314,7 +1316,7 @@ void ssd1681_update_part_timeout()
     epink_write_command(0x22);
     epink_write_data(0xff);
     epink_write_command(0x20);
-    epink_wait_busy_timeout(LV_INDEV_DEF_READ_PERIOD * 2);
+    epink_wait_busy_timeout(LV_DISP_DEF_REFR_PERIOD);
 }
 
 void ssd1681_update_part()
@@ -1384,8 +1386,17 @@ static void ssd1681_clear(uint8_t color)
  * @brief Flush each byte in display buffer to screen
  */
 #if EPINK_USE_FLUSH
-static void ssd1681_flush()
+// static int64_t ssd1681_do_flush_cb(alarm_id_t id, void *user_data)
+static void ssd1681_flush(void)
+// static void ssd1681_do_flush(void)
 {
+    /* Note: this function is only called when lvgl have
+     * a real area update, but this function cost too much time
+     * because the `ssd1681_update` function using a while(gpio_get(n))
+     * to do a busy check, it caused system blocked, when it came, input event
+     * or anything can't timely response. But considering Rp2040 have 2 cores,
+     * move this function to another core maybe the best way to solve this problem */
+    pr_debug("\n");
     uint8_t *pen = epink_disp_buffer;
     uint8_t *pen_old = epink_disp_buffer_old;
     uint16_t diff = 0;  /* counter of different  pixel */
@@ -1438,18 +1449,25 @@ static void ssd1681_flush()
     }
 #endif
 
+    /* Normally, we calling refresh too fast, the current frame
+     * may be doesn't change anything at all, if so, we don't
+     * need go further */
+    if (diff == 0) {
+        pr_debug("skipping this frame\n");
+        return;
+    }
+
     /* every `period` frame, make a global refresh */
     if ((++flush_count % GLOBAL_REFRESH_PERIOD) == 0) {
         update_method = ssd1681_update_full;
-        // pr_debug("a full update will be called\n");
+        pr_debug("a full update will be called\n");
     }
 
     /* if there pixels doesn't updated too much,
      * invoke a timeouted update job, maybe caused
      * some error pixels keeping on the screen */
     if (diff < (EPINK_DISP_BUFFER_SIZE / FULL_REFRESH_FACTOR)) {
-        // update_method = ssd1681_update_part_timeout;
-        update_method = ssd1681_update_part;
+        update_method = ssd1681_update_part_timeout;
     } else {
         update_method = ssd1681_update_part;
     }
@@ -1459,6 +1477,12 @@ static void ssd1681_flush()
 
     memcpy(epink_disp_buffer_old, epink_disp_buffer, EPINK_DISP_BUFFER_SIZE);
 }
+
+// static void ssd1681_flush()
+// {
+    // add_alarm_in_ms(0, ssd1681_do_flush_cb, NULL, false);
+    // multicore_launch_core1(ssd1681_do_flush);
+// }
 #else
 static void ssd1681_flush()
 {
