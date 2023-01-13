@@ -5,8 +5,8 @@
  * Copyright (c) 2017, Arm Limited. All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause
  */
-#include "fs/lfs.h"
-#include "fs/lfs_util.h"
+#include "fs/lfs/lfs.h"
+#include "fs/lfs/lfs_util.h"
 
 
 // some constants used throughout the code

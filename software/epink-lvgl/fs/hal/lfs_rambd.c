@@ -6,7 +6,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-#include "implementation.h"
+#include "fs/hal/implementation.h"
 
 #if DEFAULT_LFS_PORT_DEVICE == LFS_PORT_DEVICE_RAM
 

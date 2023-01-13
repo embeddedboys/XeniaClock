@@ -1,7 +1,7 @@
 /**
- * @file lfs_flashbd.c
+ * @file fs.h
  * @author IotaHydrae (writeforever@foxmail.com)
- * @brief lfs hal implementation of flash like w25qxx
+ * @brief 
  * @version 0.1
  * @date 2023-01-13
  * 
@@ -28,12 +28,7 @@
  * 
  */
 
-#include "fs/hal/implementation.h"
+#ifndef __FS_H
+#define __FS_H
 
-#if DEFAULT_LFS_PORT_DEVICE == LFS_PORT_DEVICE_FLASH
-
-struct xc_mtd_flash_device {
-
-};
-
-#endif
+#endif /* __FS_H */
