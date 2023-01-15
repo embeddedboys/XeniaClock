@@ -233,7 +233,7 @@ static void sub_screen_display_init()
     lv_disp_t *sub_disp = lv_disp_get_next(NULL);
     pr_debug("sub disp hor ver : %d %d\n", sub_disp->driver->hor_res,
              sub_disp->driver->ver_res);
-    return;
+
     /* set default disp to sub screen */
     lv_disp_set_default(sub_disp);
     lv_theme_t *th = lv_theme_mono_init(sub_disp, 0, &ui_font_FiraCodeSemiBold12);
