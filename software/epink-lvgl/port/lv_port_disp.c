@@ -54,7 +54,9 @@ union rgb888 {
  **********************/
 static void disp_init(void);
 static void disp_exit(void);
-static void main_screen_disp_flush(lv_disp_drv_t *disp_drv, const lv_area_t *area,
+static void main_screen_disp_flush_part(lv_disp_drv_t *disp_drv, const lv_area_t *area,
+                                   lv_color_t *color_p);
+static void main_screen_disp_flush_full(lv_disp_drv_t *disp_drv, const lv_area_t *area,
                                    lv_color_t *color_p);
 static void main_screen_set_pix_cb(lv_disp_drv_t *disp_drv, uint8_t *buf,
                                    lv_coord_t buf_w, lv_coord_t x, lv_coord_t y, lv_color_t color, lv_opa_t opa);
@@ -79,7 +81,7 @@ uint8_t *pen = epink_disp_buffer;
  *   GLOBAL FUNCTIONS
  **********************/
 extern void epink_buffer_clear();
-extern void epink_flush();
+extern void epink_flush(uint16_t xs, uint16_t ys, uint16_t xe, uint16_t ye, void *colorp);
 
 lv_disp_t *g_default_disp = NULL;
 static struct display_module *g_sub_disp_m = NULL;
@@ -116,27 +118,7 @@ void lv_port_disp_init(void)
      *      This way LVGL will always provide the whole rendered screen in `flush_cb`
      *      and you only need to change the frame buffer's address.
      */
-    
-    /* Example for 1) */
-    // static lv_disp_draw_buf_t draw_buf_dsc_1;
-    // static lv_color_t buf_1[MY_DISP_HOR_RES * MY_DISP_VER_RES / 8];                          /*A buffer for 10 rows*/
-    // lv_disp_draw_buf_init(&draw_buf_dsc_1, buf_1, NULL, MY_DISP_HOR_RES * MY_DISP_VER_RES / 8);   /*Initialize the display buffer*/
-    
-    /* Example for 2) */
-    // static lv_disp_draw_buf_t draw_buf_dsc_2;
-    // static lv_color_t buf_2_1[MY_DISP_HOR_RES * 10];                        /*A buffer for 10 rows*/
-    // static lv_color_t buf_2_2[MY_DISP_HOR_RES * 10];                        /*An other buffer for 10 rows*/
-    // lv_disp_draw_buf_init(&draw_buf_dsc_2, buf_2_1, buf_2_2, MY_DISP_HOR_RES * 10);   /*Initialize the display buffer*/
-    
-    /* Example for 3) also set disp_drv.full_refresh = 1 below*/
-    static lv_disp_draw_buf_t draw_buf_dsc_3;
-    static lv_color_t buf_3_1[MY_DISP_HOR_RES *
-                                              MY_DISP_VER_RES];            /*A screen sized buffer*/
-    static lv_color_t buf_3_2[MY_DISP_HOR_RES *
-                                              MY_DISP_VER_RES];            /*Another screen sized buffer*/
-    lv_disp_draw_buf_init(&draw_buf_dsc_3, buf_3_1, buf_3_2,
-                          MY_DISP_HOR_RES * MY_DISP_VER_RES);   /*Initialize the display buffer*/
-                          
+
     /*-----------------------------------
      * Register the display in LVGL
      *----------------------------------*/
@@ -152,13 +134,34 @@ void lv_port_disp_init(void)
     
     /*Used to copy the buffer's content to the display*/
     disp_drv.set_px_cb = main_screen_set_pix_cb;
-    disp_drv.flush_cb = main_screen_disp_flush;
     
     /*Set a display buffer*/
+    static lv_disp_draw_buf_t draw_buf_dsc_3;
+    static lv_color_t buf_3_1[MY_DISP_HOR_RES *
+                                              MY_DISP_VER_RES];            /*A screen sized buffer*/
+    static lv_color_t buf_3_2[MY_DISP_HOR_RES *
+                                              MY_DISP_VER_RES];            /*Another screen sized buffer*/
+    lv_disp_draw_buf_init(&draw_buf_dsc_3, buf_3_1, NULL,
+                          MY_DISP_HOR_RES * MY_DISP_VER_RES);   /*Initialize the display buffer*/
+    disp_drv.flush_cb = main_screen_disp_flush_full;
     disp_drv.draw_buf = &draw_buf_dsc_3;
-    
-    /*Required for Example 3)*/
     disp_drv.full_refresh = 1;
+
+    /* Example for 1) */
+    // static lv_disp_draw_buf_t draw_buf_dsc_1;
+    // static lv_color_t buf_1[MY_DISP_HOR_RES * MY_DISP_VER_RES / 8];                          /*A buffer for 10 rows*/
+    // lv_disp_draw_buf_init(&draw_buf_dsc_1, buf_1, NULL, MY_DISP_HOR_RES * MY_DISP_VER_RES / 8);   /*Initialize the display buffer*/
+    
+    /* Example for 2) */
+    // static lv_disp_draw_buf_t draw_buf_dsc_2;
+    // static lv_color_t buf_2_1[MY_DISP_HOR_RES * 10];                        /*A buffer for 10 rows*/
+    // static lv_color_t buf_2_2[MY_DISP_HOR_RES * 10];                        /*An other buffer for 10 rows*/
+    // lv_disp_draw_buf_init(&draw_buf_dsc_2, buf_2_1, buf_2_2, MY_DISP_HOR_RES * 10);   /*Initialize the display buffer*/
+
+    /* one screen sized buffer */
+
+    // disp_drv.flush_cb = main_screen_disp_flush_part;
+    // disp_drv.draw_buf = &draw_buf_dsc_1;
     
     // disp_drv.sw_rotate = 1;
     
@@ -262,23 +265,6 @@ static void sub_screen_set_pix_cb(lv_disp_drv_t *disp_drv, uint8_t *buf, lv_coor
         g_sub_disp_m->ops.module_put_pixel(x, y, 0);
     }
 }
-
-static void main_screen_disp_flush_part(lv_disp_drv_t *disp_drv, const lv_area_t *area,
-                                        lv_color_t *color_p)
-{
-    /* 1. save pixel to disp buffer */
-    
-    /* 2. flush the given area to panel
-     * note: the ssd1681 like IC write in byte,
-     * you need to convert pixels into byte */
-    
-    /* 3. before write to RAM, checkout if the area->x1,x2
-     * align in byte? if not, we need to read the left bits
-     * from disp buffer and fill the broken byte */
-    
-    /* 4. write to RAM and call part refresh */
-}
-
 inline void lv_port_disp_main_screen_set_flush_state(bool enabled)
 {
     g_default_disp_flush_enabled = enabled;
@@ -287,7 +273,7 @@ inline void lv_port_disp_main_screen_set_flush_state(bool enabled)
 /*Flush the content of the internal buffer the specific area on the display
  *You can use DMA or any hardware acceleration to do this operation in the background but
  *'lv_disp_flush_ready()' has to be called when finished.*/
-static void main_screen_disp_flush(lv_disp_drv_t *disp_drv, const lv_area_t *area,
+static void main_screen_disp_flush_full(lv_disp_drv_t *disp_drv, const lv_area_t *area,
                                    lv_color_t *color_p)
 {
     /*The most simple case (but also the slowest) to put all pixels to the screen one-by-one*/
@@ -317,7 +303,11 @@ static void main_screen_disp_flush(lv_disp_drv_t *disp_drv, const lv_area_t *are
         return;
     }
 
-    epink_flush();
+    epink_flush(area->x1,
+                area->y1,
+                area->x2,
+                area->y2,
+                (void *)color_p);
     /*IMPORTANT!!!
      *Inform the graphics library that you are ready with the flushing*/
     lv_disp_flush_ready(disp_drv);

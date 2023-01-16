@@ -115,7 +115,7 @@ void epink_wait_busy_timeout(uint32_t timeout_ms);
 void epink_init(uint8_t mode);
 // void epink_clear(uint8_t color);
 void epink_blank();
-void epink_flush();
+void epink_flush(uint16_t xs, uint16_t ys, uint16_t xe, uint16_t ye, void *colorp);
 void epink_draw_pixel(uint8_t x, uint8_t y, uint16_t color);
 
 #define EPINK_USE_INIT              1

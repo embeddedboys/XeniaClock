@@ -120,7 +120,25 @@ static void roller_time_set_msgbox_event_cb(lv_event_t *event)
                         LV_EVENT_VALUE_CHANGED, NULL);
 }
 
-void xc_event_setup(void)
+static void xc_event_buttonapps_cb(lv_event_t *e)
+{
+    static bool key_state = 0;
+
+    switch (e->code) {
+    case LV_EVENT_CLICKED:
+        key_state = !key_state;
+        pr_debug("clicked, val : %d\n", key_state);
+        if (key_state) {
+            lv_obj_set_style_bg_color(e->target, lv_color_hex(0x0), 0);
+            lv_obj_set_style_text_color(lv_obj_get_child(e->target, 0), lv_color_hex(0xffffffff), 0);
+        } else {
+            lv_obj_set_style_bg_color(e->target, lv_color_hex(0xffffffff), 0);
+            lv_obj_set_style_text_color(lv_obj_get_child(e->target, 0), lv_color_hex(0), 0);
+        }
+    }
+}
+
+static void xc_event_gesture_init(void)
 {
     lv_obj_add_event_cb(ui_ScreenEpinkHome, xc_main_disp_scr_home_gesture_event_cb,
                         LV_EVENT_GESTURE, NULL);
@@ -128,11 +146,36 @@ void xc_event_setup(void)
                         LV_EVENT_GESTURE, NULL);
     lv_obj_add_event_cb(ui_ScreenEpinkApps, xc_main_disp_scr_apps_gesture_event_cb,
                         LV_EVENT_GESTURE, NULL);
+}
 
+static void xc_event_roller_init(void)
+{
     lv_obj_add_event_cb(ui_RollerHour, roller_time_set_msgbox_event_cb, LV_EVENT_LONG_PRESSED,
                         NULL);
     lv_obj_add_event_cb(ui_RollerMinute, roller_time_set_msgbox_event_cb,
                         LV_EVENT_LONG_PRESSED, NULL);
     lv_obj_add_event_cb(ui_RollerSecond, roller_time_set_msgbox_event_cb,
                         LV_EVENT_LONG_PRESSED, NULL);
+}
+
+static void xc_event_buttonapps_init(void)
+{
+    // lv_obj_add_event_cb(ui_ButtonApp1, xc_event_buttonapps_cb, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(ui_ButtonApp2, xc_event_buttonapps_cb, LV_EVENT_ALL, NULL);
+    // lv_obj_add_event_cb(ui_ButtonApp3, xc_event_buttonapps_cb, LV_EVENT_ALL, NULL);
+    // lv_obj_add_event_cb(ui_ButtonApp4, xc_event_buttonapps_cb, LV_EVENT_ALL, NULL);
+
+    // lv_obj_add_flag(ui_ButtonApp1, LV_OBJ_FLAG_CHECKABLE);
+    // lv_obj_add_flag(ui_ButtonApp2, LV_OBJ_FLAG_CHECKABLE);
+    // lv_obj_add_flag(ui_ButtonApp2, LV_OBJ_FLAG_CHECKABLE);
+    // lv_obj_add_flag(ui_ButtonApp2, LV_OBJ_FLAG_CHECKABLE);
+}
+
+void xc_event_setup(void)
+{
+    xc_event_gesture_init();
+
+    xc_event_roller_init();
+    
+    xc_event_buttonapps_init();
 }

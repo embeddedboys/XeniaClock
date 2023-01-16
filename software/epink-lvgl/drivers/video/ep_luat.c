@@ -200,7 +200,7 @@ static void ep_luat_clear( uint8_t color )
 #endif
 
 #if EPINK_USE_FLUSH
-void ep_luat_flush()
+int ep_luat_flush()
 {
     uint8_t *pen = epink_disp_buffer;
     uint8_t width, height;
@@ -222,6 +222,8 @@ void ep_luat_flush()
 
     // sleep_ms(100);
     ep_luat_turn_on_display();
+    
+    return 0;
 }
 #else
 void ep_luat_flush()

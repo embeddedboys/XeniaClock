@@ -36,6 +36,7 @@
 #include "pico/time.h"
 #include "pico/multicore.h"
 
+#include "../lvgl/lvgl.h"
 #include "../../lv_conf.h"
 
 #if DISPLAY_MAIN_PANEL_USE_SSD1681
@@ -897,11 +898,11 @@ void EPD_Dis_Part_myself(unsigned int x_startA, unsigned int y_startA,
 {
     unsigned int i;
     unsigned int x_end, y_start1, y_start2, y_end1, y_end2;
-
+    
     //Data A////////////////////////////
     x_startA = x_startA / 8; //Convert to byte
     x_end = x_startA + PART_LINE / 8 - 1;
-
+    
     y_start1 = 0;
     y_start2 = y_startA - 1;
     if (y_startA >= 256) {
@@ -916,7 +917,7 @@ void EPD_Dis_Part_myself(unsigned int x_startA, unsigned int y_startA,
     }
     //Reset
     epink_reset();
-
+    
     epink_write_command(0x3C); //BorderWavefrom
     epink_write_data(0x80);
     //
@@ -928,15 +929,15 @@ void EPD_Dis_Part_myself(unsigned int x_startA, unsigned int y_startA,
     epink_write_data(y_start1);    // RAM y address start at 0127h;
     epink_write_data(y_end2);    // RAM y address end at 00h;
     epink_write_data(y_end1);
-
-
+    
+    
     epink_write_command(0x4E);   // set RAM x address count to 0;
     epink_write_data(x_startA);
     epink_write_command(0x4F);   // set RAM y address count to 0X127;
     epink_write_data(y_start2);
     epink_write_data(y_start1);
-
-
+    
+    
     epink_write_command(0x24);   //Write Black and White image to RAM
     for (i = 0; i < PART_COLUMN * PART_LINE / 8; i++) {
         epink_write_data(datasA[i]);
@@ -944,7 +945,7 @@ void EPD_Dis_Part_myself(unsigned int x_startA, unsigned int y_startA,
     //Data B/////////////////////////////////////
     x_startB = x_startB / 8; //Convert to byte
     x_end = x_startB + PART_LINE / 8 - 1;
-
+    
     y_start1 = 0;
     y_start2 = y_startB - 1;
     if (y_startB >= 256) {
@@ -957,7 +958,7 @@ void EPD_Dis_Part_myself(unsigned int x_startA, unsigned int y_startA,
         y_end1 = y_end2 / 256;
         y_end2 = y_end2 % 256;
     }
-
+    
     epink_write_command(0x44);       // set RAM x address start/end, in page 35
     epink_write_data(x_startB);    // RAM x address start at 00h;
     epink_write_data(x_end);    // RAM x address end at 0fh(15+1)*8->128
@@ -966,24 +967,24 @@ void EPD_Dis_Part_myself(unsigned int x_startA, unsigned int y_startA,
     epink_write_data(y_start1);    // RAM y address start at 0127h;
     epink_write_data(y_end2);    // RAM y address end at 00h;
     epink_write_data(y_end1);
-
-
+    
+    
     epink_write_command(0x4E);   // set RAM x address count to 0;
     epink_write_data(x_startB);
     epink_write_command(0x4F);   // set RAM y address count to 0X127;
     epink_write_data(y_start2);
     epink_write_data(y_start1);
-
-
+    
+    
     epink_write_command(0x24);   //Write Black and White image to RAM
     for (i = 0; i < PART_COLUMN * PART_LINE / 8; i++) {
         epink_write_data(datasB[i]);
     }
-
+    
     //Data C//////////////////////////////////////
     x_startC = x_startC / 8; //Convert to byte
     x_end = x_startC + PART_LINE / 8 - 1;
-
+    
     y_start1 = 0;
     y_start2 = y_startC - 1;
     if (y_startC >= 256) {
@@ -996,7 +997,7 @@ void EPD_Dis_Part_myself(unsigned int x_startA, unsigned int y_startA,
         y_end1 = y_end2 / 256;
         y_end2 = y_end2 % 256;
     }
-
+    
     epink_write_command(0x44);       // set RAM x address start/end, in page 35
     epink_write_data(x_startC);    // RAM x address start at 00h;
     epink_write_data(x_end);    // RAM x address end at 0fh(15+1)*8->128
@@ -1005,24 +1006,24 @@ void EPD_Dis_Part_myself(unsigned int x_startA, unsigned int y_startA,
     epink_write_data(y_start1);    // RAM y address start at 0127h;
     epink_write_data(y_end2);    // RAM y address end at 00h;
     epink_write_data(y_end1);
-
-
+    
+    
     epink_write_command(0x4E);   // set RAM x address count to 0;
     epink_write_data(x_startC);
     epink_write_command(0x4F);   // set RAM y address count to 0X127;
     epink_write_data(y_start2);
     epink_write_data(y_start1);
-
-
+    
+    
     epink_write_command(0x24);   //Write Black and White image to RAM
     for (i = 0; i < PART_COLUMN * PART_LINE / 8; i++) {
         epink_write_data(datasC[i]);
     }
-
+    
     //Data D//////////////////////////////////////
     x_startD = x_startD / 8; //Convert to byte
     x_end = x_startD + PART_LINE / 8 - 1;
-
+    
     y_start1 = 0;
     y_start2 = y_startD - 1;
     if (y_startD >= 256) {
@@ -1035,7 +1036,7 @@ void EPD_Dis_Part_myself(unsigned int x_startA, unsigned int y_startA,
         y_end1 = y_end2 / 256;
         y_end2 = y_end2 % 256;
     }
-
+    
     epink_write_command(0x44);       // set RAM x address start/end, in page 35
     epink_write_data(x_startD);    // RAM x address start at 00h;
     epink_write_data(x_end);        // RAM x address end at 0fh(15+1)*8->128
@@ -1044,15 +1045,15 @@ void EPD_Dis_Part_myself(unsigned int x_startA, unsigned int y_startA,
     epink_write_data(y_start1);    // RAM y address start at 0127h;
     epink_write_data(y_end2);    // RAM y address end at 00h;
     epink_write_data(y_end1);
-
-
+    
+    
     epink_write_command(0x4E);   // set RAM x address count to 0;
     epink_write_data(x_startD);
     epink_write_command(0x4F);   // set RAM y address count to 0X127;
     epink_write_data(y_start2);
     epink_write_data(y_start1);
-
-
+    
+    
     epink_write_command(0x24);   //Write Black and White image to RAM
     for (i = 0; i < PART_COLUMN * PART_LINE / 8; i++) {
         epink_write_data(datasD[i]);
@@ -1060,7 +1061,7 @@ void EPD_Dis_Part_myself(unsigned int x_startA, unsigned int y_startA,
     //Data E//////////////////////////////////////
     x_startE = x_startE / 8; //Convert to byte
     x_end = x_startE + PART_LINE / 8 - 1;
-
+    
     y_start1 = 0;
     y_start2 = y_startE - 1;
     if (y_startE >= 256) {
@@ -1073,7 +1074,7 @@ void EPD_Dis_Part_myself(unsigned int x_startA, unsigned int y_startA,
         y_end1 = y_end2 / 256;
         y_end2 = y_end2 % 256;
     }
-
+    
     epink_write_command(0x44);       // set RAM x address start/end, in page 35
     epink_write_data(x_startE);    // RAM x address start at 00h;
     epink_write_data(x_end);    // RAM x address end at 0fh(15+1)*8->128
@@ -1082,20 +1083,20 @@ void EPD_Dis_Part_myself(unsigned int x_startA, unsigned int y_startA,
     epink_write_data(y_start1);    // RAM y address start at 0127h;
     epink_write_data(y_end2);    // RAM y address end at 00h;
     epink_write_data(y_end1);
-
-
+    
+    
     epink_write_command(0x4E);   // set RAM x address count to 0;
     epink_write_data(x_startE);
     epink_write_command(0x4F);   // set RAM y address count to 0X127;
     epink_write_data(y_start2);
     epink_write_data(y_start1);
-
-
+    
+    
     epink_write_command(0x24);   //Write Black and White image to RAM
     for (i = 0; i < PART_COLUMN * PART_LINE / 8; i++) {
         epink_write_data(datasE[i]);
     }
-
+    
     ssd1681_update_part();
 }
 
@@ -1110,14 +1111,14 @@ void ssd1681_test()
     // }
     // ssd1681_update_full();
     // ssd1681_blank();
-
+    
     // for (int x = 0, y = 0; x < 200; x++, y++) {
     //     ssd1681_put_pixel(x, y, EPINK_COLOR_WHITE);
     //     ssd1681_put_pixel(x + 1, y, EPINK_COLOR_BLACK);
     //     ssd1681_put_pixel(x + 2, y, EPINK_COLOR_BLACK);
     //     ssd1681_put_pixel(x + 3, y, EPINK_COLOR_BLACK);
     // }
-
+    
     /* fast flush */
     epink_write_command(0x24);
     for (uint16_t i = 0; i < 5000; i++) {
@@ -1126,7 +1127,7 @@ void ssd1681_test()
     ssd1681_update_fast();
     ssd1681_deepsleep();
     // busy_wait_ms(2000);
-
+    
     /* flush a basemap */
     ssd1681_device_init(0);
     epink_write_command(0x24);
@@ -1134,7 +1135,7 @@ void ssd1681_test()
         epink_write_data(gImage_basemap[i]);
     }
     ssd1681_update_full();
-
+    
     /* part refresh */
     unsigned char fen_L, fen_H, miao_L, miao_H;
     for (fen_H = 0; fen_H < 6; fen_H++) {
@@ -1146,13 +1147,13 @@ void ssd1681_test()
                                         64, 112, gImage_numdot,     //x-C,y-C,DATA-C
                                         64, 154, Num[fen_L],       //x-D,y-D,DATA-D
                                         64, 186, Num[fen_H], 32, 64); //x-E,y-E,DATA-E,Resolution 32*64
-
+                                        
                     if ((fen_L == 0) && (miao_H == 0) && (miao_L == 5))
                         goto Clear;
                 }
             }
         }
-
+        
     }
 Clear:
     ssd1681_deepsleep();
@@ -1164,39 +1165,28 @@ Clear:
 
 void ssd1681_set_window(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2)
 {
-    /* set start/end position address of x in ram */
-    epink_write_command(0x44);
-    epink_write_data(x1 & 0x3f);
-    epink_write_data(x2 & 0x3f);
-
+    epink_write_command( 0x44 );
+    epink_write_data( ( x1 >> 3 ) & 0xFF );
+    epink_write_data( ( x2 >> 3 ) & 0xFF );
+    
     /* set start/end position address of y in ram */
-    epink_write_command(0x45);
-    epink_write_data(y1 & 0xff);
-    epink_write_data((y1 >> 8) & 0x01);
-    epink_write_data(y2 & 0xff);
-    epink_write_data((y2 >> 8) & 0x01);
+    epink_write_command( 0x45 );
+    epink_write_data( y1 & 0xFF );
+    epink_write_data( ( y1 >> 8 ) & 0xFF );
+    epink_write_data( y2 & 0xFF );
+    epink_write_data( ( y2 >> 8 ) & 0xFF );
 }
 
 void ssd1681_set_cursor(uint8_t x, uint8_t y)
 {
     /* set address counter of x in ram */
-    epink_write_command(0x4e);
-    epink_write_data(x & 0x3f);
-
+    epink_write_command( 0x4E );
+    epink_write_data( ( x >> 3 ) & 0xFF );
+    
     /* set address counter of y in ram */
-    epink_write_command(0x4f);
-    epink_write_data(y & 0xff);
-    epink_write_data((y >> 8) & 0x01);
-}
-
-static void ssd1681_part_flush(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2)
-{
-    epink_reset();
-
-    epink_write_command(0x3c); //BorderWavefrom,
-    epink_write_data(0x80);
-
-    ssd1681_set_window(x1, y1, x2, y2);
+    epink_write_command( 0x4F );
+    epink_write_data( y & 0xFF );
+    epink_write_data( ( y >> 8 ) & 0xFF );
 }
 
 static void ssd1681_deepsleep()
@@ -1210,28 +1200,28 @@ static void ssd1681_deepsleep()
 static void ssd1681_device_init(uint8_t mode)
 {
     epink_reset();
-
+    
     epink_write_command(0x12);  /* software reset */
     epink_wait_busy();
-
+    
     epink_write_command(0x01);
     epink_write_data(0xc7);
     epink_write_data(0x00);
     epink_write_data(0x01);
-
+    
     epink_write_command(0x11);
     epink_write_data(0x01);
-
+    
     epink_write_command(0x44);  /* set Ram-X start/end position */
     epink_write_data(0x00); /* x start : 0 */
     epink_write_data(0x18); /* x end : 25 bytes */
-
+    
     epink_write_command(0x45);
     epink_write_data(0xc7); /* 200 rows */
     epink_write_data(0x00);
     epink_write_data(0x00);
     epink_write_data(0x00);
-
+    
     // epink_write_command(0x37);
     // epink_write_data(0x00);
     // epink_write_data(0xff);
@@ -1243,20 +1233,20 @@ static void ssd1681_device_init(uint8_t mode)
     // epink_write_data(0x00);
     // epink_write_data(0x00);
     // epink_write_data(0x00);
-
+    
     epink_write_command(0x3c);
     epink_write_data(0x05);
-
+    
     epink_write_command(0x18);
     epink_write_data(0x80);
-
+    
     epink_write_command(0x4e);
     epink_write_data(0x00);
     epink_write_data(0x4f);
     epink_write_data(0xc7);
     epink_write_data(0x00);
     epink_wait_busy();
-
+    
     epink_write_command(0x22);
     if (mode == EPINK_UPDATE_MODE_FULL)
         epink_write_data(0xf7);
@@ -1267,22 +1257,22 @@ static void ssd1681_device_init(uint8_t mode)
 static void ssd1681_device_init_fast(void)
 {
     epink_reset();
-
+    
     epink_write_command(0x12);  /* software reset */
     epink_wait_busy();
-
+    
     epink_write_command(0x18);
     epink_write_data(0x80);
-
+    
     epink_write_command(0x22);
     epink_write_data(0xb1);
     epink_write_command(0x20);
     epink_wait_busy();
-
+    
     epink_write_command(0x1a);
     epink_write_data(0x64);
     epink_write_data(0x00);
-
+    
     epink_write_command(0x22);
     epink_write_data(0x91);
     epink_write_command(0x20);
@@ -1293,7 +1283,7 @@ static int ssd1681_init(uint8_t mode)
 {
     multicore_reset_core1();
     ssd1681_device_init(mode);
-
+    
     return 0;
 }
 #else
@@ -1303,8 +1293,28 @@ static int ssd1681_init(uint8_t mode)
 }
 #endif
 
+static void ssd1681_set_ram_byte(uint16_t x, uint16_t y, uint8_t byte)
+{
+    epink_write_command(0x44);       // set RAM x address start/end, in page 35
+    epink_write_data(0x00);    // RAM x address start at 00h;
+    epink_write_data(0x18);    // RAM x address end at 0fh(15+1)*8->128
+    epink_write_command(0x45);       // set RAM y address start/end, in page 35
+    epink_write_data(0xc7);    // RAM y address start at 0127h;
+    epink_write_data(0x00);    // RAM y address start at 0127h;
+    epink_write_data(0x00);    // RAM y address end at 00h;
+    epink_write_data(0x00);
+    
+    
+    epink_write_command(0x4E);   // set RAM x address count to 0;
+    epink_write_data(x);
+    epink_write_command(0x4F);   // set RAM y address count to 0X127;
+    epink_write_data(y);
+    epink_write_data(0);
+}
+
 static void ssd1681_update_fast()
 {
+    pr_debug("%s\n", __DATE__);
     epink_write_command(0x22);
     epink_write_data(0xc7);
     epink_write_command(0x20);
@@ -1313,6 +1323,7 @@ static void ssd1681_update_fast()
 
 void ssd1681_update_part_timeout()
 {
+    pr_debug("%s\n", __DATE__);
     epink_write_command(0x22);
     epink_write_data(0xff);
     epink_write_command(0x20);
@@ -1324,11 +1335,14 @@ void ssd1681_update_part()
     epink_write_command(0x22);
     epink_write_data(0xff);
     epink_write_command(0x20);
+    pr_debug("%s\n", __DATE__);
     epink_wait_busy();
+    pr_debug("%s\n", __DATE__);
 }
 
 static void ssd1681_update_full()
 {
+    pr_debug("%s\n", __DATE__);
     epink_write_command(0x22);
     epink_write_data(0xf7);
     epink_write_command(0x20);
@@ -1337,6 +1351,7 @@ static void ssd1681_update_full()
 
 static void ssd1681_update()
 {
+    pr_debug("%s\n", __DATE__);
     epink_write_command(0x22);
     epink_write_data(0xff);
     epink_write_command(0x20);
@@ -1350,18 +1365,18 @@ static void ssd1681_clear(uint16_t color)
     // width = ( EPINK_WIDTH % 8 == 0 ) ? ( EPINK_WIDTH / 8 ) :
     //         ( EPINK_WIDTH / 8 + 1 );
     // height = EPINK_HEIGHT;
-
+    
     // ssd1681_set_window( 0, 0, EPINK_WIDTH, EPINK_HEIGHT );
     // epink_write_command( 0x24 );
-
+    
     // for( uint16_t i = 0; i < height; i++ ) {
     //     ssd1681_set_cursor( 0, i );
-
+    
     //     for( uint16_t j = 0; j < width; j++ ) {
     //         epink_write_data( color );
     //     }
     // }
-
+    
     /* Clear RED pixel RAM ? */
     // epink_write_command(0x26);
     // for (uint16_t i = 0; i < EPINK_DISP_BUFFER_SIZE; i++) {
@@ -1372,7 +1387,7 @@ static void ssd1681_clear(uint16_t color)
     for (uint16_t i = 0; i < EPINK_DISP_BUFFER_SIZE; i++) {
         epink_write_data(color);
     }
-
+    
     ssd1681_update();
 }
 #else
@@ -1386,30 +1401,63 @@ static void ssd1681_clear(uint8_t color)
  * @brief Flush each byte in display buffer to screen
  */
 #if EPINK_USE_FLUSH
-// static int64_t ssd1681_do_flush_cb(alarm_id_t id, void *user_data)
-static void ssd1681_flush(void)
-// static void ssd1681_do_flush(void)
+static bool ssd1681_get_pixel(uint16_t x, uint16_t y)
 {
+    uint8_t *pen = epink_disp_buffer;
+    
+    return pen[y * EPINK_LINE_WIDTH_IN_PAGE + (x / EPINK_PAGE_SIZE)] & (0x80 >>
+                                                                        (x % EPINK_PAGE_SIZE));
+}
+
+static int ssd1681_flush_part(uint16_t xs, uint16_t ys, uint16_t xe, uint16_t ye, void *colorp)
+{
+    pr_debug("\n");
+    uint8_t *pen = epink_disp_buffer;
+
+    epink_reset();
+    
+    /* BorderWavefrom */
+    epink_write_command(0x3c);
+    epink_write_data(0x80);
+
+    pr_debug("x1: %d, x2: %d, y1: %d, y2: %d\n", xs, xe, ys, ye);
+    ssd1681_set_window(xs, ys, xe, ye);
+    for (uint16_t i = ys; i <= ye; i++) {
+        ssd1681_set_cursor(xs, (199-i));
+        epink_write_command(0x24);
+
+        /* flush each line in buffer */
+        for (uint16_t j = (xs / 8); j <= (xe / 8); j++) {
+            epink_write_data(pen[j + i * 25]);
+        }
+    }
+
+    ssd1681_update_part();
+    return 0;
+}
+
+static int ssd1681_flush_full(void)
+{
+    pr_debug("\n");
     /* Note: this function is only called when lvgl have
      * a real area update, but this function cost too much time
      * because the `ssd1681_update` function using a while(gpio_get(n))
      * to do a busy check, it caused system blocked, when it came, input event
      * or anything can't timely response. But considering Rp2040 have 2 cores,
      * move this function to another core maybe the best way to solve this problem */
-    pr_debug("\n");
     uint8_t *pen = epink_disp_buffer;
     uint8_t *pen_old = epink_disp_buffer_old;
     uint16_t diff = 0;  /* counter of different  pixel */
-
+    
     static uint32_t flush_count = 0;
     void(*update_method)(void) = ssd1681_update_part;
-
+    
     epink_reset();
-
+    
     /* BorderWavefrom */
     epink_write_command(0x3c);
     epink_write_data(0x80);
-
+    
     // ssd1681_set_window(0, 0, 25, 200);
     /* update window settings */
     epink_write_command(0x44);
@@ -1420,22 +1468,22 @@ static void ssd1681_flush(void)
     epink_write_data(0x00);
     epink_write_data(0x00);
     epink_write_data(0x00);
-
+    
 #if 0
     for (uint8_t row = 0; row < 200; row++) {
         for (uint8_t col_in_byte = 0; col_in_byte < 25; col_in_byte++) {
             /* flush each line in buffer */
             if (pen[row + col_in_byte * 25] == pen_old[row + col_in_byte * 25])
                 continue;
-
+                
             epink_write_command(0x4e);
             epink_write_data((col_in_byte) & 0x3f);
-
+            
             /* set address counter of y in ram */
             epink_write_command(0x4f);
             epink_write_data((200 - row) & 0xff);
             epink_write_data(((200 - row) >> 8) & 0x01);
-
+            
             epink_write_command(0x24);
             epink_write_data(pen[row + col_in_byte * 25]);
         }
@@ -1448,21 +1496,21 @@ static void ssd1681_flush(void)
         epink_write_data(pen[i]);
     }
 #endif
-
-    /* Normally, we calling refresh too fast, the current frame
-     * may be doesn't change anything at all, if so, we don't
-     * need go further */
-    if (diff == 0) {
-        pr_debug("skipping this frame\n");
-        return;
-    }
-
+    
+    // /* Normally, we calling refresh too fast, the current frame
+    //  * may be doesn't change anything at all, if so, we don't
+    //  * need go further */
+    // if (diff == 0) {
+    //     pr_debug("skipping this frame\n");
+    //     return;
+    // }
+    
     /* every `period` frame, make a global refresh */
     if ((++flush_count % GLOBAL_REFRESH_PERIOD) == 0) {
         update_method = ssd1681_update_full;
         pr_debug("a full update will be called\n");
     }
-
+    
     /* if there pixels doesn't updated too much,
      * invoke a timeouted update job, maybe caused
      * some error pixels keeping on the screen */
@@ -1471,22 +1519,22 @@ static void ssd1681_flush(void)
     } else {
         update_method = ssd1681_update_part;
     }
-
+    
     /* invoke target update method */
     update_method();
-
+    
     memcpy(epink_disp_buffer_old, epink_disp_buffer, EPINK_DISP_BUFFER_SIZE);
+    
+    return 0;
 }
-
-// static void ssd1681_flush()
-// {
-    // add_alarm_in_ms(0, ssd1681_do_flush_cb, NULL, false);
-    // multicore_launch_core1(ssd1681_do_flush);
-// }
 #else
-static void ssd1681_flush()
+static int ssd1681_flush_part()
 {
-
+    return 0;
+}
+static int ssd1681_flush_full()
+{
+    return 0;
 }
 #endif
 
@@ -1501,7 +1549,7 @@ static void ssd1681_blank()
     // }
     // ssd1681_update_full();
     // ssd1681_device_init_fast();
-
+    
     // epink_write_command(0x24);
     // for (uint16_t i = 0; i < 5000; i++) {
     //     epink_write_data(0x0);
@@ -1535,7 +1583,7 @@ static void ssd1681_set_update_mode(uint8_t mode)
 static void ssd1681_put_pixel(uint16_t x, uint16_t y, uint16_t color)
 {
     uint8_t *pen = epink_disp_buffer;
-
+    
     if (color)
         pen[y * EPINK_LINE_WIDTH_IN_PAGE + (x / EPINK_PAGE_SIZE)] &= ~(0x80 >>
                                                                        (x % EPINK_PAGE_SIZE));
@@ -1562,7 +1610,8 @@ static struct display_module ssd1681_module = {
         .module_init            = ssd1681_init,
         .module_blank           = ssd1681_blank,
         .module_clear           = ssd1681_clear,
-        .module_flush           = ssd1681_flush,
+        .module_flush_part      = ssd1681_flush_part,
+        .module_flush           = ssd1681_flush_full,
         .module_put_pixel       = ssd1681_put_pixel,
         .module_set_update_mode = ssd1681_set_update_mode,
     },

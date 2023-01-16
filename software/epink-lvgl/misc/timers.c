@@ -240,7 +240,7 @@ void xc_post_timers_init(void)
     pr_debug("registering time roller timer ...\n");
 
     add_repeating_timer_ms(MILLISECOND(1000), xc_timer_roller_time_cb, NULL, &g_roller_timer);
-    add_repeating_timer_ms(MILLISECOND(LV_DISP_DEF_REFR_PERIOD), xc_repeating_timer_refresh_cb, NULL, &g_refresh_timer);
+    add_repeating_timer_ms(MILLISECOND(LV_INDEV_DEF_READ_PERIOD), xc_repeating_timer_refresh_cb, NULL, &g_refresh_timer);
 
     lv_timer_t *timer_time_sync = lv_timer_create_basic();
     timer_time_sync->timer_cb = xc_timer_time_sync_cb;

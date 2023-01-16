@@ -55,10 +55,10 @@ typedef void (*exitcall_t)(void);
 // #define subsys_initcall_sync(fn)	__define_initcall(fn, 4s)
 #define fs_initcall(fn)			__define_initcall(fn, 106)
 // #define fs_initcall_sync(fn)		__define_initcall(fn, 5s)
-// #define rootfs_initcall(fn)		__define_initcall(fn, rootfs)
-#define device_initcall(fn)		__define_initcall(fn, 107)
+#define rootfs_initcall(fn)		__define_initcall(fn, 107)
+#define device_initcall(fn)		__define_initcall(fn, 108)
 // #define device_initcall_sync(fn)	__define_initcall(fn, 6s)
-#define late_initcall(fn)		__define_initcall(fn, 108)
+#define late_initcall(fn)		__define_initcall(fn, 109)
 // #define late_initcall_sync(fn)		__define_initcall(fn, 7s)
 
 #define __initcall(fn)  device_initcall(fn);

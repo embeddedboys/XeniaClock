@@ -81,7 +81,7 @@ static void ssd1306_set_pos(uint8_t page, uint8_t col)
 }
 
 #if SSD1306_USE_FLUSH
-static void ssd1306_flush()
+static int ssd1306_flush()
 {
     uint8_t page, col;
     
@@ -97,11 +97,12 @@ static void ssd1306_flush()
         }
     
     memcpy(old_ssd1306_buffer, ssd1306_buffer, SSD1306_BUFFER_SIZE);
+    return 0;
 }
 #else
-static void ssd1306_flush()
+static int ssd1306_flush()
 {
-
+    return 0;
 }
 #endif
 

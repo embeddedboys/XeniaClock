@@ -69,6 +69,14 @@
 #endif
 
 /* define all common cfgs here */
+
+typedef struct {
+    uint16_t x1;
+    uint16_t y1;
+    uint16_t x2;
+    uint16_t y2;
+} disp_area_t;
+
 struct display_config {
     uint32_t width;
     uint32_t height;
@@ -82,7 +90,9 @@ struct display_ops {
 
     int (*module_init)(uint8_t mode);
 
-    void (*module_flush)();
+    int (*module_flush_part)(uint16_t xs, uint16_t ys, uint16_t xe, uint16_t ye, void *colorp);
+
+    int (*module_flush)();
 
     void (*module_clear)(uint16_t color);
 

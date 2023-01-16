@@ -35,6 +35,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  *
  */
+
+#include "common/settings.h"
+
 #include "port/lv_port_disp.h"
 #include "video/epd.h"
 #include <stddef.h>
@@ -92,10 +95,10 @@ void epink_reset()
 {
     epink_res_set();
     // busy_wait_ms(20);
-    
+
     epink_res_clr();
     busy_wait_ms(2);
-    
+
     epink_res_set();
     // busy_wait_ms(20);
 }
@@ -152,7 +155,7 @@ void epink_wait_busy_timeout(uint32_t timeout_ms)
 void epink_wait_busy()
 {
     while (gpio_get(EPINK_BUSY_PIN));
-    
+
     // lv_port_disp_main_screen_set_flush_state(false);
     // add_alarm_in_ms(50, epink_wait_busy_timer_cb, NULL, false);
 }
@@ -180,14 +183,25 @@ void epink_init(uint8_t mode)
  * @brief Flush each byte in display buffer to screen
  *
  */
-void epink_flush()
+void epink_flush(uint16_t xs, uint16_t ys, uint16_t xe, uint16_t ye, void *colorp)
 {
     if (!default_module.ops.module_flush) {
-        EPINK_ERROR("This module [%s] doesn't exposed a {flush} function!\n", default_module.name);
+        EPINK_ERROR("This module [%s] doesn't exposed a {flush} function!\n",
+                    default_module.name);
         return;
     }
 
-    default_module.ops.module_flush();
+    if (g_xc_disp_flush_mode == DISP_FLUSH_MODE_FULL) {
+        // pr_debug("using full refresh mode\n");
+        default_module.ops.module_flush();
+    } else if ((g_xc_disp_flush_mode == DISP_FLUSH_MODE_PART)
+               && default_module.ops.module_flush_part) {
+        // pr_debug("using part refresh mode\n");
+        default_module.ops.module_flush_part(xs, ys, xe, ye, colorp);
+    } else {
+        // pr_debug("using default refresh mode\n");
+        default_module.ops.module_flush();
+    }
 }
 
 /**
@@ -198,7 +212,8 @@ void epink_flush()
 void epink_clear(uint8_t color)
 {
     if (default_module.ops.module_clear) {
-        EPINK_ERROR("This module [%s] doesn't exposed a {clear} function!\n", default_module.name);
+        EPINK_ERROR("This module [%s] doesn't exposed a {clear} function!\n",
+                    default_module.name);
         return;
     }
 
@@ -210,17 +225,17 @@ void epink_blank()
     if (!default_module.ops.module_blank) {
         EPINK_ERROR("This module [%s] doesn't exposed a {blank} function!\n \
                     Using a default blank ops\n", default_module.name);
-        
+
         epink_init(EPINK_UPDATE_MODE_FULL);
-        
+
         /*  a global clear before drawing operations  */
         epink_clear(0x00);
         sleep_ms(200);
         epink_clear(0xFF);
         sleep_ms(200);
-        
+
         epink_init(EPINK_UPDATE_MODE_PART);
-        
+
         epink_clear(0x00);
         sleep_ms(200);
         epink_clear(0xFF);
@@ -262,7 +277,7 @@ void epink_buffer_clear()
 
 void epink_set_backlight_level(uint8_t level)
 {
-    
+
 }
 
 /**
@@ -290,14 +305,14 @@ static void epink_putascii(uint8_t x, uint8_t y, char c)
     const unsigned char *dots = (uint8_t *)&fontdata_8x16[c * 16];
     uint8_t *pen = epink_disp_buffer;
     uint8_t row, col, byte;
-    
+
     /* In this case, we use a 8x16 size font, so
      * we need to draw 16 byte totally, for each
      * byte, draw it's each bit from higher to low
      */
     for (row = 0; row < 16; row++) {
         byte = dots[row];
-        
+
         for (col = 0; col < 8; col++) {
             epink_draw_pixel(x + col, y + row, (byte << col) & 0x80);
         }
@@ -316,7 +331,7 @@ static void epink_putascii_string(uint8_t x, uint8_t y, char *str)
     while (*str != '\0') {
         epink_putascii(x, y, *str++);
         x += 8; /* move x to the next pos */
-        
+
         /* start a new line if reach the end of line */
         if (x >= EPINK_WIDTH) {
             x = 0;
