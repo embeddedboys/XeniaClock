@@ -127,7 +127,7 @@ static void xc_event_buttonapps_cb(lv_event_t *e)
     switch (e->code) {
     case LV_EVENT_CLICKED:
         key_state = !key_state;
-        pr_debug("clicked, val : %d\n", key_state);
+        // pr_debug("clicked, val : %d\n", key_state);
         if (key_state) {
             lv_obj_set_style_bg_color(e->target, lv_color_hex(0x0), 0);
             lv_obj_set_style_text_color(lv_obj_get_child(e->target, 0), lv_color_hex(0xffffffff), 0);

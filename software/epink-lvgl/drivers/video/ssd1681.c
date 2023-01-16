@@ -1314,7 +1314,6 @@ static void ssd1681_set_ram_byte(uint16_t x, uint16_t y, uint8_t byte)
 
 static void ssd1681_update_fast()
 {
-    pr_debug("%s\n", __DATE__);
     epink_write_command(0x22);
     epink_write_data(0xc7);
     epink_write_command(0x20);
@@ -1323,7 +1322,6 @@ static void ssd1681_update_fast()
 
 void ssd1681_update_part_timeout()
 {
-    pr_debug("%s\n", __DATE__);
     epink_write_command(0x22);
     epink_write_data(0xff);
     epink_write_command(0x20);
@@ -1335,14 +1333,11 @@ void ssd1681_update_part()
     epink_write_command(0x22);
     epink_write_data(0xff);
     epink_write_command(0x20);
-    pr_debug("%s\n", __DATE__);
     epink_wait_busy();
-    pr_debug("%s\n", __DATE__);
 }
 
 static void ssd1681_update_full()
 {
-    pr_debug("%s\n", __DATE__);
     epink_write_command(0x22);
     epink_write_data(0xf7);
     epink_write_command(0x20);
@@ -1351,7 +1346,6 @@ static void ssd1681_update_full()
 
 static void ssd1681_update()
 {
-    pr_debug("%s\n", __DATE__);
     epink_write_command(0x22);
     epink_write_data(0xff);
     epink_write_command(0x20);
