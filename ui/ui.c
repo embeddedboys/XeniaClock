@@ -34,9 +34,13 @@ lv_obj_t * ui_ImageSleep;
 lv_obj_t * ui_ScreenEpinkApps;
 lv_obj_t * ui_PanelStatusBar1;
 lv_obj_t * ui_ButtonApp1;
+lv_obj_t * ui_LabelApp1;
 lv_obj_t * ui_ButtonApp2;
+lv_obj_t * ui_LabelApp2;
 lv_obj_t * ui_ButtonApp3;
+lv_obj_t * ui_LabelApp3;
 lv_obj_t * ui_ButtonApp4;
+lv_obj_t * ui_LabelApp4;
 
 ///////////////////// TEST LVGL SETTINGS ////////////////////
 #if LV_COLOR_DEPTH != 8
@@ -370,8 +374,21 @@ void ui_ScreenEpinkApps_screen_init(void)
     lv_obj_set_align(ui_ButtonApp1, LV_ALIGN_CENTER);
     lv_obj_add_flag(ui_ButtonApp1, LV_OBJ_FLAG_SCROLL_ON_FOCUS);     /// Flags
     lv_obj_clear_flag(ui_ButtonApp1, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
-    lv_obj_set_style_bg_color(ui_ButtonApp1, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_radius(ui_ButtonApp1, 12, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_color(ui_ButtonApp1, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_opa(ui_ButtonApp1, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_border_color(ui_ButtonApp1, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_border_opa(ui_ButtonApp1, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_border_width(ui_ButtonApp1, 3, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    ui_LabelApp1 = lv_label_create(ui_ButtonApp1);
+    lv_obj_set_width(ui_LabelApp1, LV_SIZE_CONTENT);   /// 1
+    lv_obj_set_height(ui_LabelApp1, LV_SIZE_CONTENT);    /// 1
+    lv_obj_set_align(ui_LabelApp1, LV_ALIGN_CENTER);
+    lv_label_set_text(ui_LabelApp1, "Settings");
+    lv_obj_set_style_text_color(ui_LabelApp1, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_opa(ui_LabelApp1, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_font(ui_LabelApp1, &ui_font_FiraCodeSemiBold12, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     ui_ButtonApp2 = lv_btn_create(ui_ScreenEpinkApps);
     lv_obj_set_width(ui_ButtonApp2, 70);
@@ -381,8 +398,21 @@ void ui_ScreenEpinkApps_screen_init(void)
     lv_obj_set_align(ui_ButtonApp2, LV_ALIGN_CENTER);
     lv_obj_add_flag(ui_ButtonApp2, LV_OBJ_FLAG_SCROLL_ON_FOCUS);     /// Flags
     lv_obj_clear_flag(ui_ButtonApp2, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
-    lv_obj_set_style_bg_color(ui_ButtonApp2, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_radius(ui_ButtonApp2, 12, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_color(ui_ButtonApp2, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_opa(ui_ButtonApp2, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_border_color(ui_ButtonApp2, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_border_opa(ui_ButtonApp2, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_border_width(ui_ButtonApp2, 3, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    ui_LabelApp2 = lv_label_create(ui_ButtonApp2);
+    lv_obj_set_width(ui_LabelApp2, LV_SIZE_CONTENT);   /// 1
+    lv_obj_set_height(ui_LabelApp2, LV_SIZE_CONTENT);    /// 1
+    lv_obj_set_align(ui_LabelApp2, LV_ALIGN_CENTER);
+    lv_label_set_text(ui_LabelApp2, "Light");
+    lv_obj_set_style_text_color(ui_LabelApp2, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_opa(ui_LabelApp2, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_font(ui_LabelApp2, &ui_font_FiraCodeSemiBold12, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     ui_ButtonApp3 = lv_btn_create(ui_ScreenEpinkApps);
     lv_obj_set_width(ui_ButtonApp3, 70);
@@ -392,8 +422,21 @@ void ui_ScreenEpinkApps_screen_init(void)
     lv_obj_set_align(ui_ButtonApp3, LV_ALIGN_CENTER);
     lv_obj_add_flag(ui_ButtonApp3, LV_OBJ_FLAG_SCROLL_ON_FOCUS);     /// Flags
     lv_obj_clear_flag(ui_ButtonApp3, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
-    lv_obj_set_style_bg_color(ui_ButtonApp3, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_radius(ui_ButtonApp3, 12, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_color(ui_ButtonApp3, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_opa(ui_ButtonApp3, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_border_color(ui_ButtonApp3, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_border_opa(ui_ButtonApp3, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_border_width(ui_ButtonApp3, 3, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    ui_LabelApp3 = lv_label_create(ui_ButtonApp3);
+    lv_obj_set_width(ui_LabelApp3, LV_SIZE_CONTENT);   /// 1
+    lv_obj_set_height(ui_LabelApp3, LV_SIZE_CONTENT);    /// 1
+    lv_obj_set_align(ui_LabelApp3, LV_ALIGN_CENTER);
+    lv_label_set_text(ui_LabelApp3, "Credits");
+    lv_obj_set_style_text_color(ui_LabelApp3, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_opa(ui_LabelApp3, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_font(ui_LabelApp3, &ui_font_FiraCodeSemiBold12, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     ui_ButtonApp4 = lv_btn_create(ui_ScreenEpinkApps);
     lv_obj_set_width(ui_ButtonApp4, 70);
@@ -403,8 +446,21 @@ void ui_ScreenEpinkApps_screen_init(void)
     lv_obj_set_align(ui_ButtonApp4, LV_ALIGN_CENTER);
     lv_obj_add_flag(ui_ButtonApp4, LV_OBJ_FLAG_SCROLL_ON_FOCUS);     /// Flags
     lv_obj_clear_flag(ui_ButtonApp4, LV_OBJ_FLAG_SCROLLABLE);      /// Flags
-    lv_obj_set_style_bg_color(ui_ButtonApp4, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_radius(ui_ButtonApp4, 12, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_color(ui_ButtonApp4, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_opa(ui_ButtonApp4, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_border_color(ui_ButtonApp4, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_border_opa(ui_ButtonApp4, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_border_width(ui_ButtonApp4, 3, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    ui_LabelApp4 = lv_label_create(ui_ButtonApp4);
+    lv_obj_set_width(ui_LabelApp4, LV_SIZE_CONTENT);   /// 1
+    lv_obj_set_height(ui_LabelApp4, LV_SIZE_CONTENT);    /// 1
+    lv_obj_set_align(ui_LabelApp4, LV_ALIGN_CENTER);
+    lv_label_set_text(ui_LabelApp4, "Sleep");
+    lv_obj_set_style_text_color(ui_LabelApp4, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_opa(ui_LabelApp4, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_font(ui_LabelApp4, &ui_font_FiraCodeSemiBold12, LV_PART_MAIN | LV_STATE_DEFAULT);
 
 }
 

@@ -48,9 +48,13 @@ extern lv_obj_t * ui_ImageSleep;
 extern lv_obj_t * ui_ScreenEpinkApps;
 extern lv_obj_t * ui_PanelStatusBar1;
 extern lv_obj_t * ui_ButtonApp1;
+extern lv_obj_t * ui_LabelApp1;
 extern lv_obj_t * ui_ButtonApp2;
+extern lv_obj_t * ui_LabelApp2;
 extern lv_obj_t * ui_ButtonApp3;
+extern lv_obj_t * ui_LabelApp3;
 extern lv_obj_t * ui_ButtonApp4;
+extern lv_obj_t * ui_LabelApp4;
 
 
 LV_IMG_DECLARE(ui_img_line_180_1_png);    // assets/line_180_1.png
