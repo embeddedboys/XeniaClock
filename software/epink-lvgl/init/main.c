@@ -327,8 +327,7 @@ static portTASK_FUNCTION(xc_main_logic, pvParameters)
     native_rtc_init();
     
     /* widget timers init */
-    // xc_post_timers_init();
-    xc_post_timers_init_rtos();
+    xc_post_timers_init();
     
     /* initialize sub screen lvgl display */
     sub_screen_display_init();

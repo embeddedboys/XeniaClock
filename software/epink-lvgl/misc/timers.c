@@ -244,15 +244,12 @@ static inline void xc_timer_temp_humid_cb(struct _lv_timer_t *t)
 void xc_post_timers_init(void)
 {
     pr_debug("setting up ...\n");
-    lv_disp_t *disp = lv_disp_get_default();
-    lv_timer_del(disp->refr_timer);
-    disp->refr_timer = NULL;
     
     pr_debug("registering time roller timer ...\n");
-    
-    add_repeating_timer_ms(MILLISECOND(1000), xc_timer_roller_time_cb, NULL, &g_roller_timer);
-    add_repeating_timer_ms(MILLISECOND(LV_INDEV_DEF_READ_PERIOD), xc_repeating_timer_refresh_cb, NULL, &g_refresh_timer);
-    
+    lv_timer_t *timer_roller = lv_timer_create_basic();
+    timer_roller->timer_cb = xc_lvgl_timer_roller_cb;
+    timer_roller->period = MICROSECOND(1000);
+
     lv_timer_t *timer_time_sync = lv_timer_create_basic();
     timer_time_sync->timer_cb = xc_timer_time_sync_cb;
     timer_time_sync->period = TIME_SYNC_PERIOD;
@@ -319,37 +316,4 @@ static portTASK_FUNCTION(xc_disp_refresh_task, pvParameters)
         
         vTaskDelay(200);
     }
-}
-
-void xc_post_timers_init_rtos(void)
-{
-    pr_debug("setting up ...\n");
-    
-    pr_debug("registering time roller timer ...\n");
-    lv_timer_t *timer_roller = lv_timer_create_basic();
-    timer_roller->timer_cb = xc_lvgl_timer_roller_cb;
-    timer_roller->period = MICROSECOND(1000);
-
-    lv_timer_t *timer_time_sync = lv_timer_create_basic();
-    timer_time_sync->timer_cb = xc_timer_time_sync_cb;
-    timer_time_sync->period = TIME_SYNC_PERIOD;
-    
-    /* timer for updating daily tips, should requst tips from internet */
-    pr_debug("registering tips timer ...\n");
-    lv_timer_t *timer_tips = lv_timer_create_basic();
-    timer_tips->timer_cb = xc_timer_label_tips_cb;
-    timer_tips->period = REFRESH_SPEED_NORMAL * 5;
-    
-    /* timer for updating battery percent, just a demo for now */
-    pr_debug("registering battery percent timer ...\n");
-    lv_timer_t *timer_battery = lv_timer_create_basic();
-    timer_battery->timer_cb = xc_timer_battery_cb;
-    timer_battery->period = REFRESH_SPEED_SLOW * 2;
-    
-    /* timer for updating temperture and humidity */
-    pr_debug("registering temperture and humidity timer ...\n");
-    lv_timer_t *timer_temp_humid = lv_timer_create_basic();
-    timer_temp_humid->timer_cb = xc_timer_temp_humid_cb;
-    timer_temp_humid->period = REFRESH_SPEED_FAST * 9;
-    // lv_timer_pause(timer_temp_humid);
 }
