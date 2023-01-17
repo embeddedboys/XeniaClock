@@ -1,11 +1,15 @@
 ![]() Xenia Clock
 =================
 
+
+A desktop clock gadget, using a e-paper display and based on RP2040 with network and more functions!
+
+
+![pico](assets/raspberry-pi-pico.svg)
+
 ![lvgl](assets/logo_lvgl.png) ![squareline studio](assets/logo_squareline.png) ![FreeRTOS](assets/logo_freertos.jpg) ![littleFS](assets/logo_littlefs.jpg) 
 
 ![GooDisplay](assets/logo_goodisplay.jpg) ![JLC](assets/logo_jlc.png)
-
-`Xenia Clock` is a desktop clock gadget, using a e-paper display and based on RP2040 with network and more functions!
 
 Design
 ==================
