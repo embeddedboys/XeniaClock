@@ -155,7 +155,6 @@ void epink_wait_busy_timeout(uint32_t timeout_ms)
 void epink_wait_busy()
 {
     while (gpio_get(EPINK_BUSY_PIN));
-
     // lv_port_disp_main_screen_set_flush_state(false);
     // add_alarm_in_ms(50, epink_wait_busy_timer_cb, NULL, false);
 }

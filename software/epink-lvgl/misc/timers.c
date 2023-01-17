@@ -105,6 +105,13 @@ void xc_update_roller_time(uint8_t hour, uint8_t min, uint8_t sec)
         xc_set_roller_time_second(sec);
 }
 
+/**
+ * @brief 
+ * 
+ * @param id 
+ * @param user_data 
+ * @return int64_t 
+ */
 static int64_t xc_disp_manunally_refesh_cb(alarm_id_t id, void *user_data)
 {
     _lv_disp_refr_timer(NULL);
@@ -125,30 +132,6 @@ static bool xc_repeating_timer_refresh_cb(struct repeating_timer *t)
 /* This logic should never modified unless have a better idea
  * This callback must be use a  high-res timer to handle
  * Be sure to use a monospaced font */
-static bool xc_timer_roller_time_cb(struct repeating_timer *t)
-{
-    if ((++g_roller_second % SECOND_UPDATE_STEP) == 0)
-        lv_roller_set_selected(ui_RollerSecond, g_roller_second, LV_ANIM_OFF);
-        
-    if (SECONDS_IN_MINUTE == g_roller_second) {
-        g_roller_second = 0;     /* update first, then write back */
-        lv_roller_set_selected(ui_RollerSecond, g_roller_second, LV_ANIM_OFF);
-        lv_roller_set_selected(ui_RollerMinute, ++g_roller_minute, LV_ANIM_OFF);
-    }
-    
-    if (MINUTES_IN_HOUR == g_roller_minute) {
-        g_roller_minute = 0;
-        lv_roller_set_selected(ui_RollerMinute, g_roller_minute, LV_ANIM_OFF);
-        lv_roller_set_selected(ui_RollerHour, ++g_roller_hour, LV_ANIM_OFF);
-    }
-    
-    if (HOURS_IN_DAY == g_roller_hour) {
-        g_roller_hour = 0;
-        lv_roller_set_selected(ui_RollerHour, g_roller_hour, LV_ANIM_OFF);
-    }
-    
-    return true;
-}
 static void xc_lvgl_timer_roller_cb()
 {
     if ((++g_roller_second % SECOND_UPDATE_STEP) == 0)
@@ -341,13 +324,8 @@ static portTASK_FUNCTION(xc_disp_refresh_task, pvParameters)
 void xc_post_timers_init_rtos(void)
 {
     pr_debug("setting up ...\n");
-    // lv_disp_t *disp = lv_disp_get_default();
-    // lv_timer_del(disp->refr_timer);
-    // disp->refr_timer = NULL;
     
     pr_debug("registering time roller timer ...\n");
-    // xTaskCreate(xc_roller_update_task, "xc_roller_update_task", 32, NULL, 1, NULL);
-    // xTaskCreate(xc_disp_refresh_task, "xc_disp_refresh_task", 32, NULL, 1, NULL);
     lv_timer_t *timer_roller = lv_timer_create_basic();
     timer_roller->timer_cb = xc_lvgl_timer_roller_cb;
     timer_roller->period = MICROSECOND(1000);

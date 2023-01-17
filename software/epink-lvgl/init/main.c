@@ -334,8 +334,10 @@ static portTASK_FUNCTION(xc_main_logic, pvParameters)
     sub_screen_display_init();
 
     /* Here to handle message or whatever global things */
+    extern void ramfs_test(void);
     while (true) {
-    
+        ramfs_test();
+        vTaskDelay(200);
     }
 }
 

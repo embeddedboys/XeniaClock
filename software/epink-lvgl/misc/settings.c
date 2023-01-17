@@ -34,6 +34,10 @@
 #include "common/tools.h"
 #include "common/settings.h"
 
+#include "../lvgl/lvgl.h"
+
+static lv_obj_t *ui_EpinkScreenSettings;
+
 xc_time_format_t g_xc_time_format;
 xc_time_format_t xc_get_time_format(void)
 {

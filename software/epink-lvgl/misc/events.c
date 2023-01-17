@@ -150,12 +150,12 @@ static void xc_event_gesture_init(void)
 
 static void xc_event_roller_init(void)
 {
-    lv_obj_add_event_cb(ui_RollerHour, roller_time_set_msgbox_event_cb, LV_EVENT_LONG_PRESSED,
-                        NULL);
-    lv_obj_add_event_cb(ui_RollerMinute, roller_time_set_msgbox_event_cb,
-                        LV_EVENT_LONG_PRESSED, NULL);
-    lv_obj_add_event_cb(ui_RollerSecond, roller_time_set_msgbox_event_cb,
-                        LV_EVENT_LONG_PRESSED, NULL);
+    // lv_obj_add_event_cb(ui_RollerHour, roller_time_set_msgbox_event_cb, LV_EVENT_LONG_PRESSED,
+    //                     NULL);
+    // lv_obj_add_event_cb(ui_RollerMinute, roller_time_set_msgbox_event_cb,
+    //                     LV_EVENT_LONG_PRESSED, NULL);
+    // lv_obj_add_event_cb(ui_RollerSecond, roller_time_set_msgbox_event_cb,
+    //                     LV_EVENT_LONG_PRESSED, NULL);
 }
 
 static void xc_event_buttonapps_init(void)

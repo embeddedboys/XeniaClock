@@ -28,6 +28,9 @@
  *
  */
 
+#include <FreeRTOS.h>
+#include <task.h>
+
 #include <common/vals.h>
 
 #include "video/display_manager.h"
@@ -1431,7 +1434,7 @@ static int ssd1681_flush_part(uint16_t xs, uint16_t ys, uint16_t xe, uint16_t ye
 static int ssd1681_flush_full(void)
 {
     pr_debug("\n");
-#if 1
+
     /* Note: this function is only called when lvgl have
      * a real area update, but this function cost too much time
      * because the `ssd1681_update` function using a while(gpio_get(n))
@@ -1497,7 +1500,6 @@ static int ssd1681_flush_full(void)
     update_method();
 
     memcpy(epink_disp_buffer_old, epink_disp_buffer, EPINK_DISP_BUFFER_SIZE);
-#endif
     return 0;
 }
 #else
