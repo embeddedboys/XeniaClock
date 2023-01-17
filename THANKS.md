@@ -3,16 +3,18 @@ Thanks
 
 **Special thanks for these projects who made really much help**
 
-Third Party Libraries
+Third Party
 -----------------------------
 
-- [`lvgl`]() - Powerful embedded graphics library
+- [`lvgl`]() - Really a powerful graphics library for embedded system
 
 - [`pico-sdk`]() - Raspberry Pi Pico offical SDK
 
 - [`littlefs`](https://github.com/littlefs-project/littlefs) - A little fail-safe filesystem designed for microcontrollers
 
-Tool Software
+- [`FreeRTOS kernel`](https://github.com/FreeRTOS/FreeRTOS-Kernel) - A great Real-Time Operating System
+
+Tools Software
 -----------------------------
 
 - [`squareline studio`](https://squareline.io/) - lvgl offical ui designer
