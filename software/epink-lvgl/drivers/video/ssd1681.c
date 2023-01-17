@@ -34,7 +34,6 @@
 #include "video/epd.h"
 #include "hardware/timer.h"
 #include "pico/time.h"
-#include "pico/multicore.h"
 
 #include "../lvgl/lvgl.h"
 #include "../../lv_conf.h"
@@ -1281,7 +1280,6 @@ static void ssd1681_device_init_fast(void)
 
 static int ssd1681_init(uint8_t mode)
 {
-    multicore_reset_core1();
     ssd1681_device_init(mode);
     
     return 0;

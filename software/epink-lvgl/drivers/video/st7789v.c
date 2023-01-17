@@ -275,7 +275,7 @@ static void st7789v_clear(uint16_t color)
         }
 }
 
-static void st7789v_flush()
+static int st7789v_flush()
 {
 #if ST7789V_BUFFER_FLUSH
     uint8_t *cursor = epink_disp_buffer;
