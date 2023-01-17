@@ -39,12 +39,16 @@ file(GLOB_RECURSE SOURCES "lvgl/src/*.c"
                             "drivers/input/*.c"
                             "drivers/rtc/*.c")
 
+set(FREERTOS_KERNEL_PATH  ${CMAKE_CURRENT_SOURCE_DIR}/kernel)
+set(PICO_SDK_FREERTOS_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/kernel)
+add_subdirectory(kernel)
+
 # rest of your project
 add_executable(xenia_clock init/main.c ${INCLUDES} ${SOURCES})
 
 target_include_directories(xenia_clock PUBLIC . "include" "lvgl")
-target_link_libraries(xenia_clock pico_stdlib
-                            pico_multicore
+target_link_libraries(xenia_clock freertos-kernel
+                            pico_stdlib
                             hardware_clocks
                             hardware_spi
                             hardware_rtc
