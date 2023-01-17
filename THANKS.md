@@ -10,7 +10,7 @@ Third Party
 
 - [`pico-sdk`]() - Raspberry Pi Pico offical SDK
 
-- [`littlefs`](https://github.com/littlefs-project/littlefs) - A little fail-safe filesystem designed for microcontrollers
+- [`littlefs`](https://github.com/littlefs-project/littlefs) - A high-integrity embedded file system
 
 - [`FreeRTOS kernel`](https://github.com/FreeRTOS/FreeRTOS-Kernel) - A great Real-Time Operating System
 
