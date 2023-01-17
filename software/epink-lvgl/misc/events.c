@@ -173,6 +173,7 @@ static void xc_event_buttonapps_init(void)
 
 void xc_event_setup(void)
 {
+    pr_debug("setting up ...\n");
     xc_event_gesture_init();
 
     xc_event_roller_init();

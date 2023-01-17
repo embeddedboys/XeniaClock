@@ -35,6 +35,7 @@
 
 #include <stdint.h>
 #include "common/list.h"
+#include "common/init.h"
 
 /* name of panels */
 #define DISPLAY_MAIN_PANEL_EP_LUAT_NAME   "ep_luat"

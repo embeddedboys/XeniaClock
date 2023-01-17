@@ -74,6 +74,9 @@ Here some tips you should known before starting develop
 
 2. the period of seconds bit of time updating shouldn't be too fast, it cause display panel going flash, I suggested set it's period to 5s at least.
 
+3. Actually, you didn't have to delete the unused function, beacase most of linkers will do this
+automatically
+
 More
 -----------------------------------
 nothing yet

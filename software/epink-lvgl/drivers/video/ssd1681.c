@@ -1431,6 +1431,7 @@ static int ssd1681_flush_part(uint16_t xs, uint16_t ys, uint16_t xe, uint16_t ye
 static int ssd1681_flush_full(void)
 {
     pr_debug("\n");
+#if 1
     /* Note: this function is only called when lvgl have
      * a real area update, but this function cost too much time
      * because the `ssd1681_update` function using a while(gpio_get(n))
@@ -1443,7 +1444,7 @@ static int ssd1681_flush_full(void)
     
     static uint32_t flush_count = 0;
     void(*update_method)(void) = ssd1681_update_part;
-    
+
     epink_reset();
     
     /* BorderWavefrom */
@@ -1460,35 +1461,14 @@ static int ssd1681_flush_full(void)
     epink_write_data(0x00);
     epink_write_data(0x00);
     epink_write_data(0x00);
-    
-#if 0
-    for (uint8_t row = 0; row < 200; row++) {
-        for (uint8_t col_in_byte = 0; col_in_byte < 25; col_in_byte++) {
-            /* flush each line in buffer */
-            if (pen[row + col_in_byte * 25] == pen_old[row + col_in_byte * 25])
-                continue;
-                
-            epink_write_command(0x4e);
-            epink_write_data((col_in_byte) & 0x3f);
-            
-            /* set address counter of y in ram */
-            epink_write_command(0x4f);
-            epink_write_data((200 - row) & 0xff);
-            epink_write_data(((200 - row) >> 8) & 0x01);
-            
-            epink_write_command(0x24);
-            epink_write_data(pen[row + col_in_byte * 25]);
-        }
-    }
-#else
+
     epink_write_command(0x24);
     for (uint16_t i = 0; i < EPINK_DISP_BUFFER_SIZE; i++) {
         if (pen[i] != pen_old[i])
             diff++;
         epink_write_data(pen[i]);
     }
-#endif
-    
+
     // /* Normally, we calling refresh too fast, the current frame
     //  * may be doesn't change anything at all, if so, we don't
     //  * need go further */
@@ -1496,13 +1476,13 @@ static int ssd1681_flush_full(void)
     //     pr_debug("skipping this frame\n");
     //     return;
     // }
-    
+
     /* every `period` frame, make a global refresh */
     if ((++flush_count % GLOBAL_REFRESH_PERIOD) == 0) {
         update_method = ssd1681_update_full;
         pr_debug("a full update will be called\n");
     }
-    
+
     /* if there pixels doesn't updated too much,
      * invoke a timeouted update job, maybe caused
      * some error pixels keeping on the screen */
@@ -1513,10 +1493,11 @@ static int ssd1681_flush_full(void)
     }
     
     /* invoke target update method */
+
     update_method();
-    
+
     memcpy(epink_disp_buffer_old, epink_disp_buffer, EPINK_DISP_BUFFER_SIZE);
-    
+#endif
     return 0;
 }
 #else

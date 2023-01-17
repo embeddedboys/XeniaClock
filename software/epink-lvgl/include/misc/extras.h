@@ -39,6 +39,7 @@ void xc_event_setup(void);
 void xc_theme_setup(void);
 
 void xc_post_timers_init(void);
+void xc_post_timers_init_rtos(void);
 
 uint8_t xc_get_roller_time_hour();
 uint8_t xc_get_roller_time_minute();

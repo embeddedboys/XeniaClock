@@ -37,6 +37,7 @@
 
 #include <FreeRTOS.h>
 #include <task.h>
+#include <semphr.h>
 
 #include <stdio.h>
 #include <string.h>
@@ -88,28 +89,28 @@ static void hal_init(void)
 #else
     /* changed to called by subsys_initcall */
     // native_spi_init();
-
+    
     gpio_init(EPINK_CS_PIN);
     gpio_set_dir(EPINK_CS_PIN, GPIO_OUT);
     gpio_put(EPINK_CS_PIN, 1);
     bi_decl(bi_1pin_with_name(EPINK_CS_PIN, "EPINK CS"));
-
+    
     gpio_init(EPINK_RES_PIN);
     gpio_set_dir(EPINK_RES_PIN, GPIO_OUT);
     bi_decl(bi_1pin_with_name(EPINK_CS_PIN, "EPINK RES"));
-
+    
     gpio_init(EPINK_DC_PIN);
     gpio_set_dir(EPINK_DC_PIN, GPIO_OUT);
     bi_decl(bi_1pin_with_name(EPINK_CS_PIN, "EPINK DC"));
-
+    
     gpio_init(EPINK_BUSY_PIN);
     gpio_set_dir(EPINK_BUSY_PIN, GPIO_IN);
     bi_decl(bi_1pin_with_name(EPINK_CS_PIN, "EPINK BUSY"));
 #endif
-
+    
     /* changed to called by subsys_initcall */
     // native_i2c_init();
-
+    
     /* initialize uart */
     uart_init(uart1, DEFAULT_UART_SPEED);
     gpio_set_function(DEFAULT_ESP8266_RX_PIN, GPIO_FUNC_UART);
@@ -123,7 +124,7 @@ void system_init(void)
 {
     /* initialize clocks */
     clk_init();
-
+    
     /* system up hardware init */
     stdio_init_all();
     hal_init();
@@ -136,7 +137,7 @@ static void native_rtc_init()
     /* TODO: init rtc device */
     pr_debug("initializing rtc device ...\n");
     rtc_device_init();
-
+    
     /* set a test time to device */
     // t.hour = hour;    /* if i could get home earlier */
     // t.min = minute;
@@ -144,18 +145,18 @@ static void native_rtc_init()
     // p_rtc_device_set_time(t);
     // pr_debug("time of rtc device has been set to %02d:%02d:%02d\n",
     //  hour, minute, second);
-
+    
     /* init rtc host in mcu */
     pr_debug("initializing rtc host ...\n");
     rtc_host_init();
-
+    
     /* read RTC time from mcu */
     t = rtc_host_get_datetime();
     pr_debug("got time from rtc host : %02d:%02d:%02d\n",
              t.hour, t.min, t.sec);
-
+             
     xc_update_roller_time(t.hour, t.min, t.sec);
-
+    
     /* write back to lvgl */
     pr_debug("setting lvgl time roller ...\n");
     lv_roller_set_selected(ui_RollerHour, t.hour, LV_ANIM_OFF);
@@ -163,41 +164,33 @@ static void native_rtc_init()
     lv_roller_set_selected(ui_RollerSecond, t.sec, LV_ANIM_OFF);
 }
 
-static inline bool lvgl_clock_cb(struct repeating_timer *t)
-{
-    lv_timer_handler();
-    lv_tick_inc(5);
-    return true;
-}
-
 extern lv_obj_t *ui_LabelWifiName;
-
 static void network_config()
 {
     pr_debug("configurating network ...\n");
     esp01s_init(NULL);
     const char *data = "http://192.168.4.1";
-
+    
     /* show a default AP name */
     lv_label_set_text_fmt(ui_LabelWifiName, "connect to \"%s\" then scan this QR code",
                           DEFAULT_ESP8266_AP_NAME);
-
+                          
     /* make a QR code on it, (0, -5), 120x120 */
     lv_obj_t *qr_code = lv_qrcode_create(ui_ScreenEpinkConfig, 120, lv_color_hex(0x0),
                                          lv_color_hex(0xffffffff));
     lv_obj_align(qr_code, LV_ALIGN_CENTER, 0, -5);
     lv_qrcode_update(qr_code, data, strlen(data));
     lv_scr_load(ui_ScreenEpinkConfig);
-
+    
     /* wait here because we are testing esp01s */
     // while (1) {
     //     tight_loop_contents();
     // }
-
+    
     /* lol, pretending we are configuring device */
     sleep_ms(1000);
     pr_debug("network has been sucessfully configured!\n");
-
+    
     /* if network configuration is okay, switch to home */
     pr_debug("loading ui home screen ...\n");
     lv_scr_load(ui_ScreenEpinkHome);
@@ -208,14 +201,14 @@ static bool sub_display_label_flash = true;
 static inline void sub_screen_display_update_cb()
 {
     uint8_t hour, minute;
-
+    
     hour = xc_get_roller_time_hour();
     minute = xc_get_roller_time_minute();
-
+    
     lv_label_set_text_fmt(sub_display_label_time,
                           sub_display_label_flash ? "%02d:%02d" : "%02d %02d",
                           hour, minute);
-
+                          
     sub_display_label_flash = !sub_display_label_flash;
 }
 
@@ -226,54 +219,85 @@ static void sub_screen_display_init()
      * check ssd1306_banner();
      */
     post_lv_port_disp_init();
-
+    
     /* get lvgl displays */
     lv_disp_t *disp = lv_disp_get_default();
     pr_debug("default disp hor ver : %d %d\n", disp->driver->hor_res,
              disp->driver->ver_res);
-
+             
     lv_disp_t *sub_disp = lv_disp_get_next(NULL);
     pr_debug("sub disp hor ver : %d %d\n", sub_disp->driver->hor_res,
              sub_disp->driver->ver_res);
-
+             
     /* set default disp to sub screen */
     lv_disp_set_default(sub_disp);
     lv_theme_t *th = lv_theme_mono_init(sub_disp, 0, &ui_font_FiraCodeSemiBold12);
     lv_disp_set_theme(sub_disp, th);
-
+    
     lv_obj_t *btn = lv_btn_create(lv_scr_act());
     lv_obj_set_style_radius(btn, 5, 0);
     lv_obj_set_style_pad_all(btn, 5, 0);
     lv_obj_t *label = lv_label_create(btn);
     lv_label_set_text(label, "Xenia Clock");
     lv_obj_center(btn);
-
-    sleep_ms(1000);
-
+    
+    vTaskDelay(1000);
+    
     lv_obj_del(btn);
     th  = lv_theme_basic_init(sub_disp);
     lv_disp_set_theme(sub_disp, th);
-
+    
     sub_display_label_time = lv_label_create(lv_scr_act());
     lv_label_set_text_fmt(sub_display_label_time, "%02d:%02d", 0, 0);
     lv_obj_set_style_text_font(sub_display_label_time, &ui_font_FiraCodeSemiBold40, 0);
     // lv_obj_align(sub_display_label_time, LV_ALIGN_CENTER, 0, 0);
     lv_obj_center(sub_display_label_time);
-
+    
     /* add a time refresh timer */
     pr_debug("adding sub screen refresh timer ...\n");
     lv_timer_t *sub_screen_display_timer = lv_timer_create_basic();
     sub_screen_display_timer->timer_cb = sub_screen_display_update_cb;
     sub_screen_display_timer->period = MICROSECOND(500);
-
+    
     lv_disp_set_default(disp);
+}
+
+// static inline bool lvgl_clock_cb(struct repeating_timer *t)
+// {
+//     lv_timer_handler();
+//     lv_tick_inc(5);
+//     return true;
+// }
+
+void vApplicationTickHook()
+{
+    lv_tick_inc(1);
+}
+
+SemaphoreHandle_t xGuiSemaphore;
+static portTASK_FUNCTION(lvgl_task_handler, pvParameters)
+{
+    TickType_t xLastWakeTime;
+    const TickType_t xPeriod = pdMS_TO_TICKS(5);
+    
+    xLastWakeTime = xTaskGetTickCount();
+    
+    for (;;) {
+        vTaskDelayUntil(&xLastWakeTime, xPeriod);
+        
+        xSemaphoreTake(xGuiSemaphore, portMAX_DELAY);
+        lv_task_handler();
+        xSemaphoreGive(xGuiSemaphore);
+    }
+    
+    vTaskDelete(NULL);
 }
 
 static void launch_banner()
 {
     /* display a string on sub screen when starting */
     ssd1306_banner();
-
+    
     printf("\n\n\n\n");
     printf(R"EOF(
 __  __          _              ____ _            _
@@ -286,56 +310,58 @@ __  __          _              ____ _            _
 }
 
 #if 1
+static portTASK_FUNCTION(xc_main_logic, pvParameters)
+{
+    // xSemaphoreTake(xGuiSemaphore, portMAX_DELAY);
+    /* call squareline project initialization process */
+    ui_init();
+    // xSemaphoreGive(xGuiSemaphore);
+    
+    xc_event_setup();
+    xc_theme_setup();
+    
+    /* initialize network */
+    network_config();
+    
+    /* some post hardware init */
+    native_rtc_init();
+    
+    /* widget timers init */
+    // xc_post_timers_init();
+    xc_post_timers_init_rtos();
+    
+    /* initialize sub screen lvgl display */
+    sub_screen_display_init();
+
+    /* Here to handle message or whatever global things */
+    while (true) {
+    
+    }
+}
+
 int main(void)
 {
     /* some system layer initialize ops */
     system_init();
-
+    
     /* some ops used to display banner to anywhere */
     launch_banner();
-
+    
     /* lvgl init */
-    struct repeating_timer lvgl_clock_timer;
+    // struct repeating_timer lvgl_clock_timer;
     lv_init();
     lv_port_disp_init();
     lv_port_indev_init();
-
+    
     /* start a native timer for lvgl clock */
-    add_repeating_timer_us(MICROSECOND(5000), lvgl_clock_cb, NULL, &lvgl_clock_timer);
+    // add_repeating_timer_us(MICROSECOND(5000), lvgl_clock_cb, NULL, &lvgl_clock_timer);
+    xGuiSemaphore = xSemaphoreCreateMutex();
+    xTaskCreate(xc_main_logic, "xc_main_logic", 512, NULL, 3, NULL);
+    xTaskCreate(lvgl_task_handler, "lvgl_task_handler", 512, NULL, 4, NULL);
 
-    /* call squareline project initialization process */
-    ui_init();
-
-    xc_event_setup();
-    xc_theme_setup();
-
-    /* initialize network */
-    network_config();
-
-    /* some post hardware init */
-    native_rtc_init();
-
-    /* widget timers init */
-    xc_post_timers_init();
-
-    /* initialize sub screen lvgl display */
-    sub_screen_display_init();
-
-    pr_debug("going to loop\n");
-    while (1) {
-        tight_loop_contents();
-    }
-
-    sleep_ms(3000);
-    lv_disp_load_scr(ui_ScreenSleep);
-
-    sleep_ms(3000);
-    lv_disp_load_scr(ui_ScreenEpinkHome);
-
-    while (1) {
-        tight_loop_contents();
-    }
-
+    vTaskStartScheduler();
+    while (1) {};
+    
     return 0;
 }
 #else
@@ -368,11 +394,11 @@ void led_task2()
 int main()
 {
     stdio_init_all();
-
+    
     xTaskCreate(led_task, "LED_Task", 256, NULL, 1, NULL);
     xTaskCreate(led_task2, "LED_Task2", 256, NULL, 1, NULL);
     vTaskStartScheduler();
-
-    while(1){};
+    
+    while (1) {};
 }
 #endif
