@@ -122,13 +122,11 @@ static void hal_init(void)
 
 void system_init(void)
 {
-    /* initialize stdio */
-    stdio_init_all();
-
     /* initialize clocks */
     clk_init();
 
     /* system up hardware init */
+    stdio_init_all();
     hal_init();
 }
 
