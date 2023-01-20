@@ -30,7 +30,6 @@
 
 #pragma once
 
-#include "pico/types.h"
 #ifndef __NATIVE_RTC_H
 #define __NATIVE_RTC_H
 
@@ -39,6 +38,7 @@
 #include "hardware/i2c.h"
 #include "hardware/rtc.h"
 #include "pico/util/datetime.h"
+#include "pico/types.h"
 #include "lvgl/lvgl.h"
 
 struct native_rtc_data {
@@ -66,8 +66,8 @@ struct native_rtc_handle {
     #define DEFAULT_RTC_DEVICE RTC_DEVICE_DS1307
 #endif
 
-void (*p_rtc_device_set_time)(datetime_t t);
-datetime_t (*p_rtc_device_get_time)();
+extern void (*p_rtc_device_set_time)(datetime_t t);
+extern datetime_t (*p_rtc_device_get_time)();
 void rtc_device_init();
 
 void rtc_host_init();

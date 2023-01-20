@@ -114,7 +114,9 @@ struct display_module {
 
     struct display_module *p_next;
     struct list_head head;
-} default_module;
+};
+
+extern struct display_module default_module;
 
 extern int register_module( struct display_module *module );
 struct display_module *request_disp_module(char *name);

@@ -31,6 +31,9 @@
 #include "rtc/native_rtc.h"
 #include "pico/types.h"
 
+void (*p_rtc_device_set_time)(datetime_t t);
+datetime_t (*p_rtc_device_get_time)();
+
 void rtc_host_set_datetime(datetime_t *time)
 {
     rtc_set_datetime(time);
