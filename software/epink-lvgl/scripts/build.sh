@@ -59,7 +59,10 @@ function do_compile() {
 
 function do_install() {
     echo "do installing ..."
-    cp ${BUILDDIR}/${BIN} .
+    #cp ${BUILDDIR}/${BIN} .
+    ln -sf ${BUILDDIR}/${BIN} ${WORKDIR}
+    echo -e "                     =--- size info ---=\n"
+    arm-none-eabi-size -G -d ${BIN}
 }
 
 function do_flash() {
