@@ -61,7 +61,7 @@ static uint8_t read_buffer[LFS_READ_BUFFER_SIZE];
 static uint8_t prog_buffer[LFS_PROG_BUFFER_SIZE];
 static uint8_t lookahead_buffer[LFS_LOOKAHEAD_BUFFER_SIZE];
 
-uint8_t *mem;
+uint8_t *ramfs_mem;
 
 static struct lfs_config ramfs_cfg;
 static struct lfs_file_config ramfs_f_cfg;
@@ -100,14 +100,14 @@ void ramfs_test(void)
 
 static int ramfs_init(void)
 {
-    mem = (uint8_t *)malloc(LFS_BLOCK_SIZE * LFS_BLOCK_COUNT);
+    ramfs_mem = (uint8_t *)malloc(LFS_BLOCK_SIZE * LFS_BLOCK_COUNT);
 
     struct lfs_rambd_config rambd_cfg = {
-        .buffer = mem,
+        .buffer = ramfs_mem,
     };
 
     lfs_rambd_t rambd = {
-        .buffer = mem,
+        .buffer = ramfs_mem,
         .cfg = &rambd_cfg,
     };
 

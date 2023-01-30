@@ -219,7 +219,7 @@ uint32_t lfs_crc(uint32_t crc, const void *buffer, size_t size);
 
 // Allocate memory, only used if buffers are not provided to littlefs
 // Note, memory must be 64-bit aligned
-extern uint8_t *mem;
+extern uint8_t *ramfs_mem;
 static inline void *lfs_malloc(size_t size) {
 // #ifndef LFS_NO_MALLOC
 //     return malloc(size);
@@ -230,7 +230,7 @@ static inline void *lfs_malloc(size_t size) {
 
 #if DEFAULT_LFS_PORT_DEVICE == LFS_PORT_DEVICE_RAM
     (void)size;
-    return (void *)mem;
+    return (void *)ramfs_mem;
 #endif
 }
 
