@@ -62,7 +62,7 @@ function do_install() {
     #cp ${BUILDDIR}/${BIN} .
     ln -sf ${BUILDDIR}/${BIN} ${WORKDIR}
     echo -e "                     =--- size info ---=\n"
-    arm-none-eabi-size -G -d ${BIN}
+    arm-none-eabi-size -d ${BIN}
 }
 
 function do_flash() {
