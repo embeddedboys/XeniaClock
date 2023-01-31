@@ -32,17 +32,24 @@
 #include "task.h"
 
 #include "pico/stdlib.h"
+#include "hardware/clocks.h"
 
 #define WS2812B_DIN 25
 #define WS2812B_NUM 4
 
 /* TODO: Replace data output signal with PWM or others */
 
-void _delay_us(double __us)
+static __noinline void _delay_us(double __us)
 {
     // uint32_t __count=(uint32_t)(__us/0.008)-3; // 8ns per cycle for 125MHz, from experimentation remove 3cycles for overhead
     uint32_t __count=(uint32_t)(__us/0.008)-20; // 8ns per cycle for 125MHz, from experimentation remove 3cycles for overhead
     busy_wait_at_least_cycles(__count);
+}
+
+static __noinline void _delay_ns(uint32_t ns) {
+    // cycles = ns * clk_sys_hz / 1,000,000,000
+    uint32_t cycles = ns * (clock_get_hz(clk_sys) >> 16u) / (1000000000u >> 16u);
+    busy_wait_at_least_cycles(cycles);
 }
 
 static inline void ws2812b_write_0(void)
