@@ -1,9 +1,25 @@
-![]() Xenia Clock
-=================
+<h1 align="center">
+    <span>Xenia Clock</span>
+</h1>
 
+<div align="center">
 
-A desktop clock gadget, using a e-paper display and based on RP2040 with network and more functions!
+<a href="https://iotahydrae.github.io/XeniaClock/">![Docs](https://img.shields.io/badge/docs-iotahydrae.github.io%2FXeniaClock%2F-green)</a> <a>![](https://img.shields.io/github/license/iotahydrae/xeniaclock)</a> <a>![](https://img.shields.io/github/forks/IotaHydrae/XeniaClock)</a> <a>![](https://img.shields.io/github/stars/iotahydrae/XeniaClock)</a> <a>![](https://img.shields.io/github/last-commit/iotahydrae/XeniaClock)</a> <a>  [![HitCount](https://hits.dwyl.com/IotaHydrae/XeniaClock.svg?style=flat-square)](http://hits.dwyl.com/IotaHydrae/XeniaClock)</a>
 
+</div>
+
+Table of Contents
+------------------
+
+- [Introduction](#Introduction)
+- [Design](#Design)
+- [Inside](#Inside)
+- [License](#License)
+
+Introduction
+------------------
+
+A fully open sourced desktop clock gadget, including software, hardware and even more. Using a e-paper display, support network and more functions! platform is based on RP2040.
 
 ![pico](assets/raspberry-pi-pico.svg)
 
@@ -12,7 +28,7 @@ A desktop clock gadget, using a e-paper display and based on RP2040 with network
 ![GooDisplay](assets/logo_goodisplay.jpg) ![JLC](assets/logo_jlc.png)
 
 Design
-==================
+------------------
 
 Well, **Xenia Clock** is consists of three parts, namely **"Roof"**, **"Middle"**, **"Power"** and
 each parts got different works to do.
@@ -41,7 +57,7 @@ Repository at :
 
 
 Inside
-------
+------------------
 
 * `MCU` - raspberrypi RP2040
 
@@ -64,12 +80,10 @@ Inside
 * `Battery` - 200mAh lithium
 
 LICENSE
-----------
+------------------
 
 This project was pushlished under MIT license, check `About -> License` for more infomation.
 
 Have fun with this!
 
 Cheers,
-
-## [FAQs](FAQs.md)
