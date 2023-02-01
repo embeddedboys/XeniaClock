@@ -33,6 +33,7 @@
 #ifndef __SETTINGS_H
 #define __SETTINGS_H
 
+/* Time Format */
 typedef enum {
     TIME_FORMAT_12_HOUR = 0x00,
     TIME_FORMAT_24_HOUR = 0x01,
@@ -44,6 +45,7 @@ extern xc_time_format_t g_xc_time_format;
 xc_time_format_t xc_get_time_format(void);
 void xc_set_time_format(xc_time_format_t format);
 
+/* Display refresh type */
 typedef enum {
     DISP_FLUSH_MODE_PART = 0x00,
     DISP_FLUSH_MODE_FULL = 0x01,
@@ -51,5 +53,13 @@ typedef enum {
 extern xc_disp_flush_mode_t g_xc_disp_flush_mode;
 xc_disp_flush_mode_t xc_get_disp_flush_mode(void);
 void xc_set_disp_flush_mode(xc_disp_flush_mode_t mode);
+
+/* lanuage setting for ui */
+typedef enum {
+    XC_LANGUAGE_ENGLISH = 0x00,
+    XC_LANGUAGE_CHINESE = 0x01,
+} xc_language_t;
+void xc_set_ui_language(xc_language_t lang);
+xc_language_t xc_get_ui_language(void);
 
 #endif  /* __SETTINGS_H */
