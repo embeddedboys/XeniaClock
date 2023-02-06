@@ -54,6 +54,7 @@ target_link_libraries(xenia_clock freertos-kernel
                             hardware_spi
                             hardware_rtc
                             hardware_i2c
+                            hardware_pwm
                             hardware_uart)
 
 pico_enable_stdio_usb(xenia_clock 1)
