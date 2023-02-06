@@ -28,6 +28,9 @@
  *
  */
 
+#include "FreeRTOS.h"
+#include "task.h"
+
 #include <stdbool.h>
 #include <string.h>
 #include <stdlib.h>
@@ -166,7 +169,7 @@ static void __esp01s_send(char *buf, uint32_t delay_ms)
 {
     uart_puts(DEFAULT_ESP8266_UART_IFACE, buf);
     /* a delay is needed for waiting esp8266 internal process */
-    sleep_ms(delay_ms);
+    vTaskDelay(delay_ms);
 
     /* append terminate ch '\0' to the end of buf and reset buf index */
     esp01s_rx_buf_reset();

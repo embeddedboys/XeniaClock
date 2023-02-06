@@ -36,6 +36,9 @@
  *
  */
 
+#include "FreeRTOS.h"
+#include "task.h"
+
 #include "common/settings.h"
 
 #include "port/lv_port_disp.h"
@@ -135,7 +138,7 @@ void epink_wait_busy_timeout(uint32_t timeout_ms)
             // EPINK_DEBUG("epink_wait_busy timeout\n");
             break;
         } else {
-            busy_wait_ms(1);
+            vTaskDelay(1);
         }
     }
     // EPINK_DEBUG("epink_wait_busy_timeout ok\n");

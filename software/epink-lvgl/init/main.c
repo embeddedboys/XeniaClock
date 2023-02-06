@@ -188,7 +188,7 @@ static void network_config()
     // }
 
     /* lol, pretending we are configuring device */
-    sleep_ms(1000);
+    vTaskDelay(1000);
     pr_debug("network has been sucessfully configured!\n");
 
     /* if network configuration is okay, switch to home */
@@ -269,25 +269,35 @@ static void sub_screen_display_init()
 //     return true;
 // }
 
+SemaphoreHandle_t xGuiSemaphore;
+inline void task_mutex_lock(SemaphoreHandle_t semaphore)
+{
+    xSemaphoreTake(semaphore, portMAX_DELAY);
+}
+
+inline void task_mutex_unlock(SemaphoreHandle_t semaphore)
+{
+    xSemaphoreGive(semaphore);
+}
+
 void vApplicationTickHook()
 {
     lv_tick_inc(1);
 }
 
-SemaphoreHandle_t xGuiSemaphore;
 static portTASK_FUNCTION(lvgl_task_handler, pvParameters)
 {
     TickType_t xLastWakeTime;
-    const TickType_t xPeriod = pdMS_TO_TICKS(5);
+    const TickType_t xPeriod = pdMS_TO_TICKS(1);
 
     xLastWakeTime = xTaskGetTickCount();
 
     for (;;) {
         vTaskDelayUntil(&xLastWakeTime, xPeriod);
 
-        xSemaphoreTake(xGuiSemaphore, portMAX_DELAY);
+        task_mutex_lock(xGuiSemaphore);
         lv_task_handler();
-        xSemaphoreGive(xGuiSemaphore);
+        task_mutex_unlock(xGuiSemaphore);
     }
 
     vTaskDelete(NULL);
@@ -310,12 +320,29 @@ __  __          _              ____ _            _
 }
 
 #if 1
+
+static portTASK_FUNCTION(led_task_handler, pvParameters)
+{
+    const uint LED_PIN = 25;
+    gpio_init(LED_PIN);
+    gpio_set_dir(LED_PIN, GPIO_OUT);
+    while (true) {
+        /* this lock is in need, otherwise other  tasks may interrupt this block when this thread executing */
+        task_mutex_lock(xGuiSemaphore);
+
+        gpio_put(LED_PIN, 1);
+        vTaskDelay(5);
+        gpio_put(LED_PIN, 0);
+        vTaskDelay(5);
+
+        task_mutex_unlock(xGuiSemaphore);
+    }
+}
+
 static portTASK_FUNCTION(xc_main_logic, pvParameters)
 {
-    // xSemaphoreTake(xGuiSemaphore, portMAX_DELAY);
     /* call squareline project initialization process */
     ui_init();
-    // xSemaphoreGive(xGuiSemaphore);
 
     xc_event_setup();
     xc_theme_setup();
@@ -345,6 +372,10 @@ int main(void)
     /* some system layer initialize ops */
     system_init();
 
+    extern void ws2812b_test();
+    ws2812b_test();
+    while(1);
+
     /* some ops used to display banner to anywhere */
     launch_banner();
 
@@ -359,6 +390,7 @@ int main(void)
     xGuiSemaphore = xSemaphoreCreateMutex();
     xTaskCreate(xc_main_logic, "xc_main_logic", 512, NULL, 3, NULL);
     xTaskCreate(lvgl_task_handler, "lvgl_task_handler", 512, NULL, 4, NULL);
+    xTaskCreate(led_task_handler, "led_task_handler", 32, NULL, 5, NULL);
 
     vTaskStartScheduler();
     while (1) {};
