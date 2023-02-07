@@ -372,10 +372,6 @@ int main(void)
     /* some system layer initialize ops */
     system_init();
 
-    extern void ws2812b_test();
-    ws2812b_test();
-    while(1);
-
     /* some ops used to display banner to anywhere */
     launch_banner();
 
@@ -390,7 +386,7 @@ int main(void)
     xGuiSemaphore = xSemaphoreCreateMutex();
     xTaskCreate(xc_main_logic, "xc_main_logic", 512, NULL, 3, NULL);
     xTaskCreate(lvgl_task_handler, "lvgl_task_handler", 512, NULL, 4, NULL);
-    xTaskCreate(led_task_handler, "led_task_handler", 32, NULL, 5, NULL);
+    // xTaskCreate(led_task_handler, "led_task_handler", 32, NULL, 5, NULL);
 
     vTaskStartScheduler();
     while (1) {};

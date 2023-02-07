@@ -138,7 +138,7 @@ void epink_wait_busy_timeout(uint32_t timeout_ms)
             // EPINK_DEBUG("epink_wait_busy timeout\n");
             break;
         } else {
-            vTaskDelay(1);
+            busy_wait_ms(1);
         }
     }
     // EPINK_DEBUG("epink_wait_busy_timeout ok\n");
