@@ -70,12 +70,14 @@ Attention for developers
 
 Here some tips you should known before starting develop
 
-1. sleep function like `sleep_ms` should never called in lvgl timer callback so did in interrupt , it cause system to crash, considering replace it with `busy_wait_ms`.
+1. sleep function like `sleep_ms` should never called in lvgl timer callback so did in interrupt isr, it cause system to crash, considering replace it with `busy_wait_ms`.
 
 2. the period of seconds bit of time updating shouldn't be too fast, it cause display panel going flash, I suggested set it's period to 5s at least.
 
 3. Actually, you didn't have to delete the unused function, beacase most of linkers will do this
 automatically
+
+4, Anywhere code block that you didn't want to interrupted by other threads, you should give them a lock. for gpio holding function etc. if this got interruptted, There could caused gpio level holding time be wrong.
 
 More
 -----------------------------------
