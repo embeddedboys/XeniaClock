@@ -57,3 +57,5 @@ dkms.conf
 
 dir_build/
 compile_commands.json
+*include/generated/
+*include/config/
