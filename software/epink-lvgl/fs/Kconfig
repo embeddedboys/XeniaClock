@@ -1,0 +1,13 @@
+#
+menu "File systems"
+
+config FS_RAMFS
+    bool "Enable Ramfs"
+
+config FS_PROCFS
+    bool "Enable procfs"
+    depends on FS_RAMFS
+
+endmenu
+
+

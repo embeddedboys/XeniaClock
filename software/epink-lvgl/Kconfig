@@ -4,47 +4,14 @@
 #
 mainmenu "Xenia Clock Configuration"
 
-#config SRCARCH
-#	string
-#	option env="SRCARCH"
+source "init/Kconfig"
 
-#source "arch/$SRCARCH/Kconfig"
+source "net/Kconfig"
 
+source "drivers/Kconfig"
 
-menu "Genral setup"
+source "fs/Kconfig"
 
-config DEFAULT_USERNAME
-	string "Default username"
-	default "(none)"
-	help
-		This is a default username for ui etc. to display
-
-endmenu
-
-menu "Networking support"
-
-choice
-	prompt "Select default network module"
-	default NET_MODULE_ESP01S
-
-config NET_MODULE_ESP01S
-	bool "esp01s"
-	help
-		nothing yet
-
-config NET_MODULE_ESP32
-	bool "esp32"
-	help
-		nothing yet
-
-endchoice
-
-endmenu
-
-menu "Device Drivers"
-endmenu
-
-menu "File systems"
-endmenu
+source "misc/Kconfig"
 
 

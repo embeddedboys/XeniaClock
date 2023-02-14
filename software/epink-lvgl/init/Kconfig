@@ -1,0 +1,13 @@
+#
+menu "Genral setup"
+
+config DEFAULT_USERNAME
+	string "Default username"
+	default "(none)"
+	help
+		This option is used to set a default username for ui etc.
+		where it should display.
+
+endmenu
+
+

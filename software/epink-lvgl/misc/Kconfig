@@ -1,0 +1,18 @@
+#
+menu "Misc settings"
+
+menu "User Settings"
+endmenu
+
+menu "Events"
+endmenu
+
+menu "Theme"
+endmenu
+
+menu "Timers"
+endmenu
+
+endmenu
+
+

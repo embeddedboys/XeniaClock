@@ -1,0 +1,54 @@
+#
+menuconfig NET
+	bool "Networking support"
+	help
+      Unless you really know what you are doing, you should say Y here.
+      The reason is that some programs need kernel networking support even
+      when running on a stand-alone machine that isn't connected to any 
+      other computer.
+
+if NET
+
+# menu "Networking options"
+choice
+	prompt "Select default network module"
+	default NET_MODULE_ESP01S
+
+config NET_MODULE_ESP01S
+	bool "esp01s"
+	help
+		Set default network module to esp01s,
+		if unsure, choose this one.
+
+config NET_MODULE_ESP32
+	bool "esp32"
+	help
+	  set default network module to esp32
+
+endchoice
+
+choice
+	prompt "Module work mode"
+
+config MODULE_MODE_AT
+	bool "AT command"
+
+config MODULE_MODE_ESPHOME
+	bool "ESPHome"
+
+endchoice
+
+config NTP
+	bool "Enable NTP support"
+	depends on NET
+	help
+	  This option makes your device sync time with
+	  server though NTP.
+
+	  if unsure, say Y
+
+# endmenu
+
+endif # NET
+
+

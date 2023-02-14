@@ -1,0 +1,8 @@
+#
+menu "Device Drivers"
+
+source "drivers/clk/Kconfig"
+
+endmenu
+
+
