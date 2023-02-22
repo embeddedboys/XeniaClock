@@ -67,6 +67,13 @@ void spi_write16(uint16_t val, uint8_t cs_pin)
     spi_cs_deselect(cs_pin);
 }
 
+void spi_transfer(uint8_t *buf, int size, uint8_t cs_pin)
+{
+    spi_cs_select(cs_pin);
+    spi_write_blocking(spi_default, buf, size);
+    spi_cs_deselect(cs_pin);
+}
+
 static int native_spi_init(void)
 {
     spi_init(spi_default, DEFAULT_SPI_SPEED);

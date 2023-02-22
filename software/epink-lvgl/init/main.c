@@ -97,15 +97,15 @@ static void hal_init(void)
 
     gpio_init(EPINK_RES_PIN);
     gpio_set_dir(EPINK_RES_PIN, GPIO_OUT);
-    bi_decl(bi_1pin_with_name(EPINK_CS_PIN, "EPINK RES"));
+    bi_decl(bi_1pin_with_name(EPINK_RES_PIN, "EPINK RES"));
 
     gpio_init(EPINK_DC_PIN);
     gpio_set_dir(EPINK_DC_PIN, GPIO_OUT);
-    bi_decl(bi_1pin_with_name(EPINK_CS_PIN, "EPINK DC"));
+    bi_decl(bi_1pin_with_name(EPINK_DC_PIN, "EPINK DC"));
 
     gpio_init(EPINK_BUSY_PIN);
     gpio_set_dir(EPINK_BUSY_PIN, GPIO_IN);
-    bi_decl(bi_1pin_with_name(EPINK_CS_PIN, "EPINK BUSY"));
+    bi_decl(bi_1pin_with_name(EPINK_BUSY_PIN, "EPINK BUSY"));
 #endif
 
     /* changed to called by subsys_initcall */
