@@ -37,12 +37,19 @@ EOF
 }
 
 function do_configure() {
-    echo "do configuring ..."
     cd .. && source tools/envsetup.sh && cd ${WORKDIR}
+
+    echo_debug "do configuring ..."
+    if [ ! -f .config ]; then
+        echo_debug "making a default config"
+        ARCH=${ARCH} make xeniaclock_defconfig
+    else
+        echo_debug "user config exists"
+    fi
 }
 
 function do_compile() {
-    echo "do compiling ..."
+    echo_debug "do compiling ..."
     # if [ ! -d "${WORKDIR}/build" ]; then
     #     mkdir build
     # fi
@@ -58,7 +65,7 @@ function do_compile() {
 }
 
 function do_install() {
-    echo "do installing ..."
+    echo_debug "do installing ..."
     #cp ${BUILDDIR}/${BIN} .
     ln -sf ${BUILDDIR}/${BIN} ${WORKDIR}
     echo -e "                     =--- size info ---=\n"
@@ -66,10 +73,12 @@ function do_install() {
 }
 
 function do_flash() {
+    echo_debug "do flashning ..."
     ${WORKDIR}/../tools/dapp ./${BIN}
 }
 
 function do_clean() {
+    echo_debug "do cleaning ..."
     mkdir -p ${BUILDDIR} && cd ${BUILDDIR}
     ninja clean
     cd -
@@ -78,23 +87,30 @@ function do_clean() {
 case $1 in
 
     "-h")
-        echo "Printing Usage ..."
+        echo_debug "Printing Usage ..."
         do_banner
         do_usage
         exit 0
         ;;
 
     "-p")
-        echo "will do a flash job"
+        echo_debug "will do a flash job"
         do_banner
         do_flash
         exit 0
         ;;
 
     "-c")
-        echo "do a clean job"
+        echo_debug "do a clean job"
         do_banner
         do_clean
+        exit 0
+        ;;
+
+    "menuconfig")
+        do_configure
+        echo_debug "show the menu"
+        ARCH=${ARCH} make menuconfig
         exit 0
         ;;
 

@@ -1,12 +1,53 @@
 #
 menu "File systems"
 
-config FS_RAMFS
-    bool "Enable Ramfs"
+menuconfig LITTLE_FS
+    bool "LittleFS support"
+    default true
+    help
+      Unless you really know what you are doing, you should say Y here.
+      The reason is that most programs need this support to create
+      or modify file.
 
-config FS_PROCFS
-    bool "Enable procfs"
-    depends on FS_RAMFS
+if LITTLE_FS
+
+config LFS_RAMFS
+    bool "RAM file system support"
+    depends on LITTLE_FS
+
+choice
+    prompt "Select default ram block size"
+    default LFS_RAMFS_BLOCK_SIZE_64B
+    depends on LFS_RAMFS
+    help
+      Choose the default block size of ram file system.
+      In most cases, 64B is enough. if unsure, keep default.
+
+config LFS_RAMFS_BLOCK_SIZE_64B
+    bool "64 Byte"
+
+config LFS_RAMFS_BLOCK_SIZE_128B
+    bool "128 Byte"
+
+config LFS_RAMFS_BLOCK_SIZE_256B
+    bool "256 Byte"
+endchoice
+
+config LFS_RAMFS_BLOCK_SIZE
+    int
+    default 64 if LFS_RAMFS_BLOCK_SIZE_64B
+    default 128 if LFS_RAMFS_BLOCK_SIZE_128B
+    default 256 if LFS_RAMFS_BLOCK_SIZE_256B
+
+config LFS_FLASH
+    bool "Enable LFS flash support"
+    depends on LITTLE_FS
+
+config LFS_FLASH_W25QXX
+    bool "W25QXX flash support"
+    depends on LFS_FLASH
+
+endif  # LITTLE_FS
 
 endmenu
 

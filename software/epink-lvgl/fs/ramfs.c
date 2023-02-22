@@ -29,6 +29,7 @@
  */
 
 #include <stdlib.h>
+#include <generated/autoconf.h>
 
 #include "pico/stdlib.h"
 
@@ -38,17 +39,20 @@
 #include "fs/lfs/lfs.h"
 #include "fs/lfs/hal/lfs_rambd.h"
 
-#define LFS_READ_SIZE   16
-#define LFS_PROG_SIZE   16
+#define LFS_READ_SIZE       16
+#define LFS_PROG_SIZE       16
 
-/* alloc RAM size = LFS_BLOCK_SIZE * LFS_BLOCK_COUNT
- * let's make it 256 byte by default */
-#define LFS_BLOCK_SIZE  64
-#define LFS_BLOCK_COUNT 4
+#ifdef CONFIG_LFS_RAMFS_BLOCK_SIZE
+    #define LFS_BLOCK_SIZE      CONFIG_LFS_RAMFS_BLOCK_SIZE
+#else
+    #define LFS_BLOCK_SIZE      64
+#endif
 
-#define LFS_CACHE_SIZE  16
+#define LFS_BLOCK_COUNT     1
+
+#define LFS_CACHE_SIZE      16
 #define LFS_LOOKAHEAD_SIZE  16
-#define LFS_BLOCK_CYCLES    500
+#define LFS_BLOCK_CYCLES    200
 
 #define LFS_READ_BUFFER_SIZE        LFS_CACHE_SIZE
 #define LFS_PROG_BUFFER_SIZE        LFS_CACHE_SIZE
@@ -61,19 +65,11 @@ static uint8_t read_buffer[LFS_READ_BUFFER_SIZE];
 static uint8_t prog_buffer[LFS_PROG_BUFFER_SIZE];
 static uint8_t lookahead_buffer[LFS_LOOKAHEAD_BUFFER_SIZE];
 
-uint8_t *ramfs_mem;
+static uint8_t *ramfs_mem;
 
 static struct lfs_config ramfs_cfg;
 static struct lfs_file_config ramfs_f_cfg;
 static uint32_t boot_count = 0;
-
-/*
-    extern void ramfs_test(void);
-    while (1) {
-        ramfs_test();
-        sleep_ms(10);
-    }
-*/
 
 void ramfs_test(void)
 {

@@ -36,6 +36,11 @@
 #define LFS_PORT_DEVICE_FLASH   0x01
 #define LFS_PORT_DEVICE_SDCARD  0x02
 
+#define LFS_NO_ASSERT
+#define LFS_NO_DEBUG
+#define LFS_NO_WARN
+#define LFS_NO_ERROR
+
 /* default port device choosing */
 #ifndef DEFAULT_LFS_PORT_DEVICE
     #define DEFAULT_LFS_PORT_DEVICE LFS_PORT_DEVICE_RAM
@@ -43,11 +48,6 @@
 
 /* Different device need different marco */
 #if DEFAULT_LFS_PORT_DEVICE == LFS_PORT_DEVICE_RAM
-    #define LFS_NO_MALLOC
-    #define LFS_NO_ASSERT
-    #define LFS_NO_DEBUG
-    #define LFS_NO_WARN
-    #define LFS_NO_ERROR
 #elif DEFAULT_LFS_PORT_DEVICE == LFS_PORT_DEVICE_FLASH
 #elif DEFAULT_LFS_PORT_DEVICE == LFS_PORT_DEVICE_SDCARD
 #endif

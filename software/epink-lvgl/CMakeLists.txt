@@ -73,4 +73,14 @@ add_custom_target(
     BYPRODUCTS ${CMAKE_CURRENT_SOURCE_DIR}/net/index.h
     COMMENT "Generating index.h"
 )
-add_dependencies(xenia_clock build_index)
+
+# build the autoconf.h from user menuconfig
+add_custom_target(
+    build_config ALL
+    COMMAND make
+        -C ${CMAKE_CURRENT_SOURCE_DIR} all
+
+    BYPRODUCTS ${CMAKE_CURRENT_SOURCE_DIR}/include/generated/autoconf.h
+    COMMENT "Genrateing autoconf"
+)
+add_dependencies(xenia_clock build_index build_config)
