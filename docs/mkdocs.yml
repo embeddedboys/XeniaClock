@@ -10,7 +10,7 @@ theme:
   locale: en
 
 nav:
-    - Home: index.md
+    - Home: README.md
     - Get Started: getstarted.md
     - Documentations:
       - 'hardware': hardware/index.md
