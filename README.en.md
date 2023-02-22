@@ -10,28 +10,20 @@
 
 ![Docs](https://img.shields.io/badge/docs-iotahydrae.github.io%2FXeniaClock%2F-green) ![](https://img.shields.io/github/license/iotahydrae/xeniaclock) ![](https://img.shields.io/github/forks/IotaHydrae/XeniaClock) ![](https://img.shields.io/github/stars/iotahydrae/XeniaClock) ![](https://img.shields.io/github/last-commit/iotahydrae/XeniaClock) [![HitCount](https://hits.dwyl.com/IotaHydrae/XeniaClock.svg?style=flat-square)](http://hits.dwyl.com/IotaHydrae/XeniaClock)
 
-
 [[中文]](README.md) [[English]](README.en.md)
 
 Table of Contents
 ------------------
 
-- [介绍](#Introduction)
-- [设计](#Design)
-- [内部](#Inside)
-- [许可证](#License)
+- [Introduction](#Introduction)
+- [Design](#Design)
+- [Inside](#Inside)
+- [License](#License)
 
 Introduction
 ------------------
 
-一个完全开源的桌面时钟小工具，包括软件、硬件等。
-
-使用电子纸显示器，支持网络和更多功能！
-
-官方网站 : [`https://embeddedboys.github.io/XeniaClock`](https://embeddedboys.github.io/XeniaClock)
-
-仓库位于 : [`https://github.com/embeddedboys/XeniaClock`](https://github.com/embeddedboys/XeniaClock)
-
+A fully open-sourced desktop clock gadget, including software, hardware, and more. Using an e-paper display, support network, and more functions! the platform is based on RP2040.
 
 ![pico](assets/raspberry-pi-pico.svg)
 
@@ -42,16 +34,18 @@ Introduction
 Design
 ------------------
 
-嗯，**Xenia Clock** 由三部分组成，即**屋顶**、**中间**、**电源**，每个部分都有不同的工作要做。
+Well, **Xenia Clock** is consists of three parts, namely **"Roof"**, **"Middle"**, **"Power"** and
+each part got different work to do.
 
-很难用语言来解释，让我们看看这张设计结构的图片
+It's hard to explain in words, let's just take a look at this picture of designing structure
+
 
 ![DesignStructure](assets/XeniaClock.png)
 
 -----------------------
 
-**Xenia Clock屋顶的预览设计**
-> 时钟的其他部分还在建造
+**A preview design of Xenia Clock's roof**
+> the other parts of the clock are still building
 
 ![roof](assets/roof.jpg)
 
@@ -59,32 +53,41 @@ Design
 
 ![power supply board](assets/power_supply_board.jpg)
 
+Offical Site :
+[`https://embeddedboys.github.io/XeniaClock`](https://embeddedboys.github.io/XeniaClock)
+
+Repository at :
+[`https://github.com/embeddedboys/XeniaClock`](https://github.com/embeddedboys/XeniaClock)
+
+
 Inside
 ------------------
-* `主 MCU`  - raspberrypi RP2040
 
-* `副 MCU`   - STC8G1K08A
+* `MCU` - raspberrypi RP2040
 
-* `主屏幕`    - 1.54 寸 电子纸显示屏
+* based on `PICO-SDK`
 
-* `副屏幕`    - 0.91 寸 OLED (默认黄色)
+* `sub MCU` - STC8G1K08A
 
-* `网络`      - esp01s AT
+* `Display` - 1.54 inc E-paper fast-flush display
 
-* `传感器`    - AHT10 温湿度传感器
+* `sub Dispaly` - 0.91 inc OLED display (yellow for default)
 
-* `实时钟`    - DS1307/DS3221
+* `Network` - esp01s AT
 
-* `充放电管理` - IP5306
+* `Sensors` - AHT10 temperture humidity sensor
 
-* `电池`      - 200mAh 锂电池
+* `RTC` - DS1307/DS3221
 
+* `Charge IC` - IP5306
+
+* `Battery` - 200mAh lithium
 
 LICENSE
 ------------------
 
-此项目是在MIT许可证下发布的，有关详细信息，请查看`关于->许可证`。
+This project was published under an MIT license, check `About -> License` for more information.
 
-玩得开心！
+Have fun with this!
 
 Cheers,
