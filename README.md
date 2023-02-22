@@ -11,7 +11,7 @@
 ![Docs](https://img.shields.io/badge/docs-iotahydrae.github.io%2FXeniaClock%2F-green) ![](https://img.shields.io/github/license/iotahydrae/xeniaclock) ![](https://img.shields.io/github/forks/IotaHydrae/XeniaClock) ![](https://img.shields.io/github/stars/iotahydrae/XeniaClock) ![](https://img.shields.io/github/last-commit/iotahydrae/XeniaClock) [![HitCount](https://hits.dwyl.com/IotaHydrae/XeniaClock.svg?style=flat-square)](http://hits.dwyl.com/IotaHydrae/XeniaClock)
 
 
-[[中文]](README.md) [[English]](README.en.md)
+[[中文]](index.md) [[English]](index-en.md)
 
 Table of Contents
 ------------------
@@ -35,7 +35,7 @@ Introduction
 
 ![pico](assets/raspberry-pi-pico.svg)
 
-![lvgl](assets/logo_lvgl.png) ![squareline studio](assets/logo_squareline.png) ![FreeRTOS](assets/logo_freertos.jpg) ![littleFS](assets/logo_littlefs.jpg) 
+![lvgl](assets/logo_lvgl.png) ![squareline studio](assets/logo_squareline.png) ![FreeRTOS](assets/logo_freertos.jpg) ![littleFS](assets/logo_littlefs.jpg)
 
 ![GooDisplay](assets/logo_goodisplay.jpg) ![JLC](assets/logo_jlc.png)
 
