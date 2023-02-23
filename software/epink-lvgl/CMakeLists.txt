@@ -38,7 +38,7 @@ file(GLOB_RECURSE SOURCES "lvgl/src/*.c"
                             "drivers/power/*.c"
                             "drivers/input/*.c"
                             "drivers/leds/*.c"
-                            "drivers/mtd/*.c"
+                            "drivers/mtd/spi-nor/*.c"
                             "drivers/rtc/*.c")
 
 set(FREERTOS_KERNEL_PATH  ${CMAKE_CURRENT_SOURCE_DIR}/kernel)

@@ -450,6 +450,8 @@ size_t winbond_flash_sector_erase(u32 to)
 
     flash_cs_deselect(FLASH_CS_PIN);
 
+    /* according to the manual, a sector erase will cost 120ms,
+     * max for 200ms, so give a 150ms delay for good */
     return rc;
 }
 
