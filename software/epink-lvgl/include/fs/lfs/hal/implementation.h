@@ -31,11 +31,14 @@
 #ifndef __LFS_HAL_IMPLEMENTATION_H
 #define __LFS_HAL_IMPLEMENTATION_H
 
+// #include <generated/autoconf.h>
+
 /* lfs supported devices */
 #define LFS_PORT_DEVICE_RAM     0x00
 #define LFS_PORT_DEVICE_FLASH   0x01
 #define LFS_PORT_DEVICE_SDCARD  0x02
 
+#define LFS_NO_MALLOC
 #define LFS_NO_ASSERT
 #define LFS_NO_DEBUG
 #define LFS_NO_WARN
