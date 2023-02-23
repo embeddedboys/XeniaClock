@@ -1,133 +1,84 @@
-kbuild-template
-===============
+The Software Project of Xenia Clock
+===================================
 
-This is a project template, that uses the Linux Kernel build system Kbuild.
+Intro
+-----------------------------------
 
-Kbuild was originially developed to be used with the Linux Kernel.
-It implements a powerfull configuration and build infrastructure that
-allowes you to build a project with only the sources, that are really
-needed to fit your configuration.
+This software project was developed basicly based on the `pico-sdk`, so if you familarize with it, you could get into the project quick and easy.
 
-But Kbuild can not only be used along with the Linux kernel. Lots of other
-projects use the Kbuild system as well. A few famos examples:
+Strucure
+-----------------------------------
+```
+.
+├── build                       # the build dir you will be working in
+├── CMakeLists.txt              # cmake configuraion file of this project
+├── common                      # common files used in this project
+├── display                     # display handles
+├── docs                        # some documentatations
+├── font                        # font source files in dot format
+├── i2c                         # native i2c implimentation
+├── lv_conf.h                   # configuraion file for lvgl
+├── lvgl                        # lvgl source, release/v8.2
+├── main.c                      # main enty of this project
+├── net                         # net work implimentation
+├── pico_sdk_import.cmake       # pico-sdk cmake configuratoin file
+├── port                        # native port for lvgl
+├── README.md
+├── references                  # datasheets, manuals, etc.
+├── rtc                         # rtc implimentation
+├── sensors                     # sensors imlementation
+├── spi                         # native spi imlementation
+├── tests                       # test files
+└── ui -> ../../ui/             # symbol link to ui source code
+```
 
-- buildroot        -- https://buildroot.org/
-- zephyr           -- https://www.zephyrproject.org/
-- U-Boot           -- http://www.denx.de/wiki/U-Boot
+Build & Flash
+-----------------------------------
 
+> Build platform is Ubuntu 18.04
 
-This project showes you that Kbuild is a makefile framework for writing 
-simple makefiles for complex and configurable tasks that you can easily 
-use for your own purposes.
+1. source the enviroment
+```shell
+$ cd ..
+$ source tools/envsetup.sh
+```
 
-How it works
-------------
+2. get back to this folder and make build dir
+```shell
+$ cd epink-lvgl
+$ mkdir build && cd build
+```
 
-The top Makefile reads the .config file, which comes from the application
-configuration process.
+3. run the build process in the build dir
+```shell
+$ cmake .. -DCMAKE_EXPORT_COMPILE_COMMANDS=1 -GNinja
+$ ninja
+```
 
-The top Makefile is responsible for building building the application
-It builds this goal by recursively descending into the subdirectories of
-the application source tree.
-The list of subdirectories which are visited depends upon the application
-configuration. The top Makefile can include several other Makefiles that
-supply function specific information to the top Makefile.
+4. reset the device in to flash mode and burn
 
-Each subdirectory has a kbuild Makefile which carries out the commands
-passed down from above. The kbuild Makefile uses information from the
-.config file to construct various file lists used by kbuild to build
-any built-in targets.
+```
+1) connect the device to computer
+2) push down the `BOOT` button, then push down the `RESET` button
+3) a `RPI` disk device will be found on your computer
+4) put the uf2 file into device and flash will autostart
+5) after flash done, device will auto restart
+```
 
-scripts/Makefile.* contains all the definitions/rules etc. that
-are used to build the application based on the kbuild makefiles.
+Attention for developers
+-----------------------------------
 
+Here some tips you should known before starting develop
 
-Sample project
---------------
+1. sleep function like `sleep_ms` should never called in lvgl timer callback so did in interrupt isr, it cause system to crash, considering replace it with `busy_wait_ms`.
 
-This project combines a pretty simple application with the Kbuild environment.
-The Kbuild system itself was copied from the Linux Kernel. Next, the Makefiles
-and scripts where simplified and most of the kernel specific rules and targets
-where removed or replaced by out own application specific targets.
+2. the period of seconds bit of time updating shouldn't be too fast, it cause display panel going flash, I suggested set it's period to 5s at least.
 
-All changes to the Makefiles and scripts are logged in this git repository.
+3. Actually, you didn't have to delete the unused function, beacase most of linkers will do this
+automatically
 
+4, Anywhere code block that you didn't want to interrupted by other threads, you should give them a lock. for gpio holding function etc. if this got interruptted, There could caused gpio level holding time be wrong.
 
-Building
---------
-
-Building the sample application is quite simple. 
-
-First configure it, then just call make to build it.
-
-        make menconfig # Create the ".config" file
-        make           # Build the application
-
-These steps generate a small executable `myapp`,
-which just print some messages to the console.
-
-You can save default configurations into the `configs/` directory.
-There are two sample default configurations one with all options
-enabled (`all-y-defconfig`) and one with no option enabled (`all-n-defconfig`)
-
-You can configure the project with a default configuration by calling e.g.
-
-        make all-y-defconfig
-
-        
-The full list of configuration and build targets is available by:
-
-        make help
-
-
-How to use and modify this template for your own applications?
---------------------------------------------------------------
-
-The application sources can easily be replaced and extended by your 
-own files.
-
-Currently the sources are located in the following directories:
-
-- main/     -- Main application source
-- lib/      -- A sample logging library, that will be compiled into a .a file
-- include/  -- This directory holds all include files.
-
-All you need to to is to modify the following files, according to your needs:
-
-- Kconfig       in the top and all sub-directories
-- Makefile      in the top and all sub-directories
-
-Eventually also
-
-- Kbuild
-
-To get a starting point, just search for the string `myapp` in all Makefiles 
-and Kconfig files. As a first task, replace these strings with your own 
-application name.
-
-It should be quite obvious how to extend this example to your needs.
-
-You can add more subdirectories by adding to `objs-y` or `libs-y` variables
-of the top-level `Makefile`.
-
-In our sample, these variables are set to:
-
-        objs-y          := main
-        libs-y          := lib
-
-You can also add further sub-sub directories, as you like.
-
-
-
-Kbuild documentation
---------------------
-
-The original Kbuild documentation is located at
-
-Learn about the kconfig language:
-`Documentation/kbuild/kconfig-language.txt`.
-
-Learn how to write makefiles:
-`Documentation/kbuild/makefiles.txt`.
-
-This is the original documentation from the Linux Kernel
+More
+-----------------------------------
+nothing yet
