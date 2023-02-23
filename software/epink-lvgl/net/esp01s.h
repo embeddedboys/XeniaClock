@@ -54,8 +54,8 @@ typedef enum {
     ESP8266_STATUS_INITIALIZED  = 3,
 } esp8266_status_t;
 
-#define DEFAULT_ESP8266_RX_PIN      8
-#define DEFAULT_ESP8266_TX_PIN      9
+#define DEFAULT_ESP8266_RX_PIN      5
+#define DEFAULT_ESP8266_TX_PIN      4
 #define DEFAULT_ESP8266_EN_PIN      0
 
 #define DEFAULT_ESP8266_UART_IFACE  uart1

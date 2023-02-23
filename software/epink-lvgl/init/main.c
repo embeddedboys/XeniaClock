@@ -358,13 +358,21 @@ static portTASK_FUNCTION(xc_main_logic, pvParameters)
 
     /* initialize sub screen lvgl display */
     sub_screen_display_init();
+    
+    extern void winbond_flash_init(void);
+    extern void winbond_flash_test(void);
 
-    /* Here to handle message or whatever global things */
-    extern void ramfs_test(void);
+    winbond_flash_init();
     while (true) {
-        ramfs_test();
-        vTaskDelay(200);
+        winbond_flash_test();
+        vTaskDelay(500);
     }
+    /* Here to handle message or whatever global things */
+    // extern void ramfs_test(void);
+    // while (true) {
+    //     ramfs_test();
+    //     vTaskDelay(200);
+    // }
 }
 
 int main(void)
@@ -386,7 +394,7 @@ int main(void)
     xGuiSemaphore = xSemaphoreCreateMutex();
     xTaskCreate(xc_main_logic, "xc_main_logic", 512, NULL, 3, NULL);
     xTaskCreate(lvgl_task_handler, "lvgl_task_handler", 512, NULL, 4, NULL);
-    // xTaskCreate(led_task_handler, "led_task_handler", 32, NULL, 5, NULL);
+    xTaskCreate(led_task_handler, "led_task_handler", 32, NULL, 5, NULL);
 
     vTaskStartScheduler();
     while (1) {};

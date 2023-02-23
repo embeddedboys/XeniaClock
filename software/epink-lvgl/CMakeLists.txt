@@ -38,6 +38,7 @@ file(GLOB_RECURSE SOURCES "lvgl/src/*.c"
                             "drivers/power/*.c"
                             "drivers/input/*.c"
                             "drivers/leds/*.c"
+                            "drivers/mtd/*.c"
                             "drivers/rtc/*.c")
 
 set(FREERTOS_KERNEL_PATH  ${CMAKE_CURRENT_SOURCE_DIR}/kernel)
@@ -74,13 +75,4 @@ add_custom_target(
     COMMENT "Generating index.h"
 )
 
-# build the autoconf.h from user menuconfig
-add_custom_target(
-    build_config ALL
-    COMMAND make
-        -C ${CMAKE_CURRENT_SOURCE_DIR} all
-
-    BYPRODUCTS ${CMAKE_CURRENT_SOURCE_DIR}/include/generated/autoconf.h
-    COMMENT "Genrateing autoconf"
-)
-add_dependencies(xenia_clock build_index build_config)
+add_dependencies(xenia_clock build_index)

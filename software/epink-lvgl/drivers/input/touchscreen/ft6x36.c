@@ -30,6 +30,7 @@
 
 #include <common/module.h>
 
+#include "pico/binary_info.h"
 #include <hardware/gpio.h>
 #include <i2c/native_i2c.h>
 #include <input/input.h>
@@ -46,21 +47,28 @@ void ft6x36_write_reg(__u8 addr, __u8 reg, __u8 val)
     i2c_write_reg(addr, reg, val);
 }
 
+static inline void ft6x36_reset(void)
+{
+    gpio_put(FT6X36_RST_PIN, 0);
+    busy_wait_ms(2);
+    gpio_put(FT6X36_RST_PIN, 1);
+}
+
 static void ft6x36_hw_init(void)
 {
     /* interrupt gpio initialize */
     gpio_init(FT6X36_INT_PIN);
     gpio_set_dir(FT6X36_INT_PIN, GPIO_IN);
+    bi_decl(bi_1pin_with_name(FT6X36_INT_PIN, "FT6X36 INT"));
 
     /* reset gpio initialize */
     gpio_init(FT6X36_RST_PIN);
     gpio_set_dir(FT6X36_RST_PIN, GPIO_OUT);
     gpio_put(FT6X36_RST_PIN, 1);
+    bi_decl(bi_1pin_with_name(FT6X36_RST_PIN, "FT6X36 RST"));
 
     /* make a device reset */
-    gpio_put(FT6X36_RST_PIN, 0);
-    busy_wait_ms(2);
-    gpio_put(FT6X36_RST_PIN, 1);
+    ft6x36_reset();
 
     /* set to working mode */
     ft6x36_set_device_mode(0x00);
