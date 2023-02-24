@@ -47,6 +47,12 @@ struct aht10_data {
     double real_temperture;
 };
 
+enum {
+    AHT10_STATUS_OK      = 0x00,
+    AHT10_STATUS_BUSY    = 0x01,
+    AHT10_STATUS_ERROR   = 0x02,
+};
+
 #define AHT10_ADDRESS       0x38
 #define AHT10_CMD_RESET     0xe1
 #define AHT10_CMD_MEASURE   0xac

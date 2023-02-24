@@ -97,37 +97,30 @@ void xc_update_roller_time(uint8_t hour, uint8_t min, uint8_t sec)
 {
     if (hour >= 0)
         xc_set_roller_time_hour(hour);
-        
+
     if (min >= 0)
         xc_set_roller_time_minute(min);
-        
+
     if (sec >= 0)
         xc_set_roller_time_second(sec);
 }
 
-/**
- * @brief 
- * 
- * @param id 
- * @param user_data 
- * @return int64_t 
- */
-static int64_t xc_disp_manunally_refesh_cb(alarm_id_t id, void *user_data)
-{
-    _lv_disp_refr_timer(NULL);
-}
+// static int64_t xc_disp_manunally_refesh_cb(alarm_id_t id, void *user_data)
+// {
+//     _lv_disp_refr_timer(NULL);
+// }
 
-static bool xc_repeating_timer_refresh_cb(struct repeating_timer *t)
-{
-    /* we deleted refresh timer of lvgl, and repalce it with timer of mcu,
-     * bacause there some blocked function in display flush method, this
-     * cause lvgl timer blocked too, so we call display refesh maunally
-     * in every 1 second */
-    
-    // pr_debug("refeshing display ...\n");
-    _lv_disp_refr_timer(NULL);
-    // pr_debug("display refreshed\n");
-}
+// static bool xc_repeating_timer_refresh_cb(struct repeating_timer *t)
+// {
+//     /* we deleted refresh timer of lvgl, and repalce it with timer of mcu,
+//      * bacause there some blocked function in display flush method, this
+//      * cause lvgl timer blocked too, so we call display refesh maunally
+//      * in every 1 second */
+
+//     // pr_debug("refeshing display ...\n");
+//     _lv_disp_refr_timer(NULL);
+//     // pr_debug("display refreshed\n");
+// }
 
 /* This logic should never modified unless have a better idea
  * This callback must be use a  high-res timer to handle
@@ -136,19 +129,19 @@ static void xc_lvgl_timer_roller_cb()
 {
     if ((++g_roller_second % SECOND_UPDATE_STEP) == 0)
         lv_roller_set_selected(ui_RollerSecond, g_roller_second, LV_ANIM_OFF);
-        
+
     if (SECONDS_IN_MINUTE == g_roller_second) {
         g_roller_second = 0;     /* update first, then write back */
         lv_roller_set_selected(ui_RollerSecond, g_roller_second, LV_ANIM_OFF);
         lv_roller_set_selected(ui_RollerMinute, ++g_roller_minute, LV_ANIM_OFF);
     }
-    
+
     if (MINUTES_IN_HOUR == g_roller_minute) {
         g_roller_minute = 0;
         lv_roller_set_selected(ui_RollerMinute, g_roller_minute, LV_ANIM_OFF);
         lv_roller_set_selected(ui_RollerHour, ++g_roller_hour, LV_ANIM_OFF);
     }
-    
+
     if (HOURS_IN_DAY == g_roller_hour) {
         g_roller_hour = 0;
         lv_roller_set_selected(ui_RollerHour, g_roller_hour, LV_ANIM_OFF);
@@ -159,22 +152,22 @@ static void xc_lvgl_timer_roller_cb()
 static inline void xc_timer_time_sync_cb(struct _lv_timer_t *t)
 {
     /* 1. trying to get time from network though NTP */
-    
+
     /* ON SYNC OKAY */
     /* 2. if ntp sync is OKAY, save it to rtc device, and set this synced time */
-    
+
     /* ON SYNC FAILED */
     /* 3. if ntp sync is FAILED, just read from rtc device */
     datetime_t t_rtc = p_rtc_device_get_time();
-    
+
     /* write back to host rtc */
     rtc_host_set_datetime(&t_rtc);
-    
+
     /* 4. set synced time */
     g_roller_hour = t_rtc.hour;
     g_roller_minute = t_rtc.min;
     g_roller_second = t_rtc.sec;
-    
+
     pr_debug("syncing time to %02d:%02d:%02d ...\n", g_roller_hour, g_roller_minute,
              g_roller_second);
     lv_roller_set_selected(ui_RollerHour, g_roller_hour, LV_ANIM_OFF);
@@ -221,10 +214,10 @@ static inline void xc_timer_battery_cb(struct _lv_timer_t *t)
 {
     lv_obj_t *ui_LabelBattery = ui_comp_get_child(ui_PanelStatusBar,
                                                   UI_COMP_PANELSTATUSBAR_LABELBATTERY);
-                                                  
+
     static uint8_t battery_percent = BATTERY_PERCENT_FULL;
     lv_label_set_text_fmt(ui_LabelBattery, "%d%%", --battery_percent);
-    
+
     if (battery_percent == BATTERY_PRECENT_DEAD)
         battery_percent = BATTERY_PERCENT_FULL;
 }
@@ -235,7 +228,10 @@ extern lv_obj_t *ui_LabelHumidity;
 static inline void xc_timer_temp_humid_cb(struct _lv_timer_t *t)
 {
     struct aht10_data data = aht10_read_humidity_temperture();
-    
+
+    if (data.status == AHT10_STATUS_ERROR)
+        return;
+
     lv_label_set_text_fmt(ui_LabelHumidity, "%d%%", (int)data.real_humidity);
     lv_label_set_text_fmt(ui_LabelTemperture, "%d*C", (int)data.real_temperture);
 }
@@ -244,28 +240,28 @@ static inline void xc_timer_temp_humid_cb(struct _lv_timer_t *t)
 void xc_post_timers_init(void)
 {
     pr_debug("setting up ...\n");
-    
+
     pr_debug("registering time roller timer ...\n");
     lv_timer_t *timer_roller = lv_timer_create_basic();
     timer_roller->timer_cb = xc_lvgl_timer_roller_cb;
     timer_roller->period = MICROSECOND(1000);
 
-    lv_timer_t *timer_time_sync = lv_timer_create_basic();
-    timer_time_sync->timer_cb = xc_timer_time_sync_cb;
-    timer_time_sync->period = TIME_SYNC_PERIOD;
-    
+    // lv_timer_t *timer_time_sync = lv_timer_create_basic();
+    // timer_time_sync->timer_cb = xc_timer_time_sync_cb;
+    // timer_time_sync->period = TIME_SYNC_PERIOD;
+
     /* timer for updating daily tips, should requst tips from internet */
     pr_debug("registering tips timer ...\n");
     lv_timer_t *timer_tips = lv_timer_create_basic();
     timer_tips->timer_cb = xc_timer_label_tips_cb;
     timer_tips->period = REFRESH_SPEED_NORMAL * 5;
-    
+
     /* timer for updating battery percent, just a demo for now */
     pr_debug("registering battery percent timer ...\n");
     lv_timer_t *timer_battery = lv_timer_create_basic();
     timer_battery->timer_cb = xc_timer_battery_cb;
     timer_battery->period = REFRESH_SPEED_SLOW * 2;
-    
+
     /* timer for updating temperture and humidity */
     pr_debug("registering temperture and humidity timer ...\n");
     lv_timer_t *timer_temp_humid = lv_timer_create_basic();
@@ -274,46 +270,18 @@ void xc_post_timers_init(void)
     // lv_timer_pause(timer_temp_humid);
 }
 
-// static portTASK_FUNCTION(xc_roller_update_task, pvParameters)
+// static portTASK_FUNCTION(xc_disp_refresh_task, pvParameters)
 // {
-//     while (true) {
-    
-//         if ((++g_roller_second % SECOND_UPDATE_STEP) == 0)
-//             lv_roller_set_selected(ui_RollerSecond, g_roller_second, LV_ANIM_OFF);
-            
-//         if (SECONDS_IN_MINUTE == g_roller_second) {
-//             g_roller_second = 0;     /* update first, then write back */
-//             lv_roller_set_selected(ui_RollerSecond, g_roller_second, LV_ANIM_OFF);
-//             lv_roller_set_selected(ui_RollerMinute, ++g_roller_minute, LV_ANIM_OFF);
-//         }
-        
-//         if (MINUTES_IN_HOUR == g_roller_minute) {
-//             g_roller_minute = 0;
-//             lv_roller_set_selected(ui_RollerMinute, g_roller_minute, LV_ANIM_OFF);
-//             lv_roller_set_selected(ui_RollerHour, ++g_roller_hour, LV_ANIM_OFF);
-//         }
-        
-//         if (HOURS_IN_DAY == g_roller_hour) {
-//             g_roller_hour = 0;
-//             lv_roller_set_selected(ui_RollerHour, g_roller_hour, LV_ANIM_OFF);
-//         }
-        
-//         vTaskDelay(1000);
+//     /* we deleted refresh timer of lvgl, and repalce it with timer of mcu,
+//      * bacause there some blocked function in display flush method, this
+//      * cause lvgl timer blocked too, so we call display refesh maunally
+//      * in every 1 second */
+
+//     while (1) {
+//         pr_debug("refeshing display ...\n");
+//         _lv_disp_refr_timer(NULL);
+//         // pr_debug("display refreshed\n");
+
+//         vTaskDelay(200);
 //     }
 // }
-
-static portTASK_FUNCTION(xc_disp_refresh_task, pvParameters)
-{
-    /* we deleted refresh timer of lvgl, and repalce it with timer of mcu,
-     * bacause there some blocked function in display flush method, this
-     * cause lvgl timer blocked too, so we call display refesh maunally
-     * in every 1 second */
-    
-    while (1) {
-        pr_debug("refeshing display ...\n");
-        _lv_disp_refr_timer(NULL);
-        // pr_debug("display refreshed\n");
-        
-        vTaskDelay(200);
-    }
-}

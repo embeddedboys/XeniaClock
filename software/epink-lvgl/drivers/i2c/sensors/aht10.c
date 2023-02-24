@@ -28,6 +28,7 @@
  *
  */
 
+#include "pico/stdlib.h"
 #include "i2c/sensors/aht10.h"
 #include "common/tools.h"
 
@@ -46,7 +47,7 @@ int aht10_reset(void)
 
 int __aht10_read_raw(uint8_t *rbuf, int len)
 {
-    int rc;
+    int rc = 0;
     uint8_t wbuf[3] = {
         AHT10_CMD_MEASURE,
         AHT10_CMD_READ,
@@ -64,17 +65,25 @@ int __aht10_read_raw(uint8_t *rbuf, int len)
         printf("%s: Device not responding\n", __func__);
         return rc;
     }
-    
+
     return rc;
 }
 
 struct aht10_data aht10_read_humidity_temperture()
 {
+    int rc;
     uint8_t rbuf[6];
-    struct aht10_data data;
-    
-    __aht10_read_raw(rbuf, ARRAY_SIZE(rbuf));
-    
+    struct aht10_data data = {0};
+
+    rc = __aht10_read_raw(rbuf, ARRAY_SIZE(rbuf));
+    if (rc == PICO_ERROR_GENERIC) {
+        data.status = AHT10_STATUS_ERROR;
+        return data;
+    }
+
+    /* passed, set successful flag */
+    data.status = AHT10_STATUS_OK;
+
     data.status  = rbuf[0];
     data.SRH = rbuf[  1] << 12 | rbuf[2] << 4 | rbuf[3] >> 4;
     data.ST = (rbuf[3] & 0x0f) << 16 | rbuf[4] << 8 | rbuf[5];
