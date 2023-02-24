@@ -31,15 +31,15 @@
 #include <FreeRTOS.h>
 #include "task.h"
 
-#include <common/init.h>
-#include <common/tools.h>
-
 #include <stdio.h>
 #include <string.h>
 #include "hardware/spi.h"
 #include "pico/stdlib.h"
-#include "common/vals.h"
 #include "pico/binary_info.h"
+
+#include "mtd/spi-nor.h"
+
+#include "core.h"
 
 #define FLASH_SPI_IFCE  spi1
 
@@ -57,130 +57,6 @@
 #define WINBOND_FLASH_CMD_MANUFACTURER_DEVICE_ID    0x90
 #define WINBOND_FLASH_CMD_READ_UNIQUE_ID            0x4b
 #define WINBOND_FLASH_CMD_JEDEC_ID                  0x9f
-
-#define SPI_NOR_MAX_ID_LEN  6
-
-struct flash_info {
-    char *name;
-    u8 id[SPI_NOR_MAX_ID_LEN];
-    u8 id_len;
-    unsigned sector_size;
-    u16 n_sectors;
-    u16 page_size;
-    u16 addr_width;
-
-    bool parse_sfdp;
-    u16 flags;
-#define SPI_NOR_HAS_LOCK        BIT(0)
-#define SPI_NOR_HAS_TB          BIT(1)
-#define SPI_NOR_TB_SR_BIT6      BIT(2)
-#define SPI_NOR_4BIT_BP         BIT(3)
-#define SPI_NOR_BP3_SR_BIT6     BIT(4)
-#define SPI_NOR_SWP_IS_VOLATILE     BIT(5)
-#define SPI_NOR_NO_ERASE        BIT(6)
-#define NO_CHIP_ERASE           BIT(7)
-#define SPI_NOR_NO_FR           BIT(8)
-#define USE_CLSR            BIT(9)
-#define USE_FSR             BIT(10)
-#define SPI_NOR_XSR_RDY         BIT(11)
-
-    u8 no_sfdp_flags;
-#define SPI_NOR_SKIP_SFDP       BIT(0)
-#define SECT_4K             BIT(1)
-#define SECT_4K_PMC         BIT(2)
-#define SPI_NOR_DUAL_READ       BIT(3)
-#define SPI_NOR_QUAD_READ       BIT(4)
-#define SPI_NOR_OCTAL_READ      BIT(5)
-#define SPI_NOR_OCTAL_DTR_READ      BIT(6)
-#define SPI_NOR_OCTAL_DTR_PP        BIT(7)
-
-    u8 fixup_flags;
-#define SPI_NOR_4B_OPCODES      BIT(0)
-#define SPI_NOR_IO_MODE_EN_VOLATILE BIT(1)
-
-    u8 mfr_flags;
-
-    // const struct spi_nor_otp_organization otp_org;
-    // const struct spi_nor_fixups *fixups;
-};
-
-/* Used when the "_ext_id" is two bytes at most */
-#define INFO(_jedec_id, _ext_id, _sector_size, _n_sectors)      \
-    .id = {                         \
-                                    ((_jedec_id) >> 16) & 0xff,         \
-                                    ((_jedec_id) >> 8) & 0xff,          \
-                                    (_jedec_id) & 0xff,             \
-                                    ((_ext_id) >> 8) & 0xff,            \
-                                    (_ext_id) & 0xff,               \
-          },                      \
-          .id_len = (!(_jedec_id) ? 0 : (3 + ((_ext_id) ? 2 : 0))),   \
-          .sector_size = (_sector_size),              \
-          .n_sectors = (_n_sectors),              \
-          .page_size = 256,                   \
-
-#define INFO6(_jedec_id, _ext_id, _sector_size, _n_sectors)     \
-    .id = {                         \
-                                    ((_jedec_id) >> 16) & 0xff,         \
-                                    ((_jedec_id) >> 8) & 0xff,          \
-                                    (_jedec_id) & 0xff,             \
-                                    ((_ext_id) >> 16) & 0xff,           \
-                                    ((_ext_id) >> 8) & 0xff,            \
-                                    (_ext_id) & 0xff,               \
-          },                      \
-          .id_len = 6,                        \
-          .sector_size = (_sector_size),              \
-          .n_sectors = (_n_sectors),              \
-          .page_size = 256,                   \
-
-#define CAT25_INFO(_sector_size, _n_sectors, _page_size, _addr_width)   \
-    .sector_size = (_sector_size),              \
-    .n_sectors = (_n_sectors),              \
-    .page_size = (_page_size),              \
-    .addr_width = (_addr_width),                \
-    .flags = SPI_NOR_NO_ERASE | SPI_NOR_NO_FR,      \
-
-#define S3AN_INFO(_jedec_id, _n_sectors, _page_size)            \
-    .id = {                         \
-                ((_jedec_id) >> 16) & 0xff,         \
-                ((_jedec_id) >> 8) & 0xff,          \
-                (_jedec_id) & 0xff              \
-          },                      \
-          .id_len = 3,                        \
-          .sector_size = (8*_page_size),              \
-          .n_sectors = (_n_sectors),              \
-          .page_size = _page_size,                \
-          .addr_width = 3,                    \
-          .flags = SPI_NOR_NO_FR | SPI_NOR_XSR_RDY,
-
-#define OTP_INFO(_len, _n_regions, _base, _offset)          \
-    .otp_org = {                        \
-                    .len = (_len),                  \
-                    .base = (_base),                \
-                    .offset = (_offset),                \
-                    .n_regions = (_n_regions),          \
-               },
-
-#define PARSE_SFDP                          \
-    .parse_sfdp = true,                     \
-
-#define FLAGS(_flags)                           \
-    .flags = (_flags),                  \
-
-#define NO_SFDP_FLAGS(_no_sfdp_flags)                   \
-    .no_sfdp_flags = (_no_sfdp_flags),          \
-
-#define FIXUP_FLAGS(_fixup_flags)                   \
-    .fixup_flags = (_fixup_flags),              \
-
-#define MFR_FLAGS(_mfr_flags)                       \
-    .mfr_flags = (_mfr_flags),              \
-
-struct spi_nor_manufacturer {
-    const char *name;
-    const struct flash_info *parts;
-    unsigned int nparts;
-    const struct spi_nor_fixups *fixups;
-};
 
 static void flash_cs_select(uint16_t pin)
 {
