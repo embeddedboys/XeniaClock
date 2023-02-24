@@ -33,6 +33,8 @@
 #ifndef __TYPES_H
 #define __TYPES_H
 
+#include <stdbool.h>
+
 #ifndef u8
     typedef unsigned char u8;
 #endif
@@ -58,5 +60,25 @@ typedef signed char  __s8;
 typedef signed short __s16;
 typedef signed int   __s32;
 typedef signed long long __s64;
+
+/* bsd */
+typedef unsigned char		u_char;
+typedef unsigned short		u_short;
+typedef unsigned int		u_int;
+typedef unsigned long		u_long;
+
+/* sysv */
+typedef unsigned char		unchar;
+typedef unsigned short		ushort;
+typedef unsigned int		uint;
+typedef unsigned long		ulong;
+
+typedef int __kernel_ssize_t;
+typedef long long   __kernel_loff_t;
+
+typedef __kernel_ssize_t ssize_t;
+typedef __kernel_loff_t loff_t;
+
+// typedef _Bool			bool;
 
 #endif  /* __TYPES_H */

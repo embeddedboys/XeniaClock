@@ -2,6 +2,8 @@
 #ifndef _LINUX_BITOPS_H
 #define _LINUX_BITOPS_H
 
+#include "common/const.h"
+
 #include "tools.h"
 #include "types.h"
 
@@ -19,6 +21,10 @@
 
 #define __BITS_PER_LONG 32
 #define BITS_PER_LONG   __BITS_PER_LONG
+
+#ifndef BITS_PER_LONG_LONG
+#define BITS_PER_LONG_LONG 64
+#endif
 
 static inline void set_bit(int nr, unsigned long *addr)
 {
@@ -43,12 +49,19 @@ static int test_bit(unsigned int nr, const unsigned long *addr)
  * position @h. For example
  * GENMASK_ULL(39, 21) gives us the 64bit vector 0x000000ffffe00000.
  */
-#define GENMASK(h, l) \
-	(((~0UL) - (1UL << (l)) + 1) & (~0UL >> (BITS_PER_LONG - 1 - (h))))
+#define GENMASK_INPUT_CHECK(h, l) 0
 
+#define __GENMASK(h, l) \
+	(((~UL(0)) - (UL(1) << (l)) + 1) & \
+	 (~UL(0) >> (BITS_PER_LONG - 1 - (h))))
+#define GENMASK(h, l) \
+	(GENMASK_INPUT_CHECK(h, l) + __GENMASK(h, l))
+
+#define __GENMASK_ULL(h, l) \
+	(((~ULL(0)) - (ULL(1) << (l)) + 1) & \
+	 (~ULL(0) >> (BITS_PER_LONG_LONG - 1 - (h))))
 #define GENMASK_ULL(h, l) \
-	(((~0ULL) - (1ULL << (l)) + 1) & \
-	 (~0ULL >> (BITS_PER_LONG_LONG - 1 - (h))))
+	(GENMASK_INPUT_CHECK(h, l) + __GENMASK_ULL(h, l))
 
 extern unsigned int __sw_hweight8(unsigned int w);
 extern unsigned int __sw_hweight16(unsigned int w);
