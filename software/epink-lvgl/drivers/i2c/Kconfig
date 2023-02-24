@@ -1,0 +1,96 @@
+
+menu "I2C support"
+
+# start I2C Bus 0
+config I2C_ENABLE_BUS_0
+    bool "Enable I2C0"
+    help
+      Enable the i2c0 support.
+      if unsure, Say Y
+
+choice
+    prompt "Default SCL Pin"
+    depends on I2C_ENABLE_BUS_0
+    help
+      Here choose the scl pin for default use.
+
+    config I2C0_SCL_PIN_GP1
+    bool "GP1"
+
+    config I2C0_SCL_PIN_GP5
+    bool "GP5"
+
+    config I2C0_SCL_PIN_GP9
+    bool "GP9"
+
+    config I2C0_SCL_PIN_GP13
+    bool "GP13"
+
+    config I2C0_SCL_PIN_GP17
+    bool "GP17"
+
+    config I2C0_SCL_PIN_GP21
+    bool "GP21"
+
+endchoice
+
+config I2C0_DEFAULT_SCL_PIN
+    int
+    default 1 if I2C0_SCL_PIN_GP1
+    default 5 if I2C0_SCL_PIN_GP5
+    default 9 if I2C0_SCL_PIN_GP9
+    default 17 if I2C0_SCL_PIN_GP17
+    default 21 if I2C0_SCL_PIN_GP21
+
+choice
+    prompt "Default SDA Pin"
+    depends on I2C_ENABLE_BUS_0
+    help
+      Here choose the sda pin for default use.
+
+    config I2C0_SDA_PIN_GP0
+    bool "GP0"
+
+    config I2C0_SDA_PIN_GP4
+    bool "GP4"
+
+    config I2C0_SDA_PIN_GP8
+    bool "GP8"
+
+    config I2C0_SDA_PIN_GP12
+    bool "GP12"
+
+    config I2C0_SDA_PIN_GP16
+    bool "GP16"
+
+    config I2C0_SDA_PIN_GP20
+    bool "GP20"
+
+endchoice
+
+config I2C0_DEFAULT_SDA_PIN
+    int
+    default 0 if I2C0_SDA_PIN_GP0
+    default 4 if I2C0_SDA_PIN_GP4
+    default 8 if I2C0_SDA_PIN_GP8
+    default 16 if I2C0_SDA_PIN_GP16
+    default 20 if I2C0_SDA_PIN_GP20
+# end I2C Bus 0
+
+# start I2C Bus 1
+
+
+
+# end I2C Bus 1
+
+config I2C_DEBUG_BUS
+    bool "I2C Bus debugging messages"
+    help
+      Say Y here if you want the I2C bus drivers to produce a bunch of
+      debug messages to the system log. Select this if you are having
+      a problem with I2C suport and want to see more of what is going
+      on.
+
+endmenu
+
+

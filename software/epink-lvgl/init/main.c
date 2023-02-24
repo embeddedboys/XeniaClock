@@ -328,14 +328,14 @@ static portTASK_FUNCTION(led_task_handler, pvParameters)
     gpio_set_dir(LED_PIN, GPIO_OUT);
     while (true) {
         /* this lock is in need, otherwise other  tasks may interrupt this block when this thread executing */
-        task_mutex_lock(xGuiSemaphore);
+        // task_mutex_lock(xGuiSemaphore);
 
         gpio_put(LED_PIN, 1);
         vTaskDelay(5);
         gpio_put(LED_PIN, 0);
         vTaskDelay(5);
 
-        task_mutex_unlock(xGuiSemaphore);
+        // task_mutex_unlock(xGuiSemaphore);
     }
 }
 
@@ -394,7 +394,7 @@ int main(void)
     xGuiSemaphore = xSemaphoreCreateMutex();
     xTaskCreate(xc_main_logic, "xc_main_logic", 512, NULL, 3, NULL);
     xTaskCreate(lvgl_task_handler, "lvgl_task_handler", 512, NULL, 4, NULL);
-    xTaskCreate(led_task_handler, "led_task_handler", 32, NULL, 5, NULL);
+    // xTaskCreate(led_task_handler, "led_task_handler", 32, NULL, 5, NULL);
 
     vTaskStartScheduler();
     while (1) {};

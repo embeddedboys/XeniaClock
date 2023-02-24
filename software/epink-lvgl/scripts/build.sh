@@ -111,6 +111,7 @@ case $1 in
         do_configure
         echo_debug "show the menu"
         ARCH=${ARCH} make menuconfig
+        ARCH=${ARCH} make
         exit 0
         ;;
 

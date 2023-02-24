@@ -1,9 +1,9 @@
 /**
- * @file native_i2c.c
+ * @file conf.h
  * @author IotaHydrae (writeforever@foxmail.com)
  * @brief 
  * @version 0.1
- * @date 2022-11-18
+ * @date 2023-02-24
  * 
  * MIT License
  * 
@@ -28,44 +28,23 @@
  * 
  */
 
-#include <common/init.h>
-#include <common/conf.h>
+#pragma once
 
-#include "i2c/native_i2c.h"
-#include "common/tools.h"
-#include "hardware/i2c.h"
-#include "hardware/gpio.h"
-#include "common/vals.h"
-#include "pico/binary_info.h"
+#ifndef __COMMON_CONF_H
+#define __COMMON_CONF_H
 
-#define DEFAULT_I2C_IFCE        i2c0
+#include <generated/autoconf.h>
 
-void i2c_write_reg(uint8_t addr, uint8_t reg, uint8_t val)
-{
-    uint8_t buf[2] = {reg, val};
-    i2c_write_blocking(DEFAULT_I2C_IFCE, addr, buf, 2, false);
-}
+#ifdef CONFIG_I2C0_DEFAULT_SCL_PIN
+    #define DEFAULT_I2C_SCL_PIN     CONFIG_I2C0_DEFAULT_SCL_PIN
+#else
+    #define DEFAULT_I2C_SCL_PIN     21
+#endif
 
-uint8_t i2c_read_reg(uint8_t addr, uint8_t reg)
-{
-    uint8_t wbuf[1] = {reg}, rbuf[1];
-    i2c_write_blocking(DEFAULT_I2C_IFCE, addr, wbuf, 1, true);
-    i2c_read_blocking(DEFAULT_I2C_IFCE, addr, rbuf, 1, false);
-    return rbuf[0];
-}
+#ifdef CONFIG_I2C0_DEFAULT_SDA_PIN
+    #define DEFAULT_I2C_SDA_PIN     CONFIG_I2C0_DEFAULT_SDA_PIN
+#else
+    #define DEFAULT_I2C_SDA_PIN     20
+#endif
 
-static int native_i2c_init(void)
-{
-    i2c_init(DEFAULT_I2C_IFCE, DEFAULT_I2C_SPEED);
-    gpio_set_function(DEFAULT_I2C_SDA_PIN, GPIO_FUNC_I2C);
-    gpio_set_function(DEFAULT_I2C_SCL_PIN, GPIO_FUNC_I2C);
-    bi_decl(bi_2pins_with_func(DEFAULT_I2C_SDA_PIN,
-                            DEFAULT_I2C_SCL_PIN,
-                            GPIO_FUNC_I2C));
-    gpio_pull_up(DEFAULT_I2C_SDA_PIN);
-    gpio_pull_up(DEFAULT_I2C_SCL_PIN);
-
-    return 0;
-}
-
-subsys_initcall(native_i2c_init);
+#endif

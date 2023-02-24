@@ -3,6 +3,20 @@ menu "Device Drivers"
 
 source "drivers/clk/Kconfig"
 
+source "drivers/i2c/Kconfig"
+
+source "drivers/spi/Kconfig"
+
+source "drivers/rtc/Kconfig"
+
+source "drivers/video/Kconfig"
+
+source "drivers/leds/Kconfig"
+
+source "drivers/soc/Kconfig"
+
+source "drivers/uart/Kconfig"
+
 endmenu
 
 
