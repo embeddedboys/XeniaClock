@@ -54,7 +54,7 @@ datetime_t rtc_host_get_datetime()
     //  *
     //  * tbe delay is up to 3 RTC clock cycles (which is 64us with the default clock settings)
     //  */
-    // sleep_us(64);
+    busy_wait_us(64);
     return t;
 }
 
@@ -75,10 +75,19 @@ void rtc_host_init()
 
     p_time = &default_t;
 
-    if (p_rtc_device_get_time != NULL) {
-        *p_time = p_rtc_device_get_time();   /* trying to require rtc device */
-        rtc_host_set_datetime(p_time);
-    } else {
-        rtc_host_set_datetime(p_time);
-    }
+    /* latch this time into native rtc */
+    rtc_host_set_datetime(p_time);
+
+    /* if didn't give a rtc device, we don't need go futher */
+    if (!p_rtc_device_get_time)
+        return;
+
+    /* request external rtc device */
+    *p_time = p_rtc_device_get_time();   /* trying to require rtc device */
+
+    /* illegal check */
+    if (p_time->hour == 0 && p_time->min == 0 && p_time->sec == 0)
+        return;
+
+    rtc_host_set_datetime(p_time);
 }
