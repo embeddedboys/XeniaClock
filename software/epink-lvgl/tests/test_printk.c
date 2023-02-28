@@ -4,12 +4,12 @@
 
 static SUBSYS_INITCALL(native_i2c_init)
 {
-    printk("%s, initializing\n", __func__);
+    pr_warn("%s, initializing\n", __func__);
 }
 
 static SUBSYS_INITCALL(native_spi_init)
 {
-    printk("%s, initializing\n", __func__);
+    pr_debug("%s, initializing\n", __func__);
 }
 
 
@@ -17,9 +17,9 @@ int main()
 {
     // printk_late_init();
 
-    printk("hhhhhhh\n");
+    pr_err("hhhhhhh\n");
 
-    printk("hello %s\n", "peter");
+    pr_info("hello %s\n", "peter");
 
     dump_kmsg(true);
 

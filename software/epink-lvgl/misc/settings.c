@@ -88,6 +88,6 @@ rootfs_initcall(xc_settings_init);
 /* give default settings */
 static int xc_settings_init(void)
 {
-    printk("%s, initialzing default settings ... ", __func__);
+    printk("%s, initialzing default settings ... \n", __func__);
     xc_set_disp_flush_mode(DISP_FLUSH_MODE_FULL);
 }

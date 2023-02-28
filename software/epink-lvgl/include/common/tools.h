@@ -46,9 +46,9 @@
     #define pr_debug
 #endif
 
-#define pr_info(fmt, ...) printf("[ INFO ] +%d %s : "fmt, __LINE__, __func__, ##__VA_ARGS__);
-#define pr_warn(fmt, ...) printf("[ WARN ] +%d %s : "fmt, __LINE__, __func__, ##__VA_ARGS__);
-#define pr_err(fmt, ...) printf("[ ERROR ] +%d %s : "fmt, __LINE__, __func__, ##__VA_ARGS__);
+// #define pr_info(fmt, ...) printf("[ INFO ] +%d %s : "fmt, __LINE__, __func__, ##__VA_ARGS__);
+// #define pr_warn(fmt, ...) printf("[ WARN ] +%d %s : "fmt, __LINE__, __func__, ##__VA_ARGS__);
+// #define pr_err(fmt, ...) printf("[ ERROR ] +%d %s : "fmt, __LINE__, __func__, ##__VA_ARGS__);
 
 #ifndef ARRAY_SIZE
     #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
