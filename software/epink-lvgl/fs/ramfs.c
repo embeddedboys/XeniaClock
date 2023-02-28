@@ -39,6 +39,8 @@
 #include "fs/lfs/lfs.h"
 #include "fs/lfs/hal/lfs_rambd.h"
 
+#include "lib/printk.h"
+
 #define LFS_READ_SIZE       16
 #define LFS_PROG_SIZE       16
 
@@ -94,8 +96,12 @@ void ramfs_test(void)
     lfs_unmount(&ramfs_lfs);
 }
 
+fs_initcall(ramfs_init);
+
 static int ramfs_init(void)
 {
+    printk("%s, initializing RAM file system ...\n", __func__);
+
     ramfs_mem = (uint8_t *)malloc(LFS_BLOCK_SIZE * LFS_BLOCK_COUNT);
 
     struct lfs_rambd_config rambd_cfg = {
@@ -140,5 +146,3 @@ static int ramfs_init(void)
 
     return 0;
 }
-
-fs_initcall(ramfs_init);

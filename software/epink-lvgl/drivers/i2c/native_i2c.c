@@ -31,6 +31,8 @@
 #include <common/init.h>
 #include <common/conf.h>
 
+#include "lib/printk.h"
+
 #include "i2c/native_i2c.h"
 #include "common/tools.h"
 #include "hardware/i2c.h"
@@ -40,14 +42,18 @@
 
 #define DEFAULT_I2C_IFCE        i2c0
 
+subsys_initcall(native_i2c_init);
+
 void i2c_write_reg(uint8_t addr, uint8_t reg, uint8_t val)
 {
+    // printk("i2c_write_reg\n");
     uint8_t buf[2] = {reg, val};
     i2c_write_blocking(DEFAULT_I2C_IFCE, addr, buf, 2, false);
 }
 
 uint8_t i2c_read_reg(uint8_t addr, uint8_t reg)
 {
+    // printk("i2c_read_reg\n");
     uint8_t wbuf[1] = {reg}, rbuf[1];
     i2c_write_blocking(DEFAULT_I2C_IFCE, addr, wbuf, 1, true);
     i2c_read_blocking(DEFAULT_I2C_IFCE, addr, rbuf, 1, false);
@@ -56,6 +62,8 @@ uint8_t i2c_read_reg(uint8_t addr, uint8_t reg)
 
 static int native_i2c_init(void)
 {
+    printk("native_i2c_init, initializing i2c bus ...\n");
+
     i2c_init(DEFAULT_I2C_IFCE, DEFAULT_I2C_SPEED);
     gpio_set_function(DEFAULT_I2C_SDA_PIN, GPIO_FUNC_I2C);
     gpio_set_function(DEFAULT_I2C_SCL_PIN, GPIO_FUNC_I2C);
@@ -67,5 +75,3 @@ static int native_i2c_init(void)
 
     return 0;
 }
-
-subsys_initcall(native_i2c_init);

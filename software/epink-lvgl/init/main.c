@@ -61,6 +61,7 @@
 #include "spi/native_spi.h"
 #include "i2c/native_i2c.h"
 #include "misc/extras.h"
+#include "lib/printk.h"
 
 /* Header files lvgl defined */
 #include "lvgl/lvgl.h"
@@ -120,14 +121,17 @@ static void hal_init(void)
     uart_set_fifo_enabled(uart1, false);
 }
 
-void system_init(void)
+static int system_init(void)
 {
     /* initialize clocks */
     clk_init();
 
     /* system up hardware init */
     stdio_init_all();
+
     hal_init();
+
+    return 0;
 }
 
 /* initialize all stuff with RTC releated */
@@ -262,13 +266,6 @@ static void sub_screen_display_init()
     lv_disp_set_default(disp);
 }
 
-// static inline bool lvgl_clock_cb(struct repeating_timer *t)
-// {
-//     lv_timer_handler();
-//     lv_tick_inc(5);
-//     return true;
-// }
-
 SemaphoreHandle_t xGuiSemaphore;
 inline void task_mutex_lock(SemaphoreHandle_t semaphore)
 {
@@ -319,8 +316,6 @@ __  __          _              ____ _            _
     printf("\n\nPlease wait. Booting ...\n\n");
 }
 
-#if 1
-
 static portTASK_FUNCTION(led_task_handler, pvParameters)
 {
     const uint LED_PIN = 25;
@@ -347,6 +342,9 @@ static portTASK_FUNCTION(xc_main_logic, pvParameters)
     xc_event_setup();
     xc_theme_setup();
 
+    /* flush pre system log */
+    dump_kmsg(true);
+
     /* initialize network */
     network_config();
 
@@ -358,21 +356,20 @@ static portTASK_FUNCTION(xc_main_logic, pvParameters)
 
     /* initialize sub screen lvgl display */
     sub_screen_display_init();
-    
-    extern void winbond_flash_init(void);
-    extern void winbond_flash_test(void);
 
-    winbond_flash_init();
-    while (true) {
-        winbond_flash_test();
-        vTaskDelay(500);
-    }
-    /* Here to handle message or whatever global things */
-    // extern void ramfs_test(void);
+    // extern void winbond_flash_init(void);
+    // extern void winbond_flash_test(void);
+    // winbond_flash_init();
     // while (true) {
-    //     ramfs_test();
-    //     vTaskDelay(200);
+    //     winbond_flash_test();
+    //     vTaskDelay(500);
     // }
+    /* Here to handle message or whatever global things */
+    extern void ramfs_test(void);
+    while (true) {
+        ramfs_test();
+        vTaskDelay(200);
+    }
 }
 
 int main(void)
@@ -401,41 +398,3 @@ int main(void)
 
     return 0;
 }
-#else
-void led_task()
-{
-    const uint LED_PIN = 25;
-    gpio_init(LED_PIN);
-    gpio_set_dir(LED_PIN, GPIO_OUT);
-    while (true) {
-        gpio_put(LED_PIN, 1);
-        vTaskDelay(100);
-        gpio_put(LED_PIN, 0);
-        vTaskDelay(100);
-    }
-}
-
-void led_task2()
-{
-    const uint LED_PIN = 16;
-    gpio_init(LED_PIN);
-    gpio_set_dir(LED_PIN, GPIO_OUT);
-    while (true) {
-        gpio_put(LED_PIN, 1);
-        vTaskDelay(100);
-        gpio_put(LED_PIN, 0);
-        vTaskDelay(100);
-    }
-}
-
-int main()
-{
-    stdio_init_all();
-
-    xTaskCreate(led_task, "LED_Task", 256, NULL, 1, NULL);
-    xTaskCreate(led_task2, "LED_Task2", 256, NULL, 1, NULL);
-    vTaskStartScheduler();
-
-    while (1) {};
-}
-#endif

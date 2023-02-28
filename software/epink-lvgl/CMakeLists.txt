@@ -45,12 +45,16 @@ set(FREERTOS_KERNEL_PATH  ${CMAKE_CURRENT_SOURCE_DIR}/kernel)
 set(PICO_SDK_FREERTOS_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/kernel)
 add_subdirectory(kernel)
 
+add_subdirectory(lib)
+
 # rest of your project
 add_executable(xenia_clock init/main.c ${INCLUDES} ${SOURCES})
 
 target_include_directories(xenia_clock PUBLIC . "include" "lvgl")
 target_link_libraries(xenia_clock freertos-kernel
+                            common_lib
                             pico_stdlib
+                            pico_bootsel_via_double_reset
                             hardware_clocks
                             hardware_spi
                             hardware_rtc

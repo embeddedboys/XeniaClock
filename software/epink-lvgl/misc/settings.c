@@ -36,6 +36,8 @@
 
 #include "../lvgl/lvgl.h"
 
+#include "lib/printk.h"
+
 static lv_obj_t *ui_EpinkScreenSettings;
 
 xc_time_format_t g_xc_time_format;
@@ -81,10 +83,11 @@ void xc_set_disp_flush_mode(xc_disp_flush_mode_t mode)
     }
 }
 
+rootfs_initcall(xc_settings_init);
+
 /* give default settings */
 static int xc_settings_init(void)
 {
+    printk("%s, initialzing default settings ... ", __func__);
     xc_set_disp_flush_mode(DISP_FLUSH_MODE_FULL);
 }
-
-rootfs_initcall(xc_settings_init);

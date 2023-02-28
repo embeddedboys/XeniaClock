@@ -35,6 +35,9 @@
 #include "spi/native_spi.h"
 #include "common/vals.h"
 #include "pico/binary_info.h"
+#include "lib/printk.h"
+
+subsys_initcall(native_spi_init);
 
 void spi_cs_select(uint16_t pin)
 {
@@ -76,6 +79,7 @@ void spi_transfer(uint8_t *buf, int size, uint8_t cs_pin)
 
 static int native_spi_init(void)
 {
+    printk("%s, initializing spi bus ...\n", __func__);
     spi_init(spi_default, DEFAULT_SPI_SPEED);
     gpio_set_function(PICO_DEFAULT_SPI_SCK_PIN, GPIO_FUNC_SPI);
     gpio_set_function(PICO_DEFAULT_SPI_TX_PIN, GPIO_FUNC_SPI);
@@ -84,5 +88,3 @@ static int native_spi_init(void)
                                GPIO_FUNC_SPI));
     return 0;
 }
-
-subsys_initcall(native_spi_init);

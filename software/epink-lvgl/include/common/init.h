@@ -35,12 +35,16 @@
 
 /*
  * Used for initialization calls..
+ *
+ * WARN:
+ * These APIs can only be used when you know what you do,
+ * otherwise may cause system crash!
  */
 typedef int (*initcall_t)(void);
 typedef void (*exitcall_t)(void);
 
-#define __define_initcall(fn, id) static int fn(void) __attribute__((constructor(id)));
-#define __define_exitcall(fn, id) static void fn(void) __attribute__((destructor(id)));
+#define __define_initcall(fn, id) static int __attribute__((constructor(id))) fn(void);
+#define __define_exitcall(fn, id) static void __attribute__((destructor(id))) fn(void);
 
 /* constructor priorities from 0 to 100 are reserved for the implementation */
 #define pure_initcall(fn)		__define_initcall(fn, 101)
@@ -63,4 +67,26 @@ typedef void (*exitcall_t)(void);
 
 #define __initcall(fn)  device_initcall(fn);
 #define __exitcall(fn)  __define_exitcall(fn, 107);
+
+
+#define __DEFINE_INITCALL(fn,id) int __attribute__((constructor(id))) fn(void)
+
+#define PURE_INITCALL(fn) __DEFINE_INITCALL(fn,101)
+
+#define CORE_INITCALL(fn) __DEFINE_INITCALL(fn,102)
+
+#define POSTCORE_INITCALL(fn) __DEFINE_INITCALL(fn,103)
+
+#define ARCH_INITCALL(fn) __DEFINE_INITCALL(fn,104)
+
+#define SUBSYS_INITCALL(fn) __DEFINE_INITCALL(fn,105)
+
+#define FS_INITCALL(fn) __DEFINE_INITCALL(fn,106)
+
+#define ROOTFS_INITCALL(fn) __DEFINE_INITCALL(fn,107)
+
+#define DEVICE_INITCALL(fn) __DEFINE_INITCALL(fn,108)
+
+#define LATE_INITCALL(fn) __DEFINE_INITCALL(fn,109)
+
 #endif
