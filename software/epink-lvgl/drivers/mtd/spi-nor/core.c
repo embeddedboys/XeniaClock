@@ -28,10 +28,14 @@
  * 
  */
 
+#include <FreeRTOS.h>
+#include "task.h"
+
 #include <common/err.h>
 #include <common/errno.h>
 #include <common/param.h>
 #include <common/list.h>
+#include <lib/printk.h>
 
 #include <mtd/spi-nor.h>
 
@@ -58,6 +62,8 @@
 
 #define SPI_NOR_SRST_SLEEP_MIN 200
 #define SPI_NOR_SRST_SLEEP_MAX 400
+
+struct spi_nor *nor;
 
 static int spi_nor_controller_ops_read_reg(struct spi_nor *nor, u8 opcode,
 					   u8 *buf, size_t len)
@@ -146,7 +152,7 @@ int spi_nor_write_enable(struct spi_nor *nor)
 	// }
 
 	if (ret)
-		pr_debug("error %d on Write Enable\n", ret);
+		pr_dbg("error %d on Write Enable\n", ret);
 
 	return ret;
 }
@@ -177,7 +183,7 @@ int spi_nor_write_disable(struct spi_nor *nor)
 	// }
 
 	if (ret)
-		pr_debug("error %d on Write Disable\n", ret);
+		pr_dbg("error %d on Write Disable\n", ret);
 
 	return ret;
 }
@@ -220,7 +226,7 @@ int spi_nor_read_sr(struct spi_nor *nor, u8 *sr)
 	// }
 
 	if (ret)
-		pr_debug("error %d reading SR\n", ret);
+		pr_dbg("error %d reading SR\n", ret);
 
 	return ret;
 }
@@ -264,7 +270,7 @@ static int spi_nor_read_fsr(struct spi_nor *nor, u8 *fsr)
 	// }
 
 	if (ret)
-		pr_debug("error %d reading FSR\n", ret);
+		pr_dbg("error %d reading FSR\n", ret);
 
 	return ret;
 }
@@ -298,7 +304,7 @@ int spi_nor_read_cr(struct spi_nor *nor, u8 *cr)
 	// }
 
 	if (ret)
-		pr_debug("error %d reading CR\n", ret);
+		pr_dbg("error %d reading CR\n", ret);
 
 	return ret;
 }
@@ -336,7 +342,7 @@ int spi_nor_set_4byte_addr_mode(struct spi_nor *nor, bool enable)
 	// }
 
 	if (ret)
-		pr_debug("error %d setting 4-byte mode\n", ret);
+		pr_dbg("error %d setting 4-byte mode\n", ret);
 
 	return ret;
 }
@@ -370,7 +376,7 @@ int spi_nor_write_ear(struct spi_nor *nor, u8 ear)
 	// }
 
 	if (ret)
-		pr_debug("error %d writing EAR\n", ret);
+		pr_dbg("error %d writing EAR\n", ret);
 
 	return ret;
 }
@@ -403,7 +409,7 @@ int spi_nor_xread_sr(struct spi_nor *nor, u8 *sr)
 	// }
 
 	if (ret)
-		pr_debug("error %d reading XRDSR\n", ret);
+		pr_dbg("error %d reading XRDSR\n", ret);
 
 	return ret;
 }
@@ -450,7 +456,7 @@ static void spi_nor_clear_sr(struct spi_nor *nor)
 	// }
 
 	if (ret)
-		pr_debug("error %d clearing SR\n", ret);
+		pr_dbg("error %d clearing SR\n", ret);
 }
 
 /**
@@ -516,7 +522,7 @@ static void spi_nor_clear_fsr(struct spi_nor *nor)
 	// }
 
 	if (ret)
-		pr_debug("error %d clearing FSR\n", ret);
+		pr_dbg("error %d clearing FSR\n", ret);
 }
 
 /**
@@ -611,7 +617,7 @@ static int spi_nor_wait_till_ready_with_timeout(struct spi_nor *nor,
 		// cond_resched();
 	}
 
-	pr_debug("flash operation timed out\n");
+	pr_dbg("flash operation timed out\n");
 
 	return -ETIMEDOUT;
 }
@@ -659,7 +665,7 @@ int spi_nor_global_block_unlock(struct spi_nor *nor)
 	// }
 
 	if (ret) {
-		pr_debug("error %d on Global Block Unlock\n", ret);
+		pr_dbg("error %d on Global Block Unlock\n", ret);
 		return ret;
 	}
 
@@ -698,7 +704,7 @@ int spi_nor_write_sr(struct spi_nor *nor, const u8 *sr, size_t len)
 	// }
 
 	if (ret) {
-		pr_debug("error %d writing SR\n", ret);
+		pr_dbg("error %d writing SR\n", ret);
 		return ret;
 	}
 
@@ -728,7 +734,7 @@ static int spi_nor_write_sr1_and_check(struct spi_nor *nor, u8 sr1)
 		return ret;
 
 	if (nor->bouncebuf[0] != sr1) {
-		pr_debug("SR1: read back test failed\n");
+		pr_dbg("SR1: read back test failed\n");
 		return -EIO;
 	}
 
@@ -793,7 +799,7 @@ static int spi_nor_write_16bit_sr_and_check(struct spi_nor *nor, u8 sr1)
 		return ret;
 
 	if (cr_written != sr_cr[1]) {
-		pr_debug("CR: read back test failed\n");
+		pr_dbg("CR: read back test failed\n");
 		return -EIO;
 	}
 
@@ -834,7 +840,7 @@ int spi_nor_write_16bit_cr_and_check(struct spi_nor *nor, u8 cr)
 		return ret;
 
 	if (sr_written != sr_cr[0]) {
-		pr_debug("SR: Read back test failed\n");
+		pr_dbg("SR: Read back test failed\n");
 		return -EIO;
 	}
 
@@ -846,7 +852,7 @@ int spi_nor_write_16bit_cr_and_check(struct spi_nor *nor, u8 cr)
 		return ret;
 
 	if (cr != sr_cr[1]) {
-		pr_debug("CR: read back test failed\n");
+		pr_dbg("CR: read back test failed\n");
 		return -EIO;
 	}
 
@@ -902,7 +908,7 @@ static int spi_nor_write_sr2(struct spi_nor *nor, const u8 *sr2)
 	// }
 
 	if (ret) {
-		pr_debug("error %d writing SR2\n", ret);
+		pr_dbg("error %d writing SR2\n", ret);
 		return ret;
 	}
 
@@ -938,7 +944,7 @@ static int spi_nor_read_sr2(struct spi_nor *nor, u8 *sr2)
 	// }
 
 	if (ret)
-		pr_debug("error %d reading SR2\n", ret);
+		pr_dbg("error %d reading SR2\n", ret);
 
 	return ret;
 }
@@ -972,7 +978,7 @@ static int spi_nor_erase_chip(struct spi_nor *nor)
 	// }
 
 	if (ret)
-		pr_debug("error %d erasing chip\n", ret);
+		pr_dbg("error %d erasing chip\n", ret);
 
 	return ret;
 }
@@ -1281,7 +1287,7 @@ static int spi_nor_set_addr_width(struct spi_nor *nor)
 	}
 
 	if (nor->addr_width > SPI_NOR_MAX_ADDR_WIDTH) {
-		pr_debug("address width is too large: %u\n",
+		pr_dbg("address width is too large: %u\n",
 			nor->addr_width);
 		return -EINVAL;
 	}
@@ -1306,6 +1312,124 @@ static int spi_nor_setup(struct spi_nor *nor,
 	}
 
 	return spi_nor_set_addr_width(nor);
+}
+
+static int spi_nor_init(struct spi_nor *nor)
+{
+	int err;
+
+	// err = spi_nor_octal_dtr_enable(nor, true);
+	// if (err) {
+	// 	dev_dbg(nor->dev, "octal mode not supported\n");
+	// 	return err;
+	// }
+
+	// err = spi_nor_quad_enable(nor);
+	// if (err) {
+	// 	dev_dbg(nor->dev, "quad mode not supported\n");
+	// 	return err;
+	// }
+
+	/*
+	 * Some SPI NOR flashes are write protected by default after a power-on
+	 * reset cycle, in order to avoid inadvertent writes during power-up.
+	 * Backward compatibility imposes to unlock the entire flash memory
+	 * array at power-up by default. Depending on the kernel configuration
+	 * (1) do nothing, (2) always unlock the entire flash array or (3)
+	 * unlock the entire flash array only when the software write
+	 * protection bits are volatile. The latter is indicated by
+	 * SNOR_F_SWP_IS_VOLATILE.
+	 */
+	// if (IS_ENABLED(CONFIG_MTD_SPI_NOR_SWP_DISABLE) ||
+	    // (IS_ENABLED(CONFIG_MTD_SPI_NOR_SWP_DISABLE_ON_VOLATILE) &&
+	    //  nor->flags & SNOR_F_SWP_IS_VOLATILE))
+		// spi_nor_try_unlock_all(nor);
+    u8 status_reg1, status_reg2;
+
+	// nor->controller_ops->read_reg(nor, SPINOR_OP_RDSR, nor->bouncebuf, 1);
+	// status_reg1 = nor->bouncebuf[0];
+	
+	spi_nor_read_sr(nor, &status_reg1);
+
+	// nor->controller_ops->read_reg(nor, SPINOR_OP_RDCR, nor->bouncebuf, 1);
+	// status_reg2 = nor->bouncebuf[0];
+	spi_nor_read_cr(nor, &status_reg2);
+
+	spi_nor_write_enable(nor);
+	
+	status_reg1 |= (1 << 1);
+	status_reg2 &= ~(0x03);
+
+	// spi_nor_write_sr(nor, &status_reg1, 1);
+	// spi_nor_write_cr(nor, &status_reg2);
+
+	return 0;
+}
+
+/**
+ * spi_nor_soft_reset() - Perform a software reset
+ * @nor:	pointer to 'struct spi_nor'
+ *
+ * Performs a "Soft Reset and Enter Default Protocol Mode" sequence which resets
+ * the device to its power-on-reset state. This is useful when the software has
+ * made some changes to device (volatile) registers and needs to reset it before
+ * shutting down, for example.
+ *
+ * Not every flash supports this sequence. The same set of opcodes might be used
+ * for some other operation on a flash that does not support this. Support for
+ * this sequence can be discovered via SFDP in the BFPT table.
+ *
+ * Return: 0 on success, -errno otherwise.
+ */
+static void spi_nor_soft_reset(struct spi_nor *nor)
+{
+	// struct spi_mem_op op;
+	int ret;
+
+	// op = (struct spi_mem_op)SPI_MEM_OP(SPI_MEM_OP_CMD(SPINOR_OP_SRSTEN, 0),
+	// 		SPI_MEM_OP_NO_DUMMY,
+	// 		SPI_MEM_OP_NO_ADDR,
+	// 		SPI_MEM_OP_NO_DATA);
+
+	// spi_nor_spimem_setup_op(nor, &op, nor->reg_proto);
+
+	// ret = spi_mem_exec_op(nor->spimem, &op);
+	// if (ret) {
+	// 	dev_warn(nor->dev, "Software reset failed: %d\n", ret);
+	// 	return;
+	// }
+
+	// op = (struct spi_mem_op)SPI_MEM_OP(SPI_MEM_OP_CMD(SPINOR_OP_SRST, 0),
+	// 		SPI_MEM_OP_NO_DUMMY,
+	// 		SPI_MEM_OP_NO_ADDR,
+	// 		SPI_MEM_OP_NO_DATA);
+
+	// spi_nor_spimem_setup_op(nor, &op, nor->reg_proto);
+
+	// ret = spi_mem_exec_op(nor->spimem, &op);
+	// if (ret) {
+	// 	pr_warn("Software reset failed: %d\n", ret);
+	// 	return;
+	// }
+
+	ret = nor->controller_ops->write_reg(nor, SPINOR_OP_SRSTEN, NULL, 0);
+	if (ret) {
+		pr_warn("Software reset failed: %d\n", ret);
+		return;
+	}
+
+	ret = nor->controller_ops->write_reg(nor, SPINOR_OP_SRST, NULL, 0);
+	if (ret) {
+		pr_warn("Software reset failed: %d\n", ret);
+		return;
+	}
+
+	/*
+	 * Software Reset is not instant, and the delay varies from flash to
+	 * flash. Looking at a few flashes, most range somewhere below 100
+	 * microseconds. So, sleep for a range of 200-400 us.
+	 */
+	vTaskDelay(150);
 }
 
 /**
@@ -1476,7 +1600,7 @@ static const struct flash_info *spi_nor_read_id(struct spi_nor *nor)
 						    SPI_NOR_MAX_ID_LEN);
 	// }
 	if (ret) {
-		pr_debug("error %d reading JEDEC ID\n", ret);
+		pr_dbg("error %d reading JEDEC ID\n", ret);
 		return ERR_PTR(ret);
 	}
 
@@ -1485,13 +1609,15 @@ static const struct flash_info *spi_nor_read_id(struct spi_nor *nor)
 						 manufacturers[i]->nparts,
 						 id);
 		if (info) {
+			pr_err("matched -> %s <- JEDEC id bytes: %02x%02x%02xh\n",
+				info->name, *id, *(id + 1), *(id + 2));
 			nor->manufacturer = manufacturers[i];
 			return info;
 		}
 	}
 
-	pr_err("unrecognized JEDEC id bytes: %*ph\n",
-		SPI_NOR_MAX_ID_LEN, id);
+	pr_err("%d unrecognized JEDEC id bytes: %02x%02x%02xh\n",
+		SPI_NOR_MAX_ID_LEN, *id, *(id + 1), *(id + 2));
 	return ERR_PTR(-ENODEV);
 }
 
@@ -1598,16 +1724,24 @@ int spi_nor_scan(struct spi_nor *nor, const char *name,
     // mutex_init(&nor->lock);
 
     /* Init flash parameters based on flash_info struct and SFDP */
-    ret = spi_nor_init_params(nor);
-    if (ret)
-        return ret;
+    // ret = spi_nor_init_params(nor);
+    // if (ret)
+    //     return ret;
 
+	// ret = spi_nor_setup(nor, hwcaps);
+	// if (ret)
+	// 	return ret;
 
+	/* Send all the required SPI flash commands to initialize device */
+	ret = spi_nor_init(nor);
+	if (ret)
+		return ret;
 }
 
-static int spi_nor_init(void)
+extern const struct spi_nor_controller_ops rpi_spi_controller_ops;
+
+static DEVICE_INITCALL(spi_nor_probe)
 {
-    struct spi_nor *nor;
 	/*
 	 * Enable all caps by default. The core will mask them after
 	 * checking what's really supported using spi_mem_supports_op().
@@ -1620,9 +1754,10 @@ static int spi_nor_init(void)
     if (!nor)
         return -ENOMEM;
 
+	nor->controller_ops = &rpi_spi_controller_ops;
+
     ret = spi_nor_scan(nor, flash_name, &hwcaps);
     if (ret)
         return ret;
-}
 
-// device_initcall(spi_nor_init);
+}
