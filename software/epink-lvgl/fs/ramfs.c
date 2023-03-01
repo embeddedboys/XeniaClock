@@ -59,10 +59,12 @@
 #define LFS_READ_BUFFER_SIZE        LFS_CACHE_SIZE
 #define LFS_PROG_BUFFER_SIZE        LFS_CACHE_SIZE
 #define LFS_LOOKAHEAD_BUFFER_SIZE   LFS_CACHE_SIZE
+#define LFS_FILE_BUFFER_SIZE        LFS_CACHE_SIZE
 
 lfs_t ramfs_lfs;
 lfs_file_t ramfs_file;
 
+static uint8_t file_buffer[LFS_FILE_BUFFER_SIZE];
 static uint8_t read_buffer[LFS_READ_BUFFER_SIZE];
 static uint8_t prog_buffer[LFS_PROG_BUFFER_SIZE];
 static uint8_t lookahead_buffer[LFS_LOOKAHEAD_BUFFER_SIZE];
@@ -70,8 +72,11 @@ static uint8_t lookahead_buffer[LFS_LOOKAHEAD_BUFFER_SIZE];
 static uint8_t *ramfs_mem;
 
 static struct lfs_config ramfs_cfg;
-static struct lfs_file_config ramfs_f_cfg;
-static uint32_t boot_count = 0;
+static struct lfs_file_config ramfs_f_cfg = {
+    .attrs      = 0,
+    .attr_count = 0,
+    .buffer     = file_buffer,
+};
 
 void ramfs_test(void)
 {
@@ -83,7 +88,10 @@ void ramfs_test(void)
         lfs_mount(&ramfs_lfs, &ramfs_cfg);
     }
 
-    lfs_file_opencfg(&ramfs_lfs, &ramfs_file, "boot_count", LFS_O_RDWR | LFS_O_CREAT, &ramfs_f_cfg);
+    uint32_t boot_count = 0;
+
+    lfs_file_opencfg(&ramfs_lfs, &ramfs_file, "boot_count", LFS_O_RDWR | LFS_O_CREAT,
+                     &ramfs_f_cfg);
     lfs_file_read(&ramfs_lfs, &ramfs_file, &boot_count, sizeof(boot_count));
     printf("boot_count : %d\n", boot_count);
 
@@ -96,7 +104,7 @@ void ramfs_test(void)
     lfs_unmount(&ramfs_lfs);
 }
 
-fs_initcall(ramfs_init);
+// fs_initcall(ramfs_init);
 
 static int ramfs_init(void)
 {
@@ -109,40 +117,40 @@ static int ramfs_init(void)
     };
 
     lfs_rambd_t rambd = {
-        .buffer = ramfs_mem,
         .cfg = &rambd_cfg,
+        .buffer = ramfs_mem,
     };
 
     struct lfs_config cfg = {
         .context = &rambd,
 
-        .read = lfs_rambd_read,
-        .prog = lfs_rambd_prog,
+        .read  = lfs_rambd_read,
+        .prog  = lfs_rambd_prog,
         .erase = lfs_rambd_erase,
-        .sync = lfs_rambd_sync,
+        .sync  = lfs_rambd_sync,
 
-        .read_size = LFS_READ_SIZE,
-        .prog_size = LFS_PROG_SIZE,
-        .block_size = LFS_BLOCK_SIZE,
-        .block_count = LFS_BLOCK_COUNT,
-        .cache_size = LFS_CACHE_SIZE,
+        .read_size      = LFS_READ_SIZE,
+        .prog_size      = LFS_PROG_SIZE,
+        .block_size     = LFS_BLOCK_SIZE,
+        .block_count    = LFS_BLOCK_COUNT,
+        .cache_size     = LFS_CACHE_SIZE,
         .lookahead_size = LFS_LOOKAHEAD_SIZE,
-        .block_cycles = LFS_BLOCK_CYCLES,
+        .block_cycles   = LFS_BLOCK_CYCLES,
 
-        .read_buffer = read_buffer,
-        .prog_buffer = prog_buffer,
+        .read_buffer      = read_buffer,
+        .prog_buffer      = prog_buffer,
         .lookahead_buffer = lookahead_buffer,
     };
+
     lfs_rambd_createcfg(&ramfs_cfg, &rambd_cfg);
 
+    // int err = lfs_mount(&ramfs_lfs, &ramfs_cfg);
+    // if (err) {
+    //     lfs_format(&ramfs_lfs, &ramfs_cfg);
+    //     lfs_mount(&ramfs_lfs, &ramfs_cfg);
+    // }
 
-    int err = lfs_mount(&ramfs_lfs, &ramfs_cfg);
-    if (err) {
-        lfs_format(&ramfs_lfs, &ramfs_cfg);
-        lfs_mount(&ramfs_lfs, &ramfs_cfg);
-    }
-
-    lfs_unmount(&ramfs_lfs);
+    // lfs_unmount(&ramfs_lfs);
 
     return 0;
 }

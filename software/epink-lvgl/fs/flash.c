@@ -62,6 +62,17 @@ static struct lfs_file_config flashfs_f_cfg = {
     .attrs = 0,
 };
 
+int flashfs_mkdir(const char *dir)
+{
+    int rc = lfs_mkdir(&flashfs_lfs, dir);
+    if (rc) {
+        printf("failed to create dir !\n");
+        return rc;
+    }
+
+    return 0;
+}
+
 void flashfs_write(const char *file_name, const void *buffer, u32 size)
 {
 
@@ -77,7 +88,8 @@ void flashfs_read(const char *file_name, void *buffer, u32 size)
         lfs_mount(&flashfs_lfs, &flashfs_cfg);
     }
 
-    lfs_file_opencfg(&flashfs_lfs, &file, file_name, LFS_O_RDWR | LFS_O_CREAT, &flashfs_f_cfg);
+    lfs_file_opencfg(&flashfs_lfs, &file, file_name, LFS_O_RDWR | LFS_O_CREAT,
+                     &flashfs_f_cfg);
     lfs_file_read(&flashfs_lfs, &file, buffer, size);
 
     lfs_file_close(&flashfs_lfs, &file);
@@ -97,7 +109,8 @@ void flashfs_test(void)
     }
 
     uint32_t boot_count = 0;
-    lfs_file_opencfg(&flashfs_lfs, &file, "boot_count", LFS_O_RDWR | LFS_O_CREAT, &flashfs_f_cfg);
+    lfs_file_opencfg(&flashfs_lfs, &file, "boot_count", LFS_O_RDWR | LFS_O_CREAT,
+                     &flashfs_f_cfg);
     lfs_file_read(&flashfs_lfs, &file, &boot_count, sizeof(boot_count));
 
     boot_count += 1;

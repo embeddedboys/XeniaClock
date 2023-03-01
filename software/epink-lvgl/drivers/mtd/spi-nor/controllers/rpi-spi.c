@@ -1,31 +1,31 @@
 /**
  * @file rpi-spi.c
  * @author IotaHydrae (writeforever@foxmail.com)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2023-02-24
- * 
+ *
  * MIT License
- * 
+ *
  * Copyright 2022 IotaHydrae(writeforever@foxmail.com)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * 
+ *
  */
 
 #include <FreeRTOS.h>
@@ -121,11 +121,11 @@ size_t winbond_flash_sector_erase(u32 to)
 }
 
 static int rpi_spi_read_reg(struct spi_nor *nor, u8 opcode, u8 *buf,
-                size_t len)
+                            size_t len)
 {
     int ret;
 
-	// pr_dbg("opcode : 0x%02x\n");
+    // pr_dbg("opcode : 0x%02x\n");
 
     uint8_t w_buf[1] = {opcode};
 
@@ -138,11 +138,11 @@ static int rpi_spi_read_reg(struct spi_nor *nor, u8 opcode, u8 *buf,
 }
 
 static int rpi_spi_write_reg(struct spi_nor *nor, u8 opcode, const u8 *buf,
-                size_t len)
+                             size_t len)
 {
     int ret;
 
-	// pr_dbg("opcode : 0x%02x\n");
+    // pr_dbg("opcode : 0x%02x\n");
 
     uint8_t w_buf[1] = {opcode};
 
@@ -151,8 +151,8 @@ static int rpi_spi_write_reg(struct spi_nor *nor, u8 opcode, const u8 *buf,
     flash_cs_select(FLASH_CS_PIN);
     spi_write_blocking(FLASH_SPI_IFCE, w_buf, 1);
 
-	if (buf && len > 0)
-    	spi_write_blocking(FLASH_SPI_IFCE, buf, len);
+    if (buf && len > 0)
+        spi_write_blocking(FLASH_SPI_IFCE, buf, len);
 
     flash_cs_deselect(FLASH_CS_PIN);
 
@@ -160,68 +160,68 @@ static int rpi_spi_write_reg(struct spi_nor *nor, u8 opcode, const u8 *buf,
 }
 
 static ssize_t rpi_spi_read(struct spi_nor *nor, loff_t from, size_t len,
-			      u_char *read_buf)
+                            u_char *read_buf)
 {
-	int rc;
-	// printf("%s, reading from ... 0x%x\n", __func__, from);
+    int rc;
+    // printf("%s, reading from ... 0x%x\n", __func__, from);
 
-	u8 w_buf[4] = {SPINOR_OP_READ, from >> 16, from >> 8, from};
+    u8 w_buf[4] = {SPINOR_OP_READ, from >> 16, from >> 8, from};
 
-	flash_cs_select(FLASH_CS_PIN);
+    flash_cs_select(FLASH_CS_PIN);
 
-	rc = spi_write_blocking(FLASH_SPI_IFCE, w_buf, ARRAY_SIZE(w_buf));
-	rc = spi_read_blocking(FLASH_SPI_IFCE, 0x0, read_buf, len);
+    rc = spi_write_blocking(FLASH_SPI_IFCE, w_buf, ARRAY_SIZE(w_buf));
+    rc = spi_read_blocking(FLASH_SPI_IFCE, 0x0, read_buf, len);
 
-	flash_cs_deselect(FLASH_CS_PIN);
+    flash_cs_deselect(FLASH_CS_PIN);
 
     return rc;
 }
 
 static ssize_t rpi_spi_write(struct spi_nor *nor, loff_t to, size_t len,
-			       const u_char *write_buf)
+                             const u_char *write_buf)
 {
     int rc;
-	// printf("%s, writing to 0x%x ... \n", __func__, to);
+    // printf("%s, writing to 0x%x ... \n", __func__, to);
 
-	u8 w_buf[4] = {SPINOR_OP_PP, to >> 16, to >> 8, to};
+    u8 w_buf[4] = {SPINOR_OP_PP, to >> 16, to >> 8, to};
 
     flash_write8(SPINOR_OP_WREN, FLASH_CS_PIN);
 
-	flash_cs_select(FLASH_CS_PIN);
+    flash_cs_select(FLASH_CS_PIN);
 
-	spi_write_blocking(FLASH_SPI_IFCE, w_buf, ARRAY_SIZE(w_buf));
-	rc = spi_write_blocking(FLASH_SPI_IFCE, write_buf, len);
+    spi_write_blocking(FLASH_SPI_IFCE, w_buf, ARRAY_SIZE(w_buf));
+    rc = spi_write_blocking(FLASH_SPI_IFCE, write_buf, len);
 
-	flash_cs_deselect(FLASH_CS_PIN);
+    flash_cs_deselect(FLASH_CS_PIN);
 
     vTaskDelay(3);
-	return rc;
+    return rc;
 }
 
 static int rpi_spi_erase(struct spi_nor *nor, loff_t offs)
 {
-	// printf("%s, erasing block 0x%x ... \n", __func__, offs);
+    // printf("%s, erasing block 0x%x ... \n", __func__, offs);
 
-	u8 w_buf[4] = { SPINOR_OP_BE_4K, offs >> 16, offs >> 8, offs};
+    u8 w_buf[4] = { SPINOR_OP_BE_4K, offs >> 16, offs >> 8, offs};
 
     flash_write8(SPINOR_OP_WREN, FLASH_CS_PIN);
 
-	flash_cs_select(FLASH_CS_PIN);
+    flash_cs_select(FLASH_CS_PIN);
 
-	spi_write_blocking(FLASH_SPI_IFCE, w_buf, ARRAY_SIZE(w_buf));
-	
-	flash_cs_deselect(FLASH_CS_PIN);
+    spi_write_blocking(FLASH_SPI_IFCE, w_buf, ARRAY_SIZE(w_buf));
+
+    flash_cs_deselect(FLASH_CS_PIN);
 
     vTaskDelay(200);
-	return 0;
+    return 0;
 }
 
 const struct spi_nor_controller_ops rpi_spi_controller_ops = {
-	.read_reg  = rpi_spi_read_reg,
-	.write_reg = rpi_spi_write_reg,
-	.read      = rpi_spi_read,
-	.write     = rpi_spi_write,
-	.erase     = rpi_spi_erase,
+    .read_reg  = rpi_spi_read_reg,
+    .write_reg = rpi_spi_write_reg,
+    .read      = rpi_spi_read,
+    .write     = rpi_spi_write,
+    .erase     = rpi_spi_erase,
 };
 
 static SUBSYS_INITCALL(rpi_spi_init)
@@ -261,10 +261,10 @@ static SUBSYS_INITCALL(rpi_spi_init)
 
 // static SUBSYS_INITCALL(rpi_spi_controller_init)
 // {
-// 	extern void register_nor_controller_ops(const struct spi_nor_controller_ops *ops);
+//  extern void register_nor_controller_ops(const struct spi_nor_controller_ops *ops);
 
-// 	pr_err("registering rpi spi controller ...\n");
-// 	register_nor_controller_ops(&rpi_spi_controller_ops);
+//  pr_err("registering rpi spi controller ...\n");
+//  register_nor_controller_ops(&rpi_spi_controller_ops);
 // }
 
 void winbond_flash_test()
@@ -278,7 +278,7 @@ void winbond_flash_test()
     u8 read_buf[1];
     /* write a byte to address */
     rpi_spi_write(NULL, 0x10, 1, test_data);
-    
+
     vTaskDelay(20);
 
     // /* read a byte from address */

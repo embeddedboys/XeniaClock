@@ -168,5 +168,5 @@ int lfs_flashbd_erase(const struct lfs_config *cfg, lfs_block_t block)
 
 int lfs_flashbd_sync(const struct lfs_config *cfg)
 {
-     return LFS_ERR_OK;
+    return LFS_ERR_OK;
 }
