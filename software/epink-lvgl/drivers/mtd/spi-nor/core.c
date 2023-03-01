@@ -1,31 +1,31 @@
 /**
  * @file core.c
  * @author IotaHydrae (writeforever@foxmail.com)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2023-02-23
- * 
+ *
  * MIT License
- * 
+ *
  * Copyright 2022 IotaHydrae(writeforever@foxmail.com)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * 
+ *
  */
 
 #include <FreeRTOS.h>
@@ -63,7 +63,7 @@
 #define SPI_NOR_SRST_SLEEP_MIN 200
 #define SPI_NOR_SRST_SLEEP_MAX 400
 
-struct spi_nor *nor;
+static struct spi_nor *nor;
 
 static int spi_nor_controller_ops_read_reg(struct spi_nor *nor, u8 opcode,
 					   u8 *buf, size_t len)
@@ -72,6 +72,14 @@ static int spi_nor_controller_ops_read_reg(struct spi_nor *nor, u8 opcode,
 		return -EOPNOTSUPP;
 
 	return nor->controller_ops->read_reg(nor, opcode, buf, len);
+}
+
+int spi_nor_read_reg(u8 opcode, u8 *buf, size_t len)
+{
+	if (!nor)
+		return -ENODEV;
+
+	return spi_nor_controller_ops_read_reg(nor, opcode, buf, len);
 }
 
 static int spi_nor_controller_ops_write_reg(struct spi_nor *nor, u8 opcode,
@@ -83,12 +91,28 @@ static int spi_nor_controller_ops_write_reg(struct spi_nor *nor, u8 opcode,
 	return nor->controller_ops->write_reg(nor, opcode, buf, len);
 }
 
+int spi_nor_write_reg(u8 opcode, const u8 *buf, size_t len)
+{
+	if (!nor)
+		return -ENODEV;
+
+	return spi_nor_controller_ops_write_reg(nor, opcode, buf, len);
+}
+
 static int spi_nor_controller_ops_erase(struct spi_nor *nor, loff_t offs)
 {
 	if (spi_nor_protocol_is_dtr(nor->write_proto))
 		return -EOPNOTSUPP;
 
 	return nor->controller_ops->erase(nor, offs);
+}
+
+int spi_nor_ops_erase(loff_t offs)
+{
+	if (!nor)
+		return -ENODEV;
+
+	return spi_nor_controller_ops_erase(nor, offs);
 }
 
 /**
@@ -108,6 +132,14 @@ ssize_t spi_nor_read_data(struct spi_nor *nor, loff_t from, size_t len, u8 *buf)
 	return nor->controller_ops->read(nor, from, len, buf);
 }
 
+ssize_t spi_nor_read(loff_t from, size_t len, u8 *buf)
+{
+	if (!nor)
+		return -ENODEV;
+
+	spi_nor_read_data(nor, from, len, buf);
+}
+
 /**
  * spi_nor_write_data() - write data to flash memory
  * @nor:        pointer to 'struct spi_nor'
@@ -124,6 +156,14 @@ ssize_t spi_nor_write_data(struct spi_nor *nor, loff_t to, size_t len,
 	// 	return spi_nor_spimem_write_data(nor, to, len, buf);
 
 	return nor->controller_ops->write(nor, to, len, buf);
+}
+
+ssize_t spi_nor_write(loff_t to, size_t len, const u8 *buf)
+{
+	if (!nor)
+		return -ENODEV;
+
+	return spi_nor_write_data(nor, to, len, buf);
 }
 
 /**
@@ -156,6 +196,7 @@ int spi_nor_write_enable(struct spi_nor *nor)
 
 	return ret;
 }
+
 
 /**
  * spi_nor_write_disable() - Send Write Disable instruction to the chip.
@@ -1344,24 +1385,28 @@ static int spi_nor_init(struct spi_nor *nor)
 	    // (IS_ENABLED(CONFIG_MTD_SPI_NOR_SWP_DISABLE_ON_VOLATILE) &&
 	    //  nor->flags & SNOR_F_SWP_IS_VOLATILE))
 		// spi_nor_try_unlock_all(nor);
-    u8 status_reg1, status_reg2;
+    u8 status_reg1, status_reg2, status_reg;
 
 	// nor->controller_ops->read_reg(nor, SPINOR_OP_RDSR, nor->bouncebuf, 1);
 	// status_reg1 = nor->bouncebuf[0];
-	
-	spi_nor_read_sr(nor, &status_reg1);
+	pr_warn("before : sr : 0x%02x, cr : 0x%02x\n", status_reg1, status_reg2);
 
 	// nor->controller_ops->read_reg(nor, SPINOR_OP_RDCR, nor->bouncebuf, 1);
 	// status_reg2 = nor->bouncebuf[0];
+	spi_nor_read_sr(nor, &status_reg1);
 	spi_nor_read_cr(nor, &status_reg2);
 
 	spi_nor_write_enable(nor);
-	
+
 	status_reg1 |= (1 << 1);
 	status_reg2 &= ~(0x03);
+	status_reg = (status_reg1 << 8) | status_reg2;
 
-	// spi_nor_write_sr(nor, &status_reg1, 1);
-	// spi_nor_write_cr(nor, &status_reg2);
+	spi_nor_write_sr(nor, &status_reg, 1);
+
+	spi_nor_read_sr(nor, &status_reg1);
+	spi_nor_read_cr(nor, &status_reg2);
+	pr_warn("after : sr : 0x%02x, cr : 0x%02x\n", status_reg1, status_reg2);
 
 	return 0;
 }

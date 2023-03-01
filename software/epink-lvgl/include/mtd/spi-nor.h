@@ -491,4 +491,11 @@ int spi_nor_scan(struct spi_nor *nor, const char *name,
  */
 void spi_nor_restore(struct spi_nor *nor);
 
+/* temporarily expose these functions because we didn't port MTD yet. */
+int spi_nor_read_reg(u8 opcode, u8 *buf, size_t len);
+int spi_nor_write_reg(u8 opcode, const u8 *buf, size_t len);
+int spi_nor_ops_erase(loff_t offs);
+ssize_t spi_nor_read(loff_t from, size_t len, u8 *buf);
+ssize_t spi_nor_write(loff_t to, size_t len, const u8 *buf);
+
 #endif

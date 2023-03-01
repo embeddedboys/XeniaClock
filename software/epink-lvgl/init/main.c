@@ -365,10 +365,17 @@ static portTASK_FUNCTION(xc_main_logic, pvParameters)
     //     vTaskDelay(500);
     // }
     /* Here to handle message or whatever global things */
-    extern void ramfs_test(void);
+    // extern void ramfs_test(void);
+    // while (true) {
+    //     ramfs_test();
+    //     vTaskDelay(200);
+    // }
+    extern int flashfs_init(void);
+    flashfs_init();
+    extern void flashfs_test(void);
     while (true) {
-        ramfs_test();
-        vTaskDelay(200);
+        flashfs_test();
+        vTaskDelay(1000);
     }
 }
 

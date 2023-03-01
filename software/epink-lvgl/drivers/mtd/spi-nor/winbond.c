@@ -32,16 +32,6 @@
 
 #include "core.h"
 
-#define WINBOND_FLASH_CMD_PAGE_PROGRAM              0x02
-#define WINBOND_FLASH_CMD_READ_DATA                 0x03
-#define WINBOND_FLASH_CMD_SECTOR_ERASE              0x20
-
-#define WINBOND_FLASH_CMD_POWER_DOWN                0xb9
-#define WINBOND_FLASH_CMD_HIGH_PERFORMANCE_MODE
-#define WINBOND_FLASH_CMD_MANUFACTURER_DEVICE_ID    0x90
-#define WINBOND_FLASH_CMD_READ_UNIQUE_ID            0x4b
-#define WINBOND_FLASH_CMD_JEDEC_ID                  0x9f
-
 static const struct flash_info winbond_parts[] = {
     /* Winbond -- w25x "blocks" are 64K, "sectors" are 4KiB */
     {
