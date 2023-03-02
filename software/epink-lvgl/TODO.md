@@ -15,12 +15,22 @@ Feature
 
 - [ ] the data from spi,i2c transfered by DMA
 
+Decoupling
+---------------------
+- [ ] naitve interface
+
+- [ ] lvgl
+
+- [ ] FreeRTOS
+
 Porting
 ---------------------
 
 - [x] port kernel printk log system
 
 - [x] port w25qxx series flash to littlefs
+
+- [ ] port lvgl file system interface
 
 - [ ] port kernel mtd subsystem
 
