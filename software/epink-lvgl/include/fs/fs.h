@@ -31,4 +31,7 @@
 #ifndef __FS_H
 #define __FS_H
 
+void flashfs_traverse_directory(const char *path, const char *parent);
+int flashfs_find_file(const char *path, const char *parent, const char *filename, char *abs_path);
+
 #endif /* __FS_H */

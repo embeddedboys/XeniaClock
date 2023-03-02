@@ -62,6 +62,7 @@
 #include "i2c/native_i2c.h"
 #include "misc/extras.h"
 #include "lib/printk.h"
+#include "fs/fs.h"
 
 /* Header files lvgl defined */
 #include "lvgl/lvgl.h"
@@ -373,8 +374,12 @@ static portTASK_FUNCTION(xc_main_logic, pvParameters)
     extern int flashfs_init(void);
     flashfs_init();
     extern void flashfs_test(void);
+    char path[64];
     while (true) {
         flashfs_test();
+        flashfs_traverse_directory("/", NULL);
+        flashfs_find_file("/", NULL, "boot_count", path);
+        printf("find result : %s\n", path);
         vTaskDelay(1000);
     }
 }

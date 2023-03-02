@@ -73,6 +73,83 @@ int flashfs_mkdir(const char *dir)
     return 0;
 }
 
+int flashfs_find_file(const char *path, const char *parent, const char *filename, char *abs_path)
+{
+    lfs_dir_t dir;
+    struct lfs_info info;
+
+    char fullpath[64];
+
+    if (parent)
+        sprintf(fullpath, "%s/%s", parent, path);
+    else
+        sprintf(fullpath, "%s", path);
+
+    int err = lfs_dir_open(&flashfs_lfs, &dir, fullpath);
+    if (err) {
+        printf("Failed to open directory: %s\n", fullpath);
+        return -1;
+    }
+
+    while (lfs_dir_read(&flashfs_lfs, &dir, &info) != 0) {
+        // skip . and ..
+        if (strcmp(info.name, ".") == 0 || strcmp(info.name, "..") == 0) {
+            continue;
+        }
+
+        if (info.type == LFS_TYPE_REG) {
+            if (strcmp(filename, info.name) == 0) {
+                printf("File: %s/%s (%u bytes)\n", fullpath, info.name, info.size);
+                sprintf(abs_path, "%s/%s", fullpath, info.name);
+            }
+        } else if (info.type == LFS_TYPE_DIR) {
+            printf("Directory: %s/%s\n", fullpath, info.name);
+            flashfs_find_file(info.name, fullpath, filename, abs_path);
+        } else {
+            printf("Unknown type: %s/%s\n", fullpath, info.name);
+        }
+    }
+
+    return -1;
+}
+
+void flashfs_traverse_directory(const char *path, const char *parent)
+{
+    lfs_dir_t dir;
+    struct lfs_info info;
+
+    char fullpath[64];
+
+    if (parent)
+        sprintf(fullpath, "%s/%s", parent, path);
+    else
+        sprintf(fullpath, "%s", path);
+
+    int err = lfs_dir_open(&flashfs_lfs, &dir, fullpath);
+    if (err) {
+        printf("Failed to open directory: %s\n", fullpath);
+        return;
+    }
+
+    while (lfs_dir_read(&flashfs_lfs, &dir, &info) != 0) {
+        // skip . and ..
+        if (strcmp(info.name, ".") == 0 || strcmp(info.name, "..") == 0) {
+            continue;
+        }
+
+        if (info.type == LFS_TYPE_REG) {
+            printf("File: %s/%s (%u bytes)\n", fullpath, info.name, info.size);
+        } else if (info.type == LFS_TYPE_DIR) {
+            printf("Directory: %s/%s\n", fullpath, info.name);
+            flashfs_traverse_directory(info.name, fullpath);
+        } else {
+            printf("Unknown type: %s/%s\n", fullpath, info.name);
+        }
+    }
+
+    lfs_dir_close(&flashfs_lfs, &dir);
+}
+
 void flashfs_write(const char *file_name, const void *buffer, u32 size)
 {
 
@@ -112,11 +189,9 @@ void flashfs_test(void)
     lfs_file_opencfg(&flashfs_lfs, &file, "boot_count", LFS_O_RDWR | LFS_O_CREAT,
                      &flashfs_f_cfg);
     lfs_file_read(&flashfs_lfs, &file, &boot_count, sizeof(boot_count));
-
     boot_count += 1;
     lfs_file_rewind(&flashfs_lfs, &file);
     lfs_file_write(&flashfs_lfs, &file, &boot_count, sizeof(boot_count));
-
     lfs_file_close(&flashfs_lfs, &file);
 
     lfs_unmount(&flashfs_lfs);
@@ -129,6 +204,17 @@ int flashfs_init(void)
 {
     printf("%s, initializing FLASH file system ...\n", __func__);
 
+    int err = lfs_mount(&flashfs_lfs, &flashfs_cfg);
+    if (err) {
+        lfs_format(&flashfs_lfs, &flashfs_cfg);
+        lfs_mount(&flashfs_lfs, &flashfs_cfg);
+    }
+
+    lfs_mkdir(&flashfs_lfs, "/usr");
+    lfs_mkdir(&flashfs_lfs, "/home");
+    lfs_mkdir(&flashfs_lfs, "/lib");
+
+    lfs_unmount(&flashfs_lfs);
     // struct lfs_flashbd_config flashbd_cfg = {
     //     .erase_value = 0,
     //     .buffer = NULL,
