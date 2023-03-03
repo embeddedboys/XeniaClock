@@ -127,7 +127,7 @@ static void esp01s_rx_isr()
     while (uart_is_readable(DEFAULT_ESP8266_UART_IFACE)) {
         char ch = uart_getc(DEFAULT_ESP8266_UART_IFACE);
         g_rx_buf[g_rx_buf_index] = ch;
-        // printf("%c", g_rx_buf[g_rx_buf_index]);
+        printf("%c", g_rx_buf[g_rx_buf_index]);
         g_rx_buf_index+=1;
 
         if (!g_dev_requesting                  &&
@@ -280,7 +280,8 @@ void esp01s_connect_wifi(struct esp01s_handle *handle, char *ssid, char *psk)
     char at_cmd[48];
     sprintf(at_cmd, "AT+CWJAP=\"%s\",\"%s\"\r\n", "oneplus", "12345678");
     __esp01s_send_command_nonwait(at_cmd);
-    
+    esp01s_rx_buf_clear();
+
     /* TODO: then query the connection stat, just to be sure */
 }
 
@@ -347,6 +348,24 @@ void esp01s_server_stop(struct esp01s_handle *handle)
     esp01s_reset(handle);
 }
 
+static void esp01s_server_args_reset(struct esp01s_response_args *p_args)
+{
+    struct kv_node *np;
+    struct list_head *pos, *next;
+
+    list_for_each_safe(pos, next, &p_args->kv.head) {
+        np = list_entry(pos, struct kv_node, head);
+        list_del(pos);
+        pr_debug("freeing node %p ...\n", np);
+        free(np);
+    }
+}
+
+static void esp01s_server_do_action()
+{
+
+}
+
 // static int64_t esp01s_server_fsm(alarm_id_t id, void *user_data)
     // struct esp01s_response_args *p_args = (struct esp01s_response_args *)user_data;
 static int64_t esp01s_server_fsm(struct esp01s_response_args *p_args)
@@ -354,6 +373,7 @@ static int64_t esp01s_server_fsm(struct esp01s_response_args *p_args)
     struct kv_node *np;
 
     if(list_empty(&p_args->kv.head)) {
+        pr_debug("just sending a index page\n");
         esp01s_server_send_index(p_correct_handle);
         goto fsm_handled;
     }
@@ -378,20 +398,9 @@ static int64_t esp01s_server_fsm(struct esp01s_response_args *p_args)
     }
 
 fsm_handled:
+    /* after args parse, reset arg list */
+    esp01s_server_args_reset(&p_correct_handle->args);
     return 0;
-}
-
-static void esp01s_server_args_reset(struct esp01s_response_args *p_args)
-{
-    struct kv_node *np;
-    struct list_head *pos, *next;
-
-    list_for_each_safe(pos, next, &p_args->kv.head) {
-        np = list_entry(pos, struct kv_node, head);
-        list_del(pos);
-        pr_debug("freeing node %p ...\n", np);
-        free(np);
-    }
 }
 
 static void esp01s_server_process_args(char *kv_buf)
@@ -399,11 +408,10 @@ static void esp01s_server_process_args(char *kv_buf)
     /* reset args list */
     esp01s_server_args_reset(&p_correct_handle->args);
 
-    // pr_debug("=== \n");
     /* IPD,0,530:GET /?ssid=KYKJ&psk=keyifamily HTTP/1.1 */
     // /* parsing response key,value from IPD */
     int argc;
-    printf("%s\n", kv_buf);
+    printf("%s, %s\n", __func__, kv_buf);
 
     char *token, *str;
     for (argc=0,str = kv_buf;; str = NULL,argc++) {
@@ -464,7 +472,7 @@ static int64_t esp01s_server_process_cb(alarm_id_t id, void *user_data)
 
     char *p_str = strchr(ipd, '?');
     if (!p_str) {
-        // pr_debug("got nothing about kv, bye\n");
+        pr_debug("got nothing about kv, bye\n");
         goto handled;
     }
 
