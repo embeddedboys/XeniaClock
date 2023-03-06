@@ -371,16 +371,16 @@ static portTASK_FUNCTION(xc_main_logic, pvParameters)
     //     ramfs_test();
     //     vTaskDelay(200);
     // }
-    extern int flashfs_init(void);
-    flashfs_init();
+    // extern int flashfs_init(void);
+    // flashfs_init();
     extern void flashfs_test(void);
-    char path[64];
+    // char path[64];
     while (true) {
         flashfs_test();
-        flashfs_traverse_directory("/", NULL);
-        flashfs_find_file("/", NULL, "boot_count", path);
-        printf("find result : %s\n", path);
-        vTaskDelay(1000);
+    //     flashfs_traverse_directory("/", NULL);
+    //     flashfs_find_file("/", NULL, "boot_count", path);
+    //     printf("find result : %s\n", path);
+        vTaskDelay(2000);
     }
 }
 
