@@ -268,18 +268,20 @@ void esp01s_change_mode(struct esp01s_handle *handle, esp8266_mode_t mode)
 /* ========== STA mode ========== */
 void esp01s_connect_wifi(struct esp01s_handle *handle, char *ssid, char *psk)
 {
-    pr_debug("\n");
-    /* This could cost seconds time */
-    // ESP8266_SEND_CMD_WAIT(
-    //     2000,
-    //     ESP8266_CMD_AT_CWJAP \
-    //     "\"%s\",\"%s\"",
-    //     // ssid, psk
-    //     "oneplus", "12345678"
-    // );
     char at_cmd[48];
-    sprintf(at_cmd, "AT+CWJAP=\"%s\",\"%s\"\r\n", "oneplus", "12345678");
-    __esp01s_send_command_nonwait(at_cmd);
+    pr_debug("\n");
+    /* store ssid and psk */
+    memcpy(p_correct_handle->cfg.ssid, ssid, sizeof(p_correct_handle->cfg.ssid));
+    memcpy(p_correct_handle->cfg.psk, psk, sizeof(p_correct_handle->cfg.psk));
+
+    // sprintf(at_cmd, "AT+CWJAP=\"%s\",\"%s\"\r\n", "oneplus", "12345678");
+    /* This could cost seconds time */
+    ESP8266_SEND_CMD_NONWAIT(
+                ESP8266_CMD_AT_CWJAP \
+                "\"%s\",\"%s\"",
+                ssid,psk
+    );
+    // __esp01s_send_command_nonwait(at_cmd);
     esp01s_rx_buf_clear();
 
     /* TODO: then query the connection stat, just to be sure */
@@ -382,16 +384,13 @@ static int64_t esp01s_server_fsm(struct esp01s_response_args *p_args)
         if (0 == strcmp(np->k, "ssid")) {
             /* the client is configuring network */
             pr_debug("network\n");
-            p_correct_handle->cfg.ssid = np->k;
-            p_correct_handle->cfg.psk = np->v;
-
             /* try to connect to the WiFi */
             esp01s_connect_wifi(p_correct_handle,
                             p_correct_handle->cfg.ssid,
                             p_correct_handle->cfg.psk);
         } else if (0 == strcmp(np->k, "light")) {
             /* the client is wanting to control the light */
-            pr_debug("light\n");
+            pr_debug("light : %s\n", np->v);
         } else {
             /* requests we don't support yet */
         }
@@ -696,7 +695,7 @@ static void esp01s_server_send_index(struct esp01s_handle *handle)
     esp01s_server_status(handle);
 
     if (!list_empty(&handle->conns.head)) {
-        pr_debug("there are some connections to send data\n");
+        pr_debug("there are some connections to sending data\n");
         struct esp01s_connection *p_tmp_conn;
         list_for_each_entry(p_tmp_conn, &handle->conns.head, head) {
             pr_debug("%p, sending content to conn->id : %d\n", p_tmp_conn, p_tmp_conn->id);
@@ -725,7 +724,7 @@ void esp01s_server_broadcast(struct esp01s_handle *handle,
     esp01s_server_status(handle);
 
     if (!list_empty(&handle->conns.head)) {
-        pr_debug("there are some connections to send data\n");
+        pr_debug("there are some connections to sending data\n");
         struct esp01s_connection *p_tmp_conn;
         list_for_each_entry(p_tmp_conn, &handle->conns.head, head) {
             pr_debug("%p, sending content to conn->id : %d\n", p_tmp_conn, p_tmp_conn->id);
