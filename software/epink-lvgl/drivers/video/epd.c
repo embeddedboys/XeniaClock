@@ -50,21 +50,21 @@ uint8_t epink_disp_buffer_old[EPINK_DISP_BUFFER_SIZE];
 // static uint8_t *pen = epink_disp_buffer;
 
 /* ========== epink pin controls ========== */
-#ifdef EPINK_CS_PIN
-inline void cs_select()
-{
-    asm volatile("nop \n nop \n nop");
-    gpio_put(EPINK_CS_PIN, 0);   // Active low
-    asm volatile("nop \n nop \n nop");
-}
+// #ifdef EPINK_CS_PIN
+// inline void cs_select()
+// {
+//     asm volatile("nop \n nop \n nop");
+//     gpio_put(EPINK_CS_PIN, 0);   // Active low
+//     asm volatile("nop \n nop \n nop");
+// }
 
-inline void cs_deselect()
-{
-    asm volatile("nop \n nop \n nop");
-    gpio_put(EPINK_CS_PIN, 1);
-    asm volatile("nop \n nop \n nop");
-}
-#endif
+// inline void cs_deselect()
+// {
+//     asm volatile("nop \n nop \n nop");
+//     gpio_put(EPINK_CS_PIN, 1);
+//     asm volatile("nop \n nop \n nop");
+// }
+// #endif
 
 inline void epink_dc_set()
 {

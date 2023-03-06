@@ -98,8 +98,6 @@ arguments that define feature behaviors."
 #define EPINK_ERROR(...) printf("[ERROR]" __VA_ARGS__)
 
 /* Base  */
-void cs_select();
-void cs_deselect();
 void epink_dc_set();
 void epink_dc_clr();
 void epink_res_set();

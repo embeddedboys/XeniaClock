@@ -33,6 +33,9 @@
 
 #include "hardware/spi.h"
 
+void cs_select(uint16_t pin);
+void cs_deselect(uint16_t pin);
+
 void spi_write8(uint8_t val, uint8_t cs_pin);
 void spi_write16(uint16_t val, uint8_t cs_pin);
 

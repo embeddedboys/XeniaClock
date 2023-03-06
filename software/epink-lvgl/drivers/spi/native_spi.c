@@ -39,14 +39,14 @@
 
 subsys_initcall(native_spi_init);
 
-void spi_cs_select(uint16_t pin)
+void cs_select(uint16_t pin)
 {
     asm volatile("nop \n nop \n nop");
     gpio_put(pin, 0);
     asm volatile("nop \n nop \n nop");
 }
 
-void spi_cs_deselect(uint16_t pin)
+void cs_deselect(uint16_t pin)
 {
     asm volatile("nop \n nop \n nop");
     gpio_put(pin, 1);
@@ -57,24 +57,24 @@ void spi_write8(uint8_t val, uint8_t cs_pin)
 {
     uint8_t buf[1] = {val};
 
-    spi_cs_select(cs_pin);
+    cs_select(cs_pin);
     spi_write_blocking(spi_default, buf, 1);
-    spi_cs_deselect(cs_pin);
+    cs_deselect(cs_pin);
 }
 
 void spi_write16(uint16_t val, uint8_t cs_pin)
 {
     uint16_t buf[1] = {val};
-    spi_cs_select(cs_pin);
+    cs_select(cs_pin);
     spi_write16_blocking(spi_default, buf, 1);
-    spi_cs_deselect(cs_pin);
+    cs_deselect(cs_pin);
 }
 
 void spi_transfer(uint8_t *buf, int size, uint8_t cs_pin)
 {
-    spi_cs_select(cs_pin);
+    cs_select(cs_pin);
     spi_write_blocking(spi_default, buf, size);
-    spi_cs_deselect(cs_pin);
+    cs_deselect(cs_pin);
 }
 
 static int native_spi_init(void)
