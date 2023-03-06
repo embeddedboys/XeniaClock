@@ -1,8 +1,31 @@
 /**
- * Copyright (c) 2023 IotaHydrae(writeforever@foxmail.com)
- *
- * This software is released under the MIT License.
- * https://opensource.org/licenses/MIT
+ * @file flash.c
+ * @author IotaHydrae (writeforever@foxmail.com)
+ * @brief 
+ * @version 0.1
+ * @date 2023-03-06
+ * 
+ * MIT License
+ * 
+ * Copyright 2022 IotaHydrae(writeforever@foxmail.com)
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * 
  */
 
 #include <stdlib.h>
@@ -29,12 +52,19 @@ lfs_file_t flashfs_file;
 #define LFS_FLASH_BLOCK_CYCLES      500
 #define LFS_FLASH_LOOKAHEAD_SIZE    16
 
-#define LFS_FLASH_FILE_BUFFER_SIZE  16
 
+#ifdef LFS_NO_MALLOC
+#define LFS_FLASH_FILE_BUFFER_SIZE  16
 static uint8_t file_buffer[LFS_FLASH_FILE_BUFFER_SIZE];
 static uint8_t read_buffer[LFS_FLASH_READ_SIZE];
 static uint8_t prog_buffer[LFS_FLASH_PROG_SIZE];
 static uint8_t lookahead_buffer[LFS_FLASH_LOOKAHEAD_SIZE];
+static struct lfs_file_config flashfs_f_cfg = {
+    .buffer = file_buffer,
+    .attr_count = 0,
+    .attrs = 0,
+};
+#endif
 
 static struct lfs_config flashfs_cfg = {
     .context = NULL,
@@ -52,14 +82,11 @@ static struct lfs_config flashfs_cfg = {
     .lookahead_size = LFS_FLASH_LOOKAHEAD_SIZE,
     .block_cycles   = LFS_FLASH_BLOCK_CYCLES,
 
+#ifdef LFS_NO_MALLOC
     .read_buffer      = read_buffer,
     .prog_buffer      = prog_buffer,
     .lookahead_buffer = lookahead_buffer,
-};
-static struct lfs_file_config flashfs_f_cfg = {
-    .buffer = file_buffer,
-    .attr_count = 0,
-    .attrs = 0,
+#endif
 };
 
 int flashfs_mkdir(const char *dir)
@@ -153,6 +180,26 @@ void flashfs_traverse_directory(const char *path, const char *parent)
 void flashfs_write(const char *file_name, const void *buffer, u32 size)
 {
 
+    lfs_file_t file;
+
+    int err = lfs_mount(&flashfs_lfs, &flashfs_cfg);
+    if (err) {
+        lfs_format(&flashfs_lfs, &flashfs_cfg);
+        lfs_mount(&flashfs_lfs, &flashfs_cfg);
+    }
+
+#ifdef LFS_NO_MALLOC
+    lfs_file_opencfg(&flashfs_lfs, &file, file_name, LFS_O_RDWR | LFS_O_CREAT,
+                     &flashfs_f_cfg);
+#else
+    lfs_file_open(&flashfs_lfs, &file, file_name, LFS_O_RDWR | LFS_O_CREAT);
+#endif
+
+    // lfs_file_rewind(&flashfs_lfs, &file);
+    lfs_file_write(&flashfs_lfs, &file, buffer, size);
+    lfs_file_close(&flashfs_lfs, &file);
+
+    lfs_unmount(&flashfs_lfs);
 }
 
 void flashfs_read(const char *file_name, void *buffer, u32 size)
@@ -165,8 +212,13 @@ void flashfs_read(const char *file_name, void *buffer, u32 size)
         lfs_mount(&flashfs_lfs, &flashfs_cfg);
     }
 
+#ifdef LFS_NO_MALLOC
     lfs_file_opencfg(&flashfs_lfs, &file, file_name, LFS_O_RDWR | LFS_O_CREAT,
                      &flashfs_f_cfg);
+#else
+    lfs_file_open(&flashfs_lfs, &file, file_name, LFS_O_RDWR | LFS_O_CREAT);
+#endif
+
     lfs_file_read(&flashfs_lfs, &file, buffer, size);
 
     lfs_file_close(&flashfs_lfs, &file);
@@ -174,7 +226,7 @@ void flashfs_read(const char *file_name, void *buffer, u32 size)
     lfs_unmount(&flashfs_lfs);
 }
 
-
+#if 0
 void flashfs_test(void)
 {
     lfs_file_t file;
@@ -186,8 +238,14 @@ void flashfs_test(void)
     }
 
     uint32_t boot_count = 0;
+
+#ifdef LFS_NO_MALLOC
     lfs_file_opencfg(&flashfs_lfs, &file, "boot_count", LFS_O_RDWR | LFS_O_CREAT,
                      &flashfs_f_cfg);
+#else
+    lfs_file_open(&flashfs_lfs, &file, "boot_count", LFS_O_RDWR | LFS_O_CREAT);
+#endif
+
     lfs_file_read(&flashfs_lfs, &file, &boot_count, sizeof(boot_count));
     boot_count += 1;
     lfs_file_rewind(&flashfs_lfs, &file);
@@ -199,6 +257,24 @@ void flashfs_test(void)
     printf("boot_count : %d\n", boot_count);
     return;
 }
+#else
+void flashfs_test(void)
+{
+    uint32_t boot_count = 0;
+
+    flashfs_read("boot_count", &boot_count, sizeof(boot_count));
+    boot_count += 1;
+    flashfs_write("boot_count", &boot_count, sizeof(boot_count));
+
+    printf("boot_count : %d\n", boot_count);
+    if (boot_count % 10 == 0) {
+        boot_count = 0;
+        flashfs_write("boot_count", &boot_count, sizeof(boot_count));
+    }
+
+    return;
+}
+#endif
 
 int flashfs_init(void)
 {

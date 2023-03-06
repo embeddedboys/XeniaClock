@@ -36,9 +36,10 @@
 
 #include "mtd/spi-nor.h"
 
-#include "hardware/spi.h"
+#include <stdio.h>
 #include "pico/stdlib.h"
 #include "pico/binary_info.h"
+#include "hardware/spi.h"
 
 #include <spi/native_spi.h>
 
@@ -49,170 +50,184 @@
 #define FLASH_RX_PIN    8
 #define FLASH_CS_PIN    9
 
-static void flash_cs_select(uint16_t pin)
+#define FLASH_PAGE_SIZE        256
+#define FLASH_SECTOR_SIZE      4096
+
+#define FLASH_CMD_PAGE_PROGRAM 0x02
+#define FLASH_CMD_READ         0x03
+#define FLASH_CMD_STATUS       0x05
+#define FLASH_CMD_WRITE_EN     0x06
+#define FLASH_CMD_SECTOR_ERASE 0x20
+
+#define FLASH_STATUS_BUSY_MASK 0x01
+
+// static void flash_cs_select(uint16_t pin)
+// {
+//     asm volatile("nop \n nop \n nop");
+//     gpio_put(pin, 0);
+//     asm volatile("nop \n nop \n nop");
+// }
+
+// static void flash_cs_deselect(uint16_t pin)
+// {
+//     asm volatile("nop \n nop \n nop");
+//     gpio_put(pin, 1);
+//     asm volatile("nop \n nop \n nop");
+// }
+
+// static void flash_write8(uint8_t val, uint8_t cs_pin)
+// {
+//     uint8_t buf[1] = {val};
+
+//     cs_select(cs_pin);
+//     spi_write_blocking(FLASH_SPI_IFCE, buf, 1);
+//     cs_deselect(cs_pin);
+// }
+
+// static void flash_write_reg(u8 reg, u8 *vals, size_t len, u8 cs_pin)
+// {
+//     u8 buf[1] = {reg};
+
+//     cs_select(cs_pin);
+//     spi_write_blocking(FLASH_SPI_IFCE, buf, 1);
+//     spi_write_blocking(FLASH_SPI_IFCE, vals, len);
+//     cs_deselect(cs_pin);
+// }
+
+// static u8 flash_read_reg(uint8_t reg, uint8_t cs_pin)
+// {
+//     uint8_t buf[1] = {reg};
+//     u8 read[1] = {0};
+
+//     cs_select(cs_pin);
+//     spi_write_blocking(FLASH_SPI_IFCE, buf, 1);
+//     spi_read_blocking(FLASH_SPI_IFCE, 0x0, read, 1);
+//     cs_deselect(cs_pin);
+
+//     return read[0];
+// }
+
+void __not_in_flash_func(flash_write_enable)()
 {
-    asm volatile("nop \n nop \n nop");
-    gpio_put(pin, 0);
-    asm volatile("nop \n nop \n nop");
+    cs_select(FLASH_CS_PIN);
+    uint8_t cmd = FLASH_CMD_WRITE_EN;
+    spi_write_blocking(FLASH_SPI_IFCE, &cmd, 1);
+    cs_deselect(FLASH_CS_PIN);
 }
 
-static void flash_cs_deselect(uint16_t pin)
+void __not_in_flash_func(flash_wait_done)()
 {
-    asm volatile("nop \n nop \n nop");
-    gpio_put(pin, 1);
-    asm volatile("nop \n nop \n nop");
+    uint8_t status;
+    do {
+        cs_select(FLASH_CS_PIN);
+        uint8_t buf[2] = {FLASH_CMD_STATUS, 0};
+        spi_write_read_blocking(FLASH_SPI_IFCE, buf, buf, 2);
+        cs_deselect(FLASH_CS_PIN);
+        status = buf[1];
+    } while (status & FLASH_STATUS_BUSY_MASK);
 }
 
-static void flash_write8(uint8_t val, uint8_t cs_pin)
-{
-    uint8_t buf[1] = {val};
+// static void flash_transfer(uint8_t *src, uint8_t *dst, int size, uint8_t cs_pin)
+// {
+//     cs_select(cs_pin);
+//     spi_write_read_blocking(FLASH_SPI_IFCE, src, dst, size);
+//     cs_deselect(cs_pin);
+// }
 
-    flash_cs_select(cs_pin);
-    spi_write_blocking(FLASH_SPI_IFCE, buf, 1);
-    flash_cs_deselect(cs_pin);
-}
+// size_t winbond_flash_sector_erase(u32 to)
+// {
+//     int rc;
+//     u8 to_buf[4] = { 0x20, to >> 16, to >> 8, to};
 
-static void flash_write_reg(u8 reg, u8 *vals, size_t len, u8 cs_pin)
-{
-    u8 buf[1] = {reg};
+//     flash_write8(0x06, FLASH_CS_PIN);
+//     flash_cs_select(FLASH_CS_PIN);
+//     spi_write_blocking(FLASH_SPI_IFCE, to_buf, ARRAY_SIZE(to_buf));
+//     flash_cs_deselect(FLASH_CS_PIN);
+//     /* according to the manual, a sector erase will cost 120ms,
+//      * max for 200ms, so give a 150ms delay for good */
+//     return rc;
+// }
 
-    flash_cs_select(cs_pin);
-    spi_write_blocking(FLASH_SPI_IFCE, buf, 1);
-    spi_write_blocking(FLASH_SPI_IFCE, vals, len);
-    flash_cs_deselect(cs_pin);
-}
-
-static u8 flash_read_reg(uint8_t reg, uint8_t cs_pin)
-{
-    uint8_t buf[1] = {reg};
-    u8 read[1] = {0};
-
-    flash_cs_select(cs_pin);
-    spi_write_blocking(FLASH_SPI_IFCE, buf, 1);
-    spi_read_blocking(FLASH_SPI_IFCE, 0x0, read, 1);
-    flash_cs_deselect(cs_pin);
-
-    return read[0];
-}
-
-static void flash_transfer(uint8_t *src, uint8_t *dst, int size, uint8_t cs_pin)
-{
-    flash_cs_select(cs_pin);
-    spi_write_read_blocking(FLASH_SPI_IFCE, src, dst, size);
-    flash_cs_deselect(cs_pin);
-}
-
-size_t winbond_flash_sector_erase(u32 to)
-{
-    int rc;
-    u8 to_buf[4] = { 0x20, to >> 16, to >> 8, to};
-
-    flash_write8(0x06, FLASH_CS_PIN);
-
-    flash_cs_select(FLASH_CS_PIN);
-
-    spi_write_blocking(FLASH_SPI_IFCE, to_buf, ARRAY_SIZE(to_buf));
-
-    flash_cs_deselect(FLASH_CS_PIN);
-
-    /* according to the manual, a sector erase will cost 120ms,
-     * max for 200ms, so give a 150ms delay for good */
-    return rc;
-}
-
-static int rpi_spi_read_reg(struct spi_nor *nor, u8 opcode, u8 *buf,
-                            size_t len)
+static int __not_in_flash_func(rpi_spi_read_reg)(struct spi_nor *nor, u8 opcode, u8 *buf,
+                                                 size_t len)
 {
     int ret;
-
     // pr_dbg("opcode : 0x%02x\n");
-
     uint8_t w_buf[1] = {opcode};
 
-    flash_cs_select(FLASH_CS_PIN);
+    cs_select(FLASH_CS_PIN);
     spi_write_blocking(FLASH_SPI_IFCE, w_buf, 1);
     spi_read_blocking(FLASH_SPI_IFCE, 0x0, buf, len);
-    flash_cs_deselect(FLASH_CS_PIN);
+    cs_deselect(FLASH_CS_PIN);
 
     return 0;
 }
 
-static int rpi_spi_write_reg(struct spi_nor *nor, u8 opcode, const u8 *buf,
-                             size_t len)
+static int __not_in_flash_func(rpi_spi_write_reg)(struct spi_nor *nor, u8 opcode,
+                                                  const u8 *buf,
+                                                  size_t len)
 {
     int ret;
-
-    // pr_dbg("opcode : 0x%02x\n");
-
     uint8_t w_buf[1] = {opcode};
 
-    flash_write8(0x06, FLASH_CS_PIN);
-
-    flash_cs_select(FLASH_CS_PIN);
+    flash_write_enable();
+    cs_select(FLASH_CS_PIN);
     spi_write_blocking(FLASH_SPI_IFCE, w_buf, 1);
-
     if (buf && len > 0)
         spi_write_blocking(FLASH_SPI_IFCE, buf, len);
-
-    flash_cs_deselect(FLASH_CS_PIN);
+    cs_deselect(FLASH_CS_PIN);
 
     return 0;
 }
 
-static ssize_t rpi_spi_read(struct spi_nor *nor, loff_t from, size_t len,
-                            u_char *read_buf)
+static ssize_t __not_in_flash_func(rpi_spi_read)(struct spi_nor *nor, loff_t from,
+                                                 size_t len,
+                                                 u_char *read_buf)
 {
     int rc;
     // printf("%s, reading from ... 0x%x\n", __func__, from);
 
     u8 w_buf[4] = {SPINOR_OP_READ, from >> 16, from >> 8, from};
 
-    flash_cs_select(FLASH_CS_PIN);
-
+    cs_select(FLASH_CS_PIN);
     rc = spi_write_blocking(FLASH_SPI_IFCE, w_buf, ARRAY_SIZE(w_buf));
     rc = spi_read_blocking(FLASH_SPI_IFCE, 0x0, read_buf, len);
-
-    flash_cs_deselect(FLASH_CS_PIN);
+    cs_deselect(FLASH_CS_PIN);
 
     return rc;
 }
 
-static ssize_t rpi_spi_write(struct spi_nor *nor, loff_t to, size_t len,
-                             const u_char *write_buf)
+static ssize_t __not_in_flash_func(rpi_spi_write)(struct spi_nor *nor, loff_t to,
+                                                  size_t len,
+                                                  const u_char *write_buf)
 {
     int rc;
     // printf("%s, writing to 0x%x ... \n", __func__, to);
 
     u8 w_buf[4] = {SPINOR_OP_PP, to >> 16, to >> 8, to};
 
-    flash_write8(SPINOR_OP_WREN, FLASH_CS_PIN);
-
-    flash_cs_select(FLASH_CS_PIN);
-
-    spi_write_blocking(FLASH_SPI_IFCE, w_buf, ARRAY_SIZE(w_buf));
+    flash_write_enable();
+    cs_select(FLASH_CS_PIN);
+    rc = spi_write_blocking(FLASH_SPI_IFCE, w_buf, ARRAY_SIZE(w_buf));
     rc = spi_write_blocking(FLASH_SPI_IFCE, write_buf, len);
-
-    flash_cs_deselect(FLASH_CS_PIN);
-
-    vTaskDelay(3);
+    cs_deselect(FLASH_CS_PIN);
+    flash_wait_done();
+    // vTaskDelay(3);
     return rc;
 }
 
-static int rpi_spi_erase(struct spi_nor *nor, loff_t offs)
+static int __not_in_flash_func(rpi_spi_erase)(struct spi_nor *nor, loff_t offs)
 {
     // printf("%s, erasing block 0x%x ... \n", __func__, offs);
 
-    u8 w_buf[4] = { SPINOR_OP_BE_4K, offs >> 16, offs >> 8, offs};
-
-    flash_write8(SPINOR_OP_WREN, FLASH_CS_PIN);
-
-    flash_cs_select(FLASH_CS_PIN);
-
+    u8 w_buf[4] = {SPINOR_OP_BE_4K, offs >> 16, offs >> 8, offs};
+    flash_write_enable();
+    cs_select(FLASH_CS_PIN);
     spi_write_blocking(FLASH_SPI_IFCE, w_buf, ARRAY_SIZE(w_buf));
+    cs_deselect(FLASH_CS_PIN);
+    // vTaskDelay(200);
+    flash_wait_done();
 
-    flash_cs_deselect(FLASH_CS_PIN);
-
-    vTaskDelay(200);
     return 0;
 }
 
@@ -227,7 +242,7 @@ const struct spi_nor_controller_ops rpi_spi_controller_ops = {
 static SUBSYS_INITCALL(rpi_spi_init)
 {
     /* HAL init */
-    spi_init(FLASH_SPI_IFCE, 10000000);
+    spi_init(FLASH_SPI_IFCE, 12000000);
     gpio_set_function(FLASH_SCK_PIN, GPIO_FUNC_SPI);
     // gpio_set_function(FLASH_CS_PIN, GPIO_FUNC_SPI);
     gpio_set_function(FLASH_TX_PIN, GPIO_FUNC_SPI);
@@ -235,8 +250,8 @@ static SUBSYS_INITCALL(rpi_spi_init)
     bi_decl(bi_3pins_with_func(FLASH_SCK_PIN, FLASH_TX_PIN, FLASH_RX_PIN, GPIO_FUNC_SPI));
 
     gpio_init(FLASH_CS_PIN);
-    gpio_set_dir(FLASH_CS_PIN, GPIO_OUT);
     gpio_put(FLASH_CS_PIN, 1);
+    gpio_set_dir(FLASH_CS_PIN, GPIO_OUT);
     bi_decl(bi_1pin_with_func(FLASH_CS_PIN, GPIO_FUNC_SPI));
 
     // /* disable memory protection */
