@@ -1,0 +1,8 @@
+
+menuconfig TTY
+    bool "TTY Support"
+
+if TTY
+
+endif
+

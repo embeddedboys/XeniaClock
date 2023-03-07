@@ -13,6 +13,8 @@ source "drivers/video/Kconfig"
 
 source "drivers/leds/Kconfig"
 
+source "drivers/misc/eeprom/Kconfig"
+
 source "drivers/soc/Kconfig"
 
 source "drivers/uart/Kconfig"

@@ -1,0 +1,8 @@
+
+menuconfig EEPROM
+    bool "EEPROM Support"
+
+if EEPROM
+
+endif
+
