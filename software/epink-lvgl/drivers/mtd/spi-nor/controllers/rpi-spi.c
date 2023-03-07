@@ -37,9 +37,11 @@
 #include "mtd/spi-nor.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 #include "pico/stdlib.h"
 #include "pico/binary_info.h"
 #include "hardware/spi.h"
+#include "hardware/dma.h"
 
 #include <spi/native_spi.h>
 
@@ -253,6 +255,27 @@ static SUBSYS_INITCALL(rpi_spi_init)
     gpio_put(FLASH_CS_PIN, 1);
     gpio_set_dir(FLASH_CS_PIN, GPIO_OUT);
     bi_decl(bi_1pin_with_func(FLASH_CS_PIN, GPIO_FUNC_SPI));
+
+    // const uint dma_tx = dma_claim_unused_channel(true);
+    // const uint dma_rx = dma_claim_unused_channel(true);
+
+    // static uint8_t txbuf[256];
+
+    // printk("configure TX DMA\n");
+
+    // dma_channel_config c = dma_channel_get_default_config(dma_tx);
+    // channel_config_set_transfer_data_size(&c, DMA_SIZE_8);
+    // channel_config_set_dreq(&c, spi_get_dreq(FLASH_SPI_IFCE, true));
+    // dma_channel_configure(dma_tx, &c,
+    //                     &spi_get_hw(FLASH_SPI_IFCE)->dr),
+    //                     tx_buf,
+    //                     ARRAY_SIZE(txbuf),
+    //                     false);
+
+    // printk("Staring DMAs\n");
+
+    // dma_channel_unclaim(dma_tx);
+    // dma_channel_unclaim(dma_rx);
 
     // /* disable memory protection */
     // /* save status regs */

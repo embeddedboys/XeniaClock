@@ -57,6 +57,7 @@ target_link_libraries(xenia_clock freertos-kernel
                             pico_bootsel_via_double_reset
                             hardware_clocks
                             hardware_spi
+                            hardware_dma
                             hardware_rtc
                             hardware_i2c
                             hardware_pwm
