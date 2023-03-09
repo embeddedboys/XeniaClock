@@ -2,7 +2,48 @@
 
 menu "Graphics support"
 
+config VIDEO_SSD1681
+    bool "Enable support for ssd1681 based e-paper display"
+    help
+      Support ssd1681 e-paper display driver IC.
+      If unsure, say Y.
+
+config VIDEO_EP_LUAT
+    bool "Enable support for luatos e-paper display"
+    help
+      Support ssd1681 e-paper display driver IC.
+      If unsure, say N.
+
+config VIDEO_ST7789V
+    bool "Enable support for st7789v based display"
+    help
+      Support st7789v display driver IC.
+      If unsure, say N.
+
+choice
+    prompt "Select default display driver"
+    default VIDEO_DEFAULT_DRIVER_SSD1681
+    help
+      Here to choose the default display driver
+      you want to use. If unsure about this, just
+      keep default.
+
+config VIDEO_DEFAULT_DRIVER_SSD1681
+    bool "ssd1681"
+    depends on VIDEO_SSD1681
+
+config VIDEO_DEFAULT_DRIVER_EP_LUAT
+    bool "ep_luat"
+    depends on VIDEO_EP_LUAT
+
+config VIDEO_DEFAULT_DRIVER_ST7789V
+    bool "st7789v"
+    depends on VIDEO_ST7789V
+
+endchoice
+
 endmenu
+
 
 
 

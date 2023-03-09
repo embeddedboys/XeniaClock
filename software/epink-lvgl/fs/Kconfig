@@ -15,6 +15,19 @@ config LFS_RAMFS
     bool "RAM file system support"
     depends on LITTLE_FS
 
+config LFS_TMPFS
+    bool "Tmpfs virtual memory file system support (former shm fs)"
+    depends on LFS_RAMFS
+    help
+      Tmpfs is a file system which keeps all files in virtual memory.
+      
+      Everything in tmpfs is temporary in the sense that no files will be
+      created on your hard drive. The files live in memory and swap
+      space. If you umount a tmpfs instance, everything stored therein is
+      lost.
+
+      See <file:Documentation/filesystem/tmpfs.rst> for details.
+
 choice
     prompt "Select default ram block size"
     default LFS_RAMFS_BLOCK_SIZE_64B
