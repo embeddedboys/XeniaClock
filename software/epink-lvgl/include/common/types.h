@@ -51,6 +51,11 @@
     typedef unsigned long u64;
 #endif
 
+typedef signed char s8;
+typedef signed short s16;
+typedef signed int  s32;
+typedef signed long long s64;
+
 typedef unsigned char   __u8;
 typedef unsigned short  __u16;
 typedef unsigned int    __u32;
