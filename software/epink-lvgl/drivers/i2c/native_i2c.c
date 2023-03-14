@@ -88,17 +88,17 @@ subsys_initcall(native_i2c_init);
 void i2c_write_reg(uint8_t addr, uint8_t reg, uint8_t val)
 {
     // printk("i2c_write_reg\n");
-    uint8_t buf[2] = {reg, val};
-    i2c_write_blocking(DEFAULT_I2C_IFCE, addr, buf, 2, false);
+    uint16_t buf = val << 8 | reg;
+    i2c_write_blocking(DEFAULT_I2C_IFCE, addr, (uint8_t *)&buf, sizeof(buf), false);
 }
 
 uint8_t i2c_read_reg(uint8_t addr, uint8_t reg)
 {
     // printk("i2c_read_reg\n");
-    uint8_t wbuf[1] = {reg}, rbuf[1];
-    i2c_write_blocking(DEFAULT_I2C_IFCE, addr, wbuf, 1, true);
-    i2c_read_blocking(DEFAULT_I2C_IFCE, addr, rbuf, 1, false);
-    return rbuf[0];
+    uint8_t val = 0;
+    i2c_write_blocking(DEFAULT_I2C_IFCE, addr, &reg, sizeof(reg), true);
+    i2c_read_blocking(DEFAULT_I2C_IFCE, addr, &val, sizeof(val), false);
+    return val;
 }
 
 static int native_i2c_init(void)

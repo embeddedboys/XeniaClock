@@ -38,6 +38,7 @@ file(GLOB_RECURSE SOURCES "lvgl/src/*.c"
                             "drivers/power/*.c"
                             "drivers/input/*.c"
                             "drivers/leds/*.c"
+                            "drivers/iio/*.c"
                             "drivers/mtd/spi-nor/*.c"
                             "drivers/rtc/*.c")
 

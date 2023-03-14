@@ -167,6 +167,9 @@ static void bmp280_hw_init(void)
         i2c_write_reg(BMP280_ADDR, BMP280_REG_CTRL_MEAS, ctrl_meas);
 }
 
+late_initcall(bmp280_drv_init);
+late_initcall(bmp280_drv_exit);
+
 static int bmp280_drv_init(void)
 {
         bmp280_hw_init();
@@ -176,6 +179,3 @@ static int bmp280_drv_exit(void)
 {
 
 }
-
-device_initcall(bmp280_drv_init);
-device_initcall(bmp280_drv_exit);

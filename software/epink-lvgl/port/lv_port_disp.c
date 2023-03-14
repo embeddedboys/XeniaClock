@@ -198,7 +198,7 @@ void post_lv_port_disp_init()
     sub_disp_drv.flush_cb = sub_screen_disp_flush;
     
     sub_disp_drv.draw_buf = &draw_buf_dsc_sub_screen;
-    // sub_disp_drv.full_refresh = 1;
+    sub_disp_drv.full_refresh = 1;
     
     lv_disp_t *sub_disp = lv_disp_drv_register(&sub_disp_drv);
     
@@ -259,6 +259,9 @@ static void main_screen_set_pix_cb(lv_disp_drv_t *disp_drv, uint8_t *buf,
 static void sub_screen_set_pix_cb(lv_disp_drv_t *disp_drv, uint8_t *buf, lv_coord_t buf_w,
                                   lv_coord_t x, lv_coord_t y, lv_color_t color, lv_opa_t opa)
 {
+    if (!g_sub_disp_m->ops.module_put_pixel)
+        return;
+
     if (lv_color_brightness(color) < 128) {
         g_sub_disp_m->ops.module_put_pixel(x, y, 1);
     } else {
@@ -316,8 +319,13 @@ static void main_screen_disp_flush_full(lv_disp_drv_t *disp_drv, const lv_area_t
 static void sub_screen_disp_flush(lv_disp_drv_t *disp_drv, const lv_area_t *area,
                                   lv_color_t *color_p)
 {
+    if (!g_sub_disp_m->ops.module_flush) {
+        pr_debug("can't find a flush method for `%s`\n", g_sub_disp_m->name);
+        return;
+    }
+
     g_sub_disp_m->ops.module_flush();
-    
+
     lv_disp_flush_ready(disp_drv);
 }
 

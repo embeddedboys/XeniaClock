@@ -30,10 +30,12 @@
 
 #include <string.h>
 
+#include "common/tools.h"
+#include "common/version.h"
+
 #include "i2c/native_i2c.h"
 #include "video/epd.h"
 #include "video/ssd1306.h"
-#include "common/tools.h"
 #include "pico/time.h"
 
 /* ssd1306 functions switch */
@@ -43,6 +45,10 @@
 #define SSD1306_USE_BLANK             1
 #define SSD1306_USE_SET_UPDATE_MODE   0
 #define SSD1306_USE_PUT_PIXEL         1
+
+#define DRV_NAME    "ssd1306"
+
+#define SSD1306_ADDR    (0x3c)
 
 #define SSD1306_CMD     (0x00)
 #define SSD1306_DATA    (0x40)
@@ -56,20 +62,24 @@ static uint8_t old_ssd1306_buffer[SSD1306_BUFFER_SIZE] = {0};
 
 static void ssd1306_write_cmd(uint8_t val)
 {
-    uint8_t wbuf[2] = {0};
-    wbuf[0] = 0x00;
-    wbuf[1] = val;
-    i2c_write_blocking(i2c_default, 0x3c, wbuf, 2, false);
-    // i2c_write_reg(SSD1306_ADDRESS, SSD1306_CMD, val);
+    // uint8_t wbuf[2] = {SSD1306_CMD, val};
+    // i2c_write_blocking(i2c_default, SSD1306_ADDR, wbuf, 2, false);
+
+    // uint16_t content = val << 8 | SSD1306_CMD;
+    // i2c_write_blocking(i2c_default, SSD1306_ADDR, (uint8_t *)&content, sizeof(content), false);
+
+    i2c_write_reg(SSD1306_ADDR, SSD1306_CMD, val);
 }
 
 static void ssd1306_write_data(uint8_t val)
 {
-    uint8_t wbuf[2] = {0};
-    wbuf[0] = 0x40;
-    wbuf[1] = val;
-    i2c_write_blocking(i2c_default, 0x3c, wbuf, 2, false);
-    // i2c_write_reg(SSD1306_ADDRESS, SSD1306_DATA, val);
+    // uint8_t wbuf[2] = {SSD1306_DATA, val};
+    // i2c_write_blocking(i2c_default, SSD1306_ADDR, wbuf, 2, false);
+
+    // uint16_t content = val << 8 | SSD1306_DATA;
+    // i2c_write_blocking(i2c_default, SSD1306_ADDR, (uint8_t *)&content, sizeof(content), false);
+
+    i2c_write_reg(SSD1306_ADDR, SSD1306_DATA, val);
 }
 
 static void ssd1306_set_pos(uint8_t page, uint8_t col)
@@ -84,18 +94,19 @@ static void ssd1306_set_pos(uint8_t page, uint8_t col)
 static int ssd1306_flush()
 {
     uint8_t page, col;
-    
+
     for (page = 0; page < SSD1306_PAGE_SIZE; page++)
         for (col = 0; col < SSD1306_HOR_RES_MAX; col++)
             // if (oled_buffer[OFFSET(page, col)] != 0x00)
         {
-            
-            if (ssd1306_buffer[OFFSET(page, col)] != old_ssd1306_buffer[OFFSET(page, col)]) {
-                ssd1306_set_pos(page, col);
-                ssd1306_write_data(ssd1306_buffer[OFFSET(page, col)]);
+            if (ssd1306_buffer[OFFSET(page, col)] == old_ssd1306_buffer[OFFSET(page, col)]) {
+                continue;
             }
+
+            ssd1306_set_pos(page, col);
+            ssd1306_write_data(ssd1306_buffer[OFFSET(page, col)]);
         }
-    
+
     memcpy(old_ssd1306_buffer, ssd1306_buffer, SSD1306_BUFFER_SIZE);
     return 0;
 }
@@ -235,24 +246,19 @@ static void ssd1306_blank()
 #if SSD1306_USE_PUT_PIXEL
 static void ssd1306_put_pixel(uint16_t x, uint16_t y, uint16_t color)
 {
-    uint8_t page, page_left;
+    // uint8_t page, page_left;
     uint8_t *pen = ssd1306_buffer;
     
 #ifdef OLED_COORD_CHECK
     if ((x >= 0 && x < SSD1306_HOR_RES_MAX) && (y >= 0 && y < SSD1306_VER_RES_MAX)) {
 #endif
-        page = y / 8;
-        page_left = y % 8 == 0 ? 0 : y % 8;
+        // page = y / 8;
+        // page_left = y % 8;
         // printf("page, page_left: %d, %d\n",page, page_left);
-        
-        if (color) {
-            pen[OFFSET(page, x)] |= (1 << page_left);
-            // printf("+++ pos : %d, dump: %d\n", OFFSET(page, x), pen[OFFSET(page, x)]);
-        } else {
-            pen[OFFSET(page, x)] &= ~(1 << page_left);
-            // printf("--- pos : %d, dump: %d\n", OFFSET(page, x), pen[OFFSET(page, x)]);
-        }
-        
+        if (color)
+            pen[OFFSET(y / 8, x)] |= (1 << (y % 8));
+        else
+            pen[OFFSET(y / 8, x)] &= ~(1 << (y % 8));
 #ifdef OLED_COORD_CHECK
     }
 #endif
@@ -296,13 +302,21 @@ static void ssd1306_putascii(uint8_t x, uint8_t y, char c)
  * @param x start position of X
  * @param y start position of Y
  * @param str string that will outputting to the panel
+ * @param delay a delay between each char display in ms
  */
-static void ssd1306_putascii_string(uint8_t x, uint8_t y, char *str)
+static void ssd1306_putascii_string(uint8_t x, uint8_t y, char *str, int delay, bool direct)
 {
     while (*str != '\0') {
+        ssd1306_putascii(x, y, '_');
+        if (direct)
+            ssd1306_flush();
         ssd1306_putascii(x, y, *str++);
         x += 8; /* move x to the next pos */
-        
+        if (delay > 0)
+            sleep_ms(delay);
+
+        if (direct)
+            ssd1306_flush();
         /* start a new line if reach the end of line */
         if (x >= SSD1306_HOR_RES_MAX) {
             x = 0;
@@ -325,10 +339,38 @@ void ssd1306_test()
 
 void ssd1306_banner()
 {
+    char buf[64];
     ssd1306_init(1);
 
-    ssd1306_putascii_string(20, 12, "Xenia Clock");
-    ssd1306_flush();
+    ssd1306_putascii_string(20, 0, "Xenia Clock", 21, true);
+    sprintf(buf, "version: %d.%d.%d", VER_MAJOR, VER_MINOR, VER_REVISION);
+    ssd1306_putascii_string(8, 16, buf, 31, true);
+
+    sleep_ms(200);
+    ssd1306_clear(SSD1306_COLOR_WHITE);
+
+    ssd1306_putascii_string(20, 8, "Booting...", 51, true);
+    sleep_ms(200);
 }
 
-DISP_MODULE_REGISTER(ssd1306);
+static struct display_module ssd1306_module = {
+    .name = DRV_NAME,
+    .cfg = {
+        .width       = SSD1306_HOR_RES_MAX,
+        .height      = SSD1306_VER_RES_MAX,
+        .bpp         = OLED_COLOR_DEPTH,
+        .update_mode = EPINK_UPDATE_MODE_FULL,
+    },
+    .ops = {
+        .module_init            = ssd1306_init,
+        .module_blank           = ssd1306_blank,
+        .module_clear           = ssd1306_clear,
+        // .module_flush_part      = ssd1306_flush_part,
+        .module_flush           = ssd1306_flush,
+        .module_put_pixel       = ssd1306_put_pixel,
+        .module_set_update_mode = ssd1306_set_update_mode,
+    },
+};
+
+// DISP_MODULE_REGISTER(ssd1306);
+DISP_MODULE_DRIVER(ssd1306);

@@ -63,6 +63,7 @@
 #include "misc/extras.h"
 #include "lib/printk.h"
 #include "fs/fs.h"
+#include "iio/bmp280.h"
 
 /* Header files lvgl defined */
 #include "lvgl/lvgl.h"
@@ -236,35 +237,50 @@ static void sub_screen_display_init()
 
     /* set default disp to sub screen */
     lv_disp_set_default(sub_disp);
+    pr_debug("set act display to sub screen\n");
+
+    /* set to mono theme */
     lv_theme_t *th = lv_theme_mono_init(sub_disp, 0, &ui_font_FiraCodeSemiBold12);
     lv_disp_set_theme(sub_disp, th);
+    pr_debug("to mono theme\n");
 
+    /* flush a banner */
     lv_obj_t *btn = lv_btn_create(lv_scr_act());
     lv_obj_set_style_radius(btn, 5, 0);
     lv_obj_set_style_pad_all(btn, 5, 0);
     lv_obj_t *label = lv_label_create(btn);
     lv_label_set_text(label, "Xenia Clock");
     lv_obj_center(btn);
+    pr_debug("a banner has been flushed\n");
 
-    vTaskDelay(1000);
+    sleep_ms(1000);
+    pr_debug("sleep out.\n");
 
+    /* remove the banner */
     lv_obj_del(btn);
+    pr_debug("banner removed.\n");
+    sleep_ms(500);
+
+    /* switch to the new theme. and display time */
     th  = lv_theme_basic_init(sub_disp);
     lv_disp_set_theme(sub_disp, th);
+    pr_debug("basic theme changed.\n");
 
     sub_display_label_time = lv_label_create(lv_scr_act());
     lv_label_set_text_fmt(sub_display_label_time, "%02d:%02d", 0, 0);
     lv_obj_set_style_text_font(sub_display_label_time, &ui_font_FiraCodeSemiBold40, 0);
     // lv_obj_align(sub_display_label_time, LV_ALIGN_CENTER, 0, 0);
     lv_obj_center(sub_display_label_time);
+    pr_debug("label time added.\n");
 
     /* add a time refresh timer */
-    pr_debug("adding sub screen refresh timer ...\n");
     lv_timer_t *sub_screen_display_timer = lv_timer_create_basic();
     sub_screen_display_timer->timer_cb = sub_screen_display_update_cb;
     sub_screen_display_timer->period = MICROSECOND(500);
+    pr_debug("sub screen refresh timer added\n");
 
     lv_disp_set_default(disp);
+    pr_debug("switched back to the main display.\n");
 }
 
 SemaphoreHandle_t xGuiSemaphore;
@@ -375,11 +391,17 @@ static portTASK_FUNCTION(xc_main_logic, pvParameters)
     // flashfs_init();
     extern void flashfs_test(void);
     // char path[64];
+    // i2c_bus_scan(NULL);
+
+    pr_debug("going into main logic loop\n");
     while (true) {
-        flashfs_test();
+        // flashfs_test();
+
     //     flashfs_traverse_directory("/", NULL);
     //     flashfs_find_file("/", NULL, "boot_count", path);
     //     printf("find result : %s\n", path);
+        bmp280_read_temp();
+        tight_loop_contents();
         vTaskDelay(2000);
     }
 }
@@ -396,7 +418,7 @@ int main(void)
     // struct repeating_timer lvgl_clock_timer;
     lv_init();
     lv_port_disp_init();
-    lv_port_indev_init();
+    // lv_port_indev_init();
 
     /* start a native timer for lvgl clock */
     // add_repeating_timer_us(MICROSECOND(5000), lvgl_clock_cb, NULL, &lvgl_clock_timer);
@@ -406,7 +428,7 @@ int main(void)
     // xTaskCreate(led_task_handler, "led_task_handler", 32, NULL, 5, NULL);
 
     vTaskStartScheduler();
-    while (1) {};
+    while (1) { };
 
     return 0;
 }
