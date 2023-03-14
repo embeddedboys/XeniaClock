@@ -28,8 +28,8 @@
  *
  */
 
-#include <FreeRTOS.h>
-#include "task.h"
+// #include <FreeRTOS.h>
+// #include "task.h"
 
 #include <common/init.h>
 #include <lib/printk.h>
@@ -120,13 +120,16 @@ void __not_in_flash_func(flash_write_enable)()
 void __not_in_flash_func(flash_wait_done)()
 {
     uint8_t status;
+    uint32_t timeout = 200; /* 200ms */
     do {
         cs_select(FLASH_CS_PIN);
         uint8_t buf[2] = {FLASH_CMD_STATUS, 0};
         spi_write_read_blocking(FLASH_SPI_IFCE, buf, buf, 2);
         cs_deselect(FLASH_CS_PIN);
         status = buf[1];
-    } while (status & FLASH_STATUS_BUSY_MASK);
+        if (timeout-- > 0)
+            sleep_ms(1);
+    } while (timeout && (status & FLASH_STATUS_BUSY_MASK));
 }
 
 // static void flash_transfer(uint8_t *src, uint8_t *dst, int size, uint8_t cs_pin)
@@ -243,6 +246,7 @@ const struct spi_nor_controller_ops rpi_spi_controller_ops = {
 
 static SUBSYS_INITCALL(rpi_spi_init)
 {
+    printk("%s, initializing rpi spi nor interface ...\n", __func__);
     /* HAL init */
     spi_init(FLASH_SPI_IFCE, 12000000);
     gpio_set_function(FLASH_SCK_PIN, GPIO_FUNC_SPI);
@@ -305,21 +309,21 @@ static SUBSYS_INITCALL(rpi_spi_init)
 //  register_nor_controller_ops(&rpi_spi_controller_ops);
 // }
 
-void winbond_flash_test()
-{
-    /* match device */
-    // winbond_flash_read_id();
-    rpi_spi_erase(NULL, 0);
-    vTaskDelay(150);
+// void winbond_flash_test()
+// {
+//     /* match device */
+//     // winbond_flash_read_id();
+//     rpi_spi_erase(NULL, 0);
+//     vTaskDelay(150);
 
-    u8 test_data[1] = {0x59};
-    u8 read_buf[1];
-    /* write a byte to address */
-    rpi_spi_write(NULL, 0x10, 1, test_data);
+//     u8 test_data[1] = {0x59};
+//     u8 read_buf[1];
+//     /* write a byte to address */
+//     rpi_spi_write(NULL, 0x10, 1, test_data);
 
-    vTaskDelay(20);
+//     vTaskDelay(20);
 
-    // /* read a byte from address */
-    rpi_spi_read(NULL, 0x10, 1, read_buf);
-    printf("read : 0x%02x\n", read_buf[0]);
-}
+//     // /* read a byte from address */
+//     rpi_spi_read(NULL, 0x10, 1, read_buf);
+//     printf("read : 0x%02x\n", read_buf[0]);
+// }
