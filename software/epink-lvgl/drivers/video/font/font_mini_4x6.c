@@ -39,6 +39,8 @@ __END__;
    MSBit to LSBit = left to right.
  */
 
+#include "font.h"
+
 const unsigned char fontdata_mini_4x6[1536] = {
 
 	/*{*/
@@ -2141,4 +2143,14 @@ const unsigned char fontdata_mini_4x6[1536] = {
 	0xee,	/*=   [*** ]        */
 	0x00,	/*=   [    ]        */
 	/*}*/
+};
+
+struct font font_mini_4x6 = {
+	.name = "font_mini_4x6",
+
+	.width = 4,
+	.height = 6,
+
+	.data = fontdata_mini_4x6,
+	.len = ARRAY_SIZE(fontdata_mini_4x6),
 };

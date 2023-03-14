@@ -5,6 +5,8 @@
 /*                                            */
 /**********************************************/
 
+#include "font.h"
+
 const unsigned char fontdata_8x16[4096] = {
 
 	/* 0 0x00 '^@' */
@@ -4613,4 +4615,15 @@ const unsigned char fontdata_8x16[4096] = {
 	0x00, /* 00000000 */
 	0x00, /* 00000000 */
 
+};
+
+
+struct font font_8x16 = {
+	.name = "font_8x16",
+
+	.width = 8,
+	.height = 16,
+
+	.data = fontdata_8x16,
+	.len = ARRAY_SIZE(fontdata_8x16),
 };

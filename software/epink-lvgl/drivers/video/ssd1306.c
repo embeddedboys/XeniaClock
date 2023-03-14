@@ -38,6 +38,8 @@
 #include "video/ssd1306.h"
 #include "pico/time.h"
 
+#include "font/font.h"
+
 /* ssd1306 functions switch */
 #define SSD1306_USE_INIT              1
 #define SSD1306_USE_FLUSH             1
@@ -59,6 +61,8 @@
 /* The old buffer is used in flush function */
 static uint8_t ssd1306_buffer[SSD1306_BUFFER_SIZE] = {0};
 static uint8_t old_ssd1306_buffer[SSD1306_BUFFER_SIZE] = {0};
+
+static struct font *g_default_font = NULL;
 
 static void ssd1306_write_cmd(uint8_t val)
 {
@@ -85,7 +89,7 @@ static void ssd1306_write_data(uint8_t val)
 static void ssd1306_set_pos(uint8_t page, uint8_t col)
 {
     ssd1306_write_cmd(0xb0 + page);
-    
+
     ssd1306_write_cmd(0x00 | (col & 0x0f));
     ssd1306_write_cmd(0x10 | (col >> 4));
 }
@@ -121,12 +125,16 @@ static int ssd1306_flush()
 static void ssd1306_clear(uint16_t color)
 {
     uint8_t page, col;
-    
+
     for (page = 0; page < SSD1306_PAGE_SIZE; page++)
         for (col = 0; col < SSD1306_HOR_RES_MAX; col++) {
-                ssd1306_set_pos(page, col);
-                ssd1306_write_data(color);
+            ssd1306_set_pos(page, col);
+            ssd1306_write_data(color);
         }
+}
+static void ssd1306_clear_buf(uint16_t color)
+{
+    memset(ssd1306_buffer, color, SSD1306_BUFFER_SIZE);
 }
 #else
 static void ssd1306_clear(uint8_t color)
@@ -212,9 +220,16 @@ static int ssd1306_init(uint8_t mode)
 {
     pr_debug("initializing driver ic ssd1306 ...\n");
     ssd1306_device_init();
-    
+
     pr_debug("clearing screen ...\n");
     ssd1306_clear(SSD1306_COLOR_WHITE);
+
+    g_default_font = find_font_by_name("font_8x16");
+    // g_default_font = find_font_by_name("font_mini_4x6");
+    if (!g_default_font) {
+        pr_debug("failed to find this font!\n");
+        return -1;
+    }
 
     return 0;
 }
@@ -246,22 +261,15 @@ static void ssd1306_blank()
 #if SSD1306_USE_PUT_PIXEL
 static void ssd1306_put_pixel(uint16_t x, uint16_t y, uint16_t color)
 {
-    // uint8_t page, page_left;
     uint8_t *pen = ssd1306_buffer;
-    
-#ifdef OLED_COORD_CHECK
-    if ((x >= 0 && x < SSD1306_HOR_RES_MAX) && (y >= 0 && y < SSD1306_VER_RES_MAX)) {
-#endif
-        // page = y / 8;
-        // page_left = y % 8;
-        // printf("page, page_left: %d, %d\n",page, page_left);
-        if (color)
-            pen[OFFSET(y / 8, x)] |= (1 << (y % 8));
-        else
-            pen[OFFSET(y / 8, x)] &= ~(1 << (y % 8));
-#ifdef OLED_COORD_CHECK
-    }
-#endif
+
+    if (!((x >= 0 && x < SSD1306_HOR_RES_MAX) && (y >= 0 && y < SSD1306_VER_RES_MAX)))
+        return;
+
+    if (color)
+        pen[OFFSET(y / 8, x)] |= (1 << (y % 8));
+    else
+        pen[OFFSET(y / 8, x)] &= ~(1 << (y % 8));
 }
 #else
 static void ssd1306_put_pixel(uint16_t x, uint16_t y, uint8_t color)
@@ -277,23 +285,27 @@ static void ssd1306_put_pixel(uint16_t x, uint16_t y, uint8_t color)
  * @param y start position of Y
  * @param c char that will outputting to panel
  */
-static void ssd1306_putascii(uint8_t x, uint8_t y, char c)
+static void ssd1306_putascii(struct font *font, uint8_t x, uint8_t y, char c, bool direct)
 {
     /* Get the char in ascii array, each char use 16 byte to store */
-    const unsigned char *dots = (uint8_t *)&fontdata_8x16[c * 16];
+    // const unsigned char *dots = (uint8_t *)&fontdata_8x16[c * 16];
+    const unsigned char *dots = &font->data[c * font->height];
     uint8_t row, col, byte;
-    
+
     /* In this case, we use a 8x16 size font, so
      * we need to draw 16 byte totally, for each
      * byte, draw it's each bit from higher to low
      */
-    for (row = 0; row < 16; row++) {
+    for (row = 0; row < font->height; row++) {
         byte = dots[row];
-        
-        for (col = 0; col < 8; col++) {
+
+        for (col = 0; col < font->width; col++) {
             ssd1306_put_pixel(x + col, y + row, (byte << col) & 0x80);
         }
     }
+
+    if (direct)
+        ssd1306_flush();
 }
 
 /**
@@ -304,23 +316,20 @@ static void ssd1306_putascii(uint8_t x, uint8_t y, char c)
  * @param str string that will outputting to the panel
  * @param delay a delay between each char display in ms
  */
-static void ssd1306_putascii_string(uint8_t x, uint8_t y, char *str, int delay, bool direct)
+static void ssd1306_putascii_string(struct font *font, uint8_t x, uint8_t y, char *str,
+                                    int delay, bool direct)
 {
     while (*str != '\0') {
-        ssd1306_putascii(x, y, '_');
-        if (direct)
-            ssd1306_flush();
-        ssd1306_putascii(x, y, *str++);
-        x += 8; /* move x to the next pos */
+        ssd1306_putascii(font, x, y, '_', direct);
+
+        ssd1306_putascii(font, x, y, *str++, direct);
+        x += font->width; /* move x to the next pos */
         if (delay > 0)
             sleep_ms(delay);
-
-        if (direct)
-            ssd1306_flush();
         /* start a new line if reach the end of line */
         if (x >= SSD1306_HOR_RES_MAX) {
             x = 0;
-            y += 16; /* line hight min:16 */
+            y += font->height; /* line hight min:16 */
         }
     }
 }
@@ -331,26 +340,41 @@ void ssd1306_test()
 
     ssd1306_blank();
 
-    for (int x=0;x<128;x++)
-        for (int y=0;y<16;y++)
+    for (int x = 0; x < 128; x++)
+        for (int y = 0; y < 16; y++)
             ssd1306_put_pixel(x, y, 1);
     ssd1306_flush();
 }
 
+static void __pre_ssd1306_banner(void)
+{
+#define PRE_BANNER "A fully open-sourced desktop clock gadget,\
+including software, hardware, and more. Using an e-paper display,\
+support network, and more functions! the platform is based on RP2040."
+
+    struct font *mini_font = find_font_by_name("font_mini_4x6");
+
+    ssd1306_putascii_string(mini_font, 0, 0, PRE_BANNER, 10, true);
+
+    ssd1306_clear_buf(SSD1306_COLOR_WHITE);
+}
+
 void ssd1306_banner()
 {
-    char buf[64];
     ssd1306_init(1);
 
-    ssd1306_putascii_string(20, 0, "Xenia Clock", 21, true);
-    sprintf(buf, "version: %d.%d.%d", VER_MAJOR, VER_MINOR, VER_REVISION);
-    ssd1306_putascii_string(8, 16, buf, 31, true);
+    __pre_ssd1306_banner();
 
-    sleep_ms(200);
+    ssd1306_putascii_string(g_default_font, 20, 0, "Xenia Clock", 21, true);
+    char buf[64];
+    sprintf(buf, "version: %d.%d.%d", VER_MAJOR, VER_MINOR, VER_REVISION);
+    ssd1306_putascii_string(g_default_font, 8, 16, buf, 21, true);
+
+    sleep_ms(100);
     ssd1306_clear(SSD1306_COLOR_WHITE);
 
-    ssd1306_putascii_string(20, 8, "Booting...", 51, true);
-    sleep_ms(200);
+    ssd1306_putascii_string(g_default_font, 20, 8, "Booting...", 51, true);
+    sleep_ms(100);
 }
 
 static struct display_module ssd1306_module = {
@@ -372,5 +396,4 @@ static struct display_module ssd1306_module = {
     },
 };
 
-// DISP_MODULE_REGISTER(ssd1306);
 DISP_MODULE_DRIVER(ssd1306);
