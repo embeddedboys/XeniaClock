@@ -31,8 +31,8 @@
 #ifndef __XXX_VERSION_H
 #define __XXX_VERSION_H
 
-#define MAJOR       1
-#define MINOR       0
-#define REVISION    0
+#define VER_MAJOR       0
+#define VER_MINOR       0
+#define VER_REVISION    1
 
 #endif
