@@ -256,10 +256,10 @@ static void sub_screen_display_init()
     sleep_ms(1000);
     pr_debug("sleep out.\n");
 
-    /* remove the banner */
+    /* remove the banner safely */
+    lv_obj_add_flag(btn, LV_OBJ_FLAG_HIDDEN);
     lv_obj_del(btn);
     pr_debug("banner removed.\n");
-    sleep_ms(500);
 
     /* switch to the new theme. and display time */
     th  = lv_theme_basic_init(sub_disp);

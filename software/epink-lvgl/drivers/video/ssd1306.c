@@ -354,7 +354,7 @@ support network, and more functions! the platform is based on RP2040."
 
     struct font *mini_font = find_font_by_name("font_mini_4x6");
 
-    ssd1306_putascii_string(mini_font, 0, 0, PRE_BANNER, 10, true);
+    ssd1306_putascii_string(mini_font, 0, 0, PRE_BANNER, 0, true);
 
     ssd1306_clear_buf(SSD1306_COLOR_WHITE);
 }
