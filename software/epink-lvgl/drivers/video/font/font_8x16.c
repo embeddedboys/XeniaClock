@@ -4619,11 +4619,13 @@ const unsigned char fontdata_8x16[4096] = {
 
 
 struct font font_8x16 = {
-	.name = "font_8x16",
+	.name   = "font_8x16",
 
-	.width = 8,
+	.width  = 8,
 	.height = 16,
 
-	.data = fontdata_8x16,
-	.len = ARRAY_SIZE(fontdata_8x16),
+	.data   = fontdata_8x16,
+	.len    = ARRAY_SIZE(fontdata_8x16),
 };
+
+DYNAMIC_FONT_REGISTER(font_8x16);

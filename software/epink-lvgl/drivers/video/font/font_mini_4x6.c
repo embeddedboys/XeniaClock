@@ -2146,11 +2146,13 @@ const unsigned char fontdata_mini_4x6[1536] = {
 };
 
 struct font font_mini_4x6 = {
-	.name = "font_mini_4x6",
+	.name   = "font_mini_4x6",
 
-	.width = 4,
+	.width  = 4,
 	.height = 6,
 
-	.data = fontdata_mini_4x6,
-	.len = ARRAY_SIZE(fontdata_mini_4x6),
+	.data   = fontdata_mini_4x6,
+	.len    = ARRAY_SIZE(fontdata_mini_4x6),
 };
+
+DYNAMIC_FONT_REGISTER(font_mini_4x6);

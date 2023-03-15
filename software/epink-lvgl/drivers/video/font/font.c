@@ -32,6 +32,8 @@
 
 #include "font.h"
 
+static LIST_HEAD(g_font_head);
+
 struct font *fonts[] = {
     &font_8x16,
     &font_mini_4x6,
@@ -41,12 +43,69 @@ struct font *fonts[] = {
 struct font *find_font_by_name(const char *name)
 {
     for (int i = 0; fonts[i] != NULL; i++) {
-
+    
         if (0 == strcmp(name, fonts[i]->name)) {
-            pr_debug("font `%s` matched!\n", name);
+            pr_debug("font `%s` matched!\n", fonts[i]->name);
             return fonts[i];
         }
     }
-
+    
     return NULL;
 }
+
+struct font *find_font_by_id(const int id)
+{
+    for (int i = 0; fonts[i] != NULL; i++) {
+    
+        if (fonts[i]->id == id) {
+            pr_debug("font `%s` matched!\n", fonts[i]->name);
+            return fonts[i];
+        }
+    }
+    
+    return NULL;
+}
+
+int register_font(struct font *font)
+{   
+    if (!font) {
+        return -1;
+    }
+    
+    if (!font->name) {
+        pr_debug("the name of font must be set!\n");
+        return -1;
+    }
+    
+    if (find_font_by_id(font->id) || find_font_by_name(font->name)) {
+        pr_debug("Conflict ID or name!\n");
+        return -1;
+    }
+
+    if (font->width <= 0 || font->height <= 0) {
+        pr_debug("Invaild font width or height!\n");
+        return -1;
+    }
+
+    if (!font->data) {
+        pr_debug("No font data\n");
+        return -1;
+    }
+
+    if (font->len <= 0) {
+        pr_debug("Warning, no font data length is not provided\n");
+        return -1;
+    }
+
+    /* the real register operation */
+    list_add_tail(&font->head, &g_font_head);
+
+    return 0;
+}
+
+// late_initcall(font_init);
+
+// static int font_init(void)
+// {
+//     INIT_LIST_HEAD(&g_font_head);
+// }
