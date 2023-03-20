@@ -28,7 +28,10 @@
  * 
  */
 
-#include <common/init.h>
+// #include <common/init.h>
+
+#include <linux/init.h>
+
 #include <common/conf.h>
 #include <common/tools.h>
 #include <common/vals.h>
@@ -83,8 +86,6 @@ int i2c_bus_scan(i2c_inst_t *i2c)
     return 0;
 }
 
-subsys_initcall(native_i2c_init);
-
 void i2c_write_reg(uint8_t addr, uint8_t reg, uint8_t val)
 {
     // printk("i2c_write_reg\n");
@@ -101,9 +102,11 @@ uint8_t i2c_read_reg(uint8_t addr, uint8_t reg)
     return val;
 }
 
-static int native_i2c_init(void)
+// __deprecated_subsys_initcall(native_i2c_init);
+static int __init native_i2c_init(void)
 {
-    printk("native_i2c_init, initializing i2c bus ...\n");
+    // printk("native_i2c_init, initializing i2c bus ...\n");
+    pr_debug("native_i2c_init, initializing i2c bus ...\n");
 
     i2c_init(DEFAULT_I2C_IFCE, DEFAULT_I2C_SPEED);
     gpio_set_function(DEFAULT_I2C_SDA_PIN, GPIO_FUNC_I2C);
@@ -116,3 +119,4 @@ static int native_i2c_init(void)
 
     return 0;
 }
+subsys_initcall(native_i2c_init);

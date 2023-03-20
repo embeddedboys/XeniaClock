@@ -2,6 +2,9 @@
 #ifndef __LINUX_COMPILER_TYPES_H
 #define __LINUX_COMPILER_TYPES_H
 
+// #define __KERNEL__
+// #define __GUNC__
+
 #ifndef __ASSEMBLY__
 
 #ifdef __CHECKER__
@@ -59,7 +62,7 @@ static inline void __chk_io_ptr(const volatile void __iomem *ptr) { }
 #define ___PASTE(a,b) a##b
 #define __PASTE(a,b) ___PASTE(a,b)
 
-#include <common/compiler_attributes.h>
+#include <linux/compiler_attributes.h>
 
 #ifdef __KERNEL__
 
@@ -78,16 +81,16 @@ static inline void __chk_io_ptr(const volatile void __iomem *ptr) { }
 #endif
 
 /* Compiler specific macros. */
-#ifdef __clang__
-#include <linux/compiler-clang.h>
-#elif defined(__INTEL_COMPILER)
-#include <linux/compiler-intel.h>
-#elif defined(__GNUC__)
+// #ifdef __clang__
+// #include <linux/compiler-clang.h>
+// #elif defined(__INTEL_COMPILER)
+// #include <linux/compiler-intel.h>
+// #elif defined(__GNUC__)
 /* The above compilers also define __GNUC__, so order is important here. */
 #include <linux/compiler-gcc.h>
-#else
-#error "Unknown compiler"
-#endif
+// #else
+// #error "Unknown compiler"
+// #endif
 
 /*
  * Some architectures need to provide custom definitions of macros provided
@@ -270,9 +273,9 @@ struct ftrace_likely_data {
  * __malloc marking.
  */
 #ifdef __alloc_size__
-# define __alloc_size(x, ...)	__alloc_size__(x, ## __VA_ARGS__) __malloc
+// # define __alloc_size(x, ...)	__alloc_size__(x, ## __VA_ARGS__) __malloc
 #else
-# define __alloc_size(x, ...)	__malloc
+// # define __alloc_size(x, ...)	__malloc
 #endif
 
 #ifndef asm_volatile_goto

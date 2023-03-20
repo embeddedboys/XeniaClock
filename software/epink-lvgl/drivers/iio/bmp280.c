@@ -30,11 +30,15 @@
 
 #include <stdlib.h>
 
-#include "common/init.h"
+// #include "common/init.h"
+#include <linux/init.h>
+#include <linux/module.h>
+
+#include <linux/err.h>
+#include <linux/errno.h>
+
 #include "common/tools.h"
 #include "common/bitops.h"
-#include "common/err.h"
-#include "common/errno.h"
 
 #include "i2c/native_i2c.h"
 
@@ -162,6 +166,10 @@ s32 bmp280_read_temp(void)
 
 static void bmp280_hw_init(void)
 {
+    if (!g_bmp280) {
+        pr_debug("bmp280 has no memory!\n");
+        return;
+    }
     g_bmp280->id = bmp280_read_id();
     if (g_bmp280->id == BMP280_ID) {
         pr_debug("device : bmp280 detected!\n");
@@ -175,18 +183,20 @@ static void bmp280_hw_init(void)
     i2c_write_reg(BMP280_ADDR, BMP280_REG_CTRL_MEAS, ctrl_meas);
 }
 
-late_initcall(bmp280_drv_init);
-
-static int bmp280_drv_init(void)
+static int __init bmp280_drv_init(void)
 {
+    pr_debug("initializing bmp280 ...\n");
+
     g_bmp280 = calloc(sizeof(struct bmp280), 1);
     if (!g_bmp280)
         return -ENOMEM;
 
     bmp280_hw_init();
 }
+module_init(bmp280_drv_init);
 
-static int bmp280_drv_exit(void)
+static void __exit bmp280_drv_exit(void)
 {
-
+    pr_debug("bmp280 exiting ...\n");
 }
+module_exit(bmp280_drv_exit);

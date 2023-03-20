@@ -37,8 +37,6 @@
 #include "pico/binary_info.h"
 #include "lib/printk.h"
 
-subsys_initcall(native_spi_init);
-
 void cs_select(uint16_t pin)
 {
     asm volatile("nop \n nop \n nop");
@@ -77,6 +75,7 @@ void spi_transfer(uint8_t *buf, int size, uint8_t cs_pin)
     cs_deselect(cs_pin);
 }
 
+__deprecated_subsys_initcall(native_spi_init);
 static int native_spi_init(void)
 {
     printk("%s, initializing spi bus ...\n", __func__);

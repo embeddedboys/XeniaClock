@@ -40,6 +40,7 @@
  *   gcc: https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html#index-alloc_005fsize-function-attribute
  * clang: https://clang.llvm.org/docs/AttributeReference.html#alloc-size
  */
+// #undef __alloc_size__
 // #define __alloc_size__(x, ...)		__attribute__((__alloc_size__(x, ## __VA_ARGS__)))
 
 /*
@@ -51,6 +52,7 @@
  *   gcc: https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html#index-always_005finline-function-attribute
  * clang: mentioned
  */
+#undef __always_inline
 #define __always_inline                 inline __attribute__((__always_inline__))
 
 /*
@@ -157,7 +159,7 @@
  *   gcc: https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html#index-gnu_005finline-function-attribute
  * clang: https://clang.llvm.org/docs/AttributeReference.html#gnu-inline
  */
-#define __gnu_inline                    __attribute__((__gnu_inline__))
+// #define __gnu_inline                    __attribute__((__gnu_inline__))
 
 /*
  *   gcc: https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html#index-malloc-function-attribute
@@ -273,6 +275,7 @@
  *   gcc: https://gcc.gnu.org/onlinedocs/gcc/Common-Variable-Attributes.html#index-section-variable-attribute
  * clang: https://clang.llvm.org/docs/AttributeReference.html#section-declspec-allocate
  */
+#undef __section
 #define __section(section)              __attribute__((__section__(section)))
 
 /*

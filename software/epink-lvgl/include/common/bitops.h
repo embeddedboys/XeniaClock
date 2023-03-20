@@ -5,7 +5,8 @@
 #include "common/const.h"
 
 #include "tools.h"
-#include "types.h"
+
+#include <linux/types.h>
 
 // #ifdef	__KERNEL__
 #define BIT(nr)			(1UL << (nr))

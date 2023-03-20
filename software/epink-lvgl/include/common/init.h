@@ -43,30 +43,22 @@
 typedef int (*initcall_t)(void);
 typedef void (*exitcall_t)(void);
 
-#define __define_initcall(fn, id) static int __attribute__((constructor(id))) fn(void);
-#define __define_exitcall(fn, id) static void __attribute__((destructor(id))) fn(void);
+#define __deprecated__define_initcall(fn, id) static int __attribute__((constructor(id))) fn(void);
+#define __deprecated__define_exitcall(fn, id) static void __attribute__((destructor(id))) fn(void);
 
 /* constructor priorities from 0 to 100 are reserved for the implementation */
-#define pure_initcall(fn)		__define_initcall(fn, 101)
+#define __deprecated_pure_initcall(fn)		__deprecated__define_initcall(fn, 101)
+#define __deprecated_core_initcall(fn)		__deprecated__define_initcall(fn, 102)
+#define __deprecated_postcore_initcall(fn)	__deprecated__define_initcall(fn, 103)
+#define __deprecated_arch_initcall(fn)		__deprecated__define_initcall(fn, 104)
+#define __deprecated_subsys_initcall(fn)		__deprecated__define_initcall(fn, 105)
+#define __deprecated_fs_initcall(fn)			__deprecated__define_initcall(fn, 106)
+#define __deprecated_rootfs_initcall(fn)		__deprecated__define_initcall(fn, 107)
+#define __deprecated_device_initcall(fn)		__deprecated__define_initcall(fn, 108)
+#define __deprecated_late_initcall(fn)		__deprecated__define_initcall(fn, 109)
 
-#define core_initcall(fn)		__define_initcall(fn, 102)
-// #define core_initcall_sync(fn)		__define_initcall(fn, 1s)
-#define postcore_initcall(fn)		__define_initcall(fn, 103)
-// #define postcore_initcall_sync(fn)	__define_initcall(fn, 2s)
-#define arch_initcall(fn)		__define_initcall(fn, 104)
-// #define arch_initcall_sync(fn)		__define_initcall(fn, 3s)
-#define subsys_initcall(fn)		__define_initcall(fn, 105)
-// #define subsys_initcall_sync(fn)	__define_initcall(fn, 4s)
-#define fs_initcall(fn)			__define_initcall(fn, 106)
-// #define fs_initcall_sync(fn)		__define_initcall(fn, 5s)
-#define rootfs_initcall(fn)		__define_initcall(fn, 107)
-#define device_initcall(fn)		__define_initcall(fn, 108)
-// #define device_initcall_sync(fn)	__define_initcall(fn, 6s)
-#define late_initcall(fn)		__define_initcall(fn, 109)
-// #define late_initcall_sync(fn)		__define_initcall(fn, 7s)
-
-#define __initcall(fn)  device_initcall(fn);
-#define __exitcall(fn)  __define_exitcall(fn, 107);
+#define __deprecated_initcall(fn)  __deprecated_device_initcall(fn);
+#define __deprecated_exitcall(fn)  __deprecated__define_exitcall(fn, 107);
 
 
 #define __DEFINE_INITCALL(fn,id) int __attribute__((constructor(id))) fn(void)

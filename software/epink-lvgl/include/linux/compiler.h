@@ -2,11 +2,12 @@
 #ifndef __LINUX_COMPILER_H
 #define __LINUX_COMPILER_H
 
-#include <common/compiler_types.h>
-
-#ifndef __ASSEMBLY__
+#include <stdio.h>
+#include <linux/compiler_types.h>
 
 #define __KERNEL__
+
+#ifndef __ASSEMBLY__
 
 #ifdef __KERNEL__
 
@@ -189,7 +190,7 @@ void ftrace_likely_update(struct ftrace_likely_data *f, int val,
 
 /* Not-quite-unique ID. */
 #ifndef __UNIQUE_ID
-# define __UNIQUE_ID(prefix) __PASTE(__PASTE(__UNIQUE_ID_, prefix), __LINE__)
+# define __UNIQUE_ID(prefix) __PASTE(prefix, __LINE__)
 #endif
 
 /**
@@ -240,6 +241,10 @@ void ftrace_likely_update(struct ftrace_likely_data *f, int val,
  */
 static inline void *offset_to_ptr(const int *off)
 {
+    printf("\tfn addr : %p + (%d) = %p\n", (void *)((unsigned long)off),
+                                    *off,
+                                    (void *)((unsigned long)off + *off));
+
 	return (void *)((unsigned long)off + *off);
 }
 

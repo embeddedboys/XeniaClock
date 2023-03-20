@@ -31,8 +31,7 @@
 #include <common/init.h>
 #include "lib/printk.h"
 
-subsys_initcall(native_uart_init);
-
+__deprecated_subsys_initcall(native_uart_init);
 static int native_uart_init(void)
 {
     printk("%s, initialzing uart interface ...\n", __func__);

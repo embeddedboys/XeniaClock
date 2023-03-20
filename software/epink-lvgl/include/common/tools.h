@@ -35,7 +35,7 @@
 #include <stdint.h>
 #include <stddef.h>
 
-#include "types.h"
+#include <linux/types.h>
 #include "bitops.h"
 
 #define DEBUG 1

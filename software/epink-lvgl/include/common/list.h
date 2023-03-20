@@ -14,11 +14,8 @@
 #ifndef __LIST_H
 #define __LIST_H
 
+#include <linux/types.h>
 #include "tools.h"
-
-struct list_head {
-	struct list_head *next, *prev;
-};
 
 #define LIST_HEAD_INIT(name) { &(name), &(name) }
 

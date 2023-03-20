@@ -69,7 +69,7 @@ void set_sys_clk(uint16_t mhz)
     stdio_init_all();   /* reinit uart when clk is changed */
 }
 
-void __attribute__((constructor)) native_clk_init(void)
-{
+// void __attribute__((constructor)) native_clk_init(void)
+// {
 
-}
+// }

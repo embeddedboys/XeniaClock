@@ -2,10 +2,10 @@
 #ifndef _LINUX_ERR_H
 #define _LINUX_ERR_H
 
-#include <common/compiler.h>
-#include <common/types.h>
+#include <linux/compiler.h>
+#include <linux/types.h>
 
-#include <common/errno.h>
+#include <linux/errno.h>
 
 /*
  * Kernel pointers have redundant information, so we can use a

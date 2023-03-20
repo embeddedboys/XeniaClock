@@ -31,8 +31,8 @@
 #include <FreeRTOS.h>
 #include "task.h"
 
-#include <common/err.h>
-#include <common/errno.h>
+#include <linux/err.h>
+#include <linux/errno.h>
 #include <common/param.h>
 #include <common/list.h>
 #include <lib/printk.h>
