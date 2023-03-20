@@ -47,8 +47,9 @@
 
 #define BMP280_REG_ID      0xD0
 #define BMP280_REG_RESET        0xE0
+#define BMP280_CMD_RESET        0xB6
 
-#define BMP280_CMD_STATUS       0xF3
+#define BMP280_REG_STATUS       0xF3
 #define BMP280_STATUS_MEASURING BIT(3)
 #define BMP280_STATUS_IM_UPDATE BIT(0)
 
@@ -70,6 +71,12 @@ enum bmp280_power_mode {
     BMP280_PWR_MODE_SLEEP  = 0x00,
     BMP280_PWR_MODE_FORCED = 0x01,
     BMP280_PWR_MODE_NORMAL = 0x03,
+};
+
+enum bmp280_status {
+    BMP280_STAT_IDLE      = 0x00,
+    BMP280_STAT_MEASURING = 0x01,
+    BMP280_STAT_IM_UPDATE = 0x02,
 };
 
 struct bmp280_data {
@@ -106,6 +113,41 @@ struct bmp280 {
 };
 
 static struct bmp280 *g_bmp280;
+
+int bmp280_reset(void)
+{
+    /* if 0xb6 is written to the register, the device is reset using
+     * the complete power-on-reset procedure
+     */
+    i2c_write_reg(BMP280_ADDR, BMP280_REG_RESET, BMP280_CMD_RESET);
+
+    return 0;
+}
+
+static u8 bmp280_check_status(void)
+{
+    u8 ret = 0;
+
+    u8 val = i2c_read_reg(BMP280_ADDR, BMP280_REG_STATUS);
+    if (val & BMP280_STATUS_MEASURING)
+        ret |= BMP280_STAT_MEASURING;
+
+    if (val & BMP280_STATUS_IM_UPDATE)
+        ret |= BMP280_STAT_IM_UPDATE;
+
+    return ret;
+}
+
+static void bmp280_wait_busy_timeout(void)
+{
+    int timeout = 50;
+    u8 status = bmp280_check_status();
+
+    while (status) {
+        status = bmp280_check_status();
+        if (timeout-- > 0) sleep_ms(1); else break;
+    }
+}
 
 int bmp280_read_id(void)
 {
