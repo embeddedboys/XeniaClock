@@ -30,7 +30,6 @@
 
 #include <stdlib.h>
 
-// #include "common/init.h"
 #include <linux/init.h>
 #include <linux/module.h>
 

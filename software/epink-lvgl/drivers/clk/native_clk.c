@@ -36,6 +36,7 @@
 #include "hardware/structs/pll.h"
 #include "hardware/structs/clocks.h"
 
+#include <linux/init.h>
 #include "common/tools.h"
 #include "common/list.h"
 #include "clk/native_clk.h"
@@ -69,7 +70,9 @@ void set_sys_clk(uint16_t mhz)
     stdio_init_all();   /* reinit uart when clk is changed */
 }
 
-// void __attribute__((constructor)) native_clk_init(void)
-// {
-
-// }
+static int __init native_clk_init(void)
+{
+    measure_freqs();
+    pr_debug("%s, initialzing clk ...", __func__);
+}
+core_initcall(native_clk_init);

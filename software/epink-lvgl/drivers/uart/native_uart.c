@@ -28,13 +28,15 @@
  * 
  */
 
-#include <common/init.h>
+// #include <common/init.h>
+#include <linux/init.h>
+#include "common/tools.h"
 #include "lib/printk.h"
 
-__deprecated_subsys_initcall(native_uart_init);
-static int native_uart_init(void)
+// __deprecated_subsys_initcall(native_uart_init);
+static int __init native_uart_init(void)
 {
-    printk("%s, initialzing uart interface ...\n", __func__);
+    pr_debug("%s, initialzing uart interface ...\n", __func__);
     return 0;
 }
-
+subsys_initcall(native_uart_init);

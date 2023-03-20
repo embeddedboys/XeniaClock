@@ -28,7 +28,8 @@
  *
  */
 
-#include "common/init.h"
+// #include "common/init.h"
+#include <linux/init.h>
 #include "common/module.h"
 
 #include "common/tools.h"
@@ -83,11 +84,12 @@ void xc_set_disp_flush_mode(xc_disp_flush_mode_t mode)
     }
 }
 
-rootfs_initcall(xc_settings_init);
+// rootfs_initcall(xc_settings_init);
 
 /* give default settings */
 static int xc_settings_init(void)
 {
-    printk("%s, initialzing default settings ... \n", __func__);
+    pr_debug("%s, initialzing default settings ... \n", __func__);
     xc_set_disp_flush_mode(DISP_FLUSH_MODE_FULL);
 }
+fs_initcall(xc_settings_init);

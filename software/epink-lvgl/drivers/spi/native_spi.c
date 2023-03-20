@@ -28,7 +28,9 @@
  * 
  */
 
-#include <common/init.h>
+// #include <common/init.h>
+#include <linux/init.h>
+#include "common/tools.h"
 
 #include "hardware/spi.h"
 #include "pico/stdlib.h"
@@ -75,10 +77,11 @@ void spi_transfer(uint8_t *buf, int size, uint8_t cs_pin)
     cs_deselect(cs_pin);
 }
 
-__deprecated_subsys_initcall(native_spi_init);
+// __deprecated_subsys_initcall(native_spi_init);
 static int native_spi_init(void)
 {
-    printk("%s, initializing spi bus ...\n", __func__);
+    // printk("%s, initializing spi bus ...\n", __func__);
+    pr_debug("%s, initializing spi bus ...\n", __func__);
     spi_init(spi_default, DEFAULT_SPI_SPEED);
     gpio_set_function(PICO_DEFAULT_SPI_SCK_PIN, GPIO_FUNC_SPI);
     gpio_set_function(PICO_DEFAULT_SPI_TX_PIN, GPIO_FUNC_SPI);
@@ -87,3 +90,4 @@ static int native_spi_init(void)
                                GPIO_FUNC_SPI));
     return 0;
 }
+subsys_initcall(native_spi_init);

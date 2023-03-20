@@ -31,6 +31,8 @@
 #include <FreeRTOS.h>
 #include "task.h"
 
+#include <linux/init.h>
+#include <linux/module.h>
 #include <linux/err.h>
 #include <linux/errno.h>
 #include <common/param.h>
@@ -1785,7 +1787,7 @@ int spi_nor_scan(struct spi_nor *nor, const char *name,
 
 extern const struct spi_nor_controller_ops rpi_spi_controller_ops;
 
-static DEVICE_INITCALL(spi_nor_probe)
+static int spi_nor_probe(void)
 {
 	/*
 	 * Enable all caps by default. The core will mask them after
@@ -1806,3 +1808,11 @@ static DEVICE_INITCALL(spi_nor_probe)
         return ret;
 
 }
+
+static int __init spi_nor_drv_init(void)
+{
+	spi_nor_probe();
+	return 0;
+}
+
+module_init(spi_nor_drv_init);

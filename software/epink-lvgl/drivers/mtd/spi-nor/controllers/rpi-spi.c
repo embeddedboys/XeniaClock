@@ -31,6 +31,7 @@
 // #include <FreeRTOS.h>
 // #include "task.h"
 
+#include <linux/init.h>
 #include <common/init.h>
 #include <lib/printk.h>
 
@@ -244,7 +245,7 @@ const struct spi_nor_controller_ops rpi_spi_controller_ops = {
     .erase     = rpi_spi_erase,
 };
 
-static SUBSYS_INITCALL(rpi_spi_init)
+static int __init rpi_spi_init(void)
 {
     printk("%s, initializing rpi spi nor interface ...\n", __func__);
     /* HAL init */
@@ -300,6 +301,7 @@ static SUBSYS_INITCALL(rpi_spi_init)
     // status_reg2 = flash_read_reg(0x35, FLASH_CS_PIN);
     // printf("stat1 : 0x%02x, stat2 : 0x%02x\n", status_reg1, status_reg2);
 }
+subsys_initcall(rpi_spi_init);
 
 // static SUBSYS_INITCALL(rpi_spi_controller_init)
 // {
