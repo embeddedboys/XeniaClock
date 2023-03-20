@@ -28,7 +28,8 @@
  *
  */
 
-#include <common/module.h>
+#include <linux/init.h>
+#include <linux/module.h>
 
 #include "pico/binary_info.h"
 #include <hardware/gpio.h>
@@ -93,7 +94,7 @@ bool ft6x36_is_pressed()
     return !gpio_get(FT6X36_INT_PIN);
 }
 
-static int ft6x36_init(void)
+static int __init ft6x36_init(void)
 {
     /* hardware initialize */
     ft6x36_hw_init();
@@ -101,7 +102,7 @@ static int ft6x36_init(void)
     return 0;
 }
 
-static void ft6x36_exit(void)
+static void __exit ft6x36_exit(void)
 {
 
 }
