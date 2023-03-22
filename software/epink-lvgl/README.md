@@ -1,12 +1,12 @@
 The Software Project of Xenia Clock
 ===================================
 
-Intro
+Intro (out-dated)
 -----------------------------------
 
 This software project was developed basicly based on the `pico-sdk`, so if you familarize with it, you could get into the project quick and easy.
 
-Strucure
+Strucure (out-dated)
 -----------------------------------
 ```
 .
@@ -33,39 +33,102 @@ Strucure
 ```
 
 Build & Flash
------------------------------------
+======================================
 
-> Build platform is Ubuntu 18.04
+Building
+--------------------------------------
 
-1. source the enviroment
+### Install requirements
+
+Ubuntu like:
 ```shell
-$ cd ..
-$ source tools/envsetup.sh
+# Basic
+sudo apt install git build-essential cmake ninja-build libncurses5-dev -y
+
+# Toolchain
+sudo apt install gcc-arm-none-eabi -y
 ```
 
-2. get back to this folder and make build dir
+Fedora like:
 ```shell
-$ cd epink-lvgl
-$ mkdir build && cd build
+# Basic
+sudo dnf install git gcc g++ make cmake ninja-build ncurses-devel -y
+
+# Toolchain
+sudo dnf install arm-none-eabi-gcc-cs arm-none-eabi-gcc-cs-c++ arm-none-eabi-binutils-cs arm-none-eabi-newlib -y
 ```
 
-3. run the build process in the build dir
+### Fetch and update
+
 ```shell
-$ cmake .. -DCMAKE_EXPORT_COMPILE_COMMANDS=1 -GNinja
-$ ninja
+# Fetch first
+git clone https://github.com/embeddedboys/XeniaClock.git
+
+# update submodule of this project
+cd XeniaClock
+git submodule update --init
+
+# Then update submodule of pico-sdk
+cd software/pico-sdk
+git submodule update --init
 ```
 
-4. reset the device in to flash mode and burn
+Build
+-----------------------------------------
+
+**First**, go to the project dir.
+```shell
+cd XeniaClock/software/epink-lvgl
+```
+
+**Then** made a config first, you could use menuconfig like blow:
+```shell
+./build.sh menuconfig
+```
+or just use a default config
+```shell
+make xeniaclock_defconfig
+```
+
+Finally, start building
+```shell
+./build.sh
+
+# you should see files like blow
+arch                   include    Makefile               scripts
+build.sh               init       memmap_default.ld      tests
+CMakeLists.txt         Kbuild     misc                   TODO.md
+compile_commands.json  Kconfig    net                    ui
+dir_build              kernel     pico_sdk_import.cmake  xenia_clock.elf
+Documentation          lib        port
+drivers                lv_conf.h  README.md
+fs                     lvgl       references
+```
+
+`dir_build` is the dir where store building files
+
+`xenia_clock.elf` is a symbol link where program file be generated.
+
+Flashing
+--------------------------------------
+### Though debugger
+if you are using a CMSIS-DAP and openocd installed on your computer, just type like
+```
+./build.sh -p
+```
+
+### Though USB
+
 
 ```
-1) connect the device to computer
+1) connect the device to computer though USB
 2) push down the `BOOT` button, then push down the `RESET` button
 3) a `RPI` disk device will be found on your computer
-4) put the uf2 file into device and flash will autostart
-5) after flash done, device will auto restart
+4) put the uf2 file into device and flash cycle will be start
+5) after flash done, device will restart automatically
 ```
 
-Attention for developers
+Hints for developers
 -----------------------------------
 
 Here some tips you should known before starting develop
@@ -78,7 +141,3 @@ Here some tips you should known before starting develop
 automatically
 
 4, Anywhere code block that you didn't want to interrupted by other threads, you should give them a lock. for gpio holding function etc. if this got interruptted, There could caused gpio level holding time be wrong.
-
-More
------------------------------------
-nothing yet
