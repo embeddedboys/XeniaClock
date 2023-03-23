@@ -524,7 +524,7 @@ static portTASK_FUNCTION(xc_main_logic, pvParameters)
     }
 }
 
-int main(void)
+int start_kernel(void)
 {
     /* some system layer initialize ops */
     system_init();

@@ -50,10 +50,13 @@ add_subdirectory(kernel)
 add_subdirectory(lib)
 
 # rest of your project
-add_executable(xenia_clock init/main.c ${INCLUDES} ${SOURCES})
+add_executable(xenia_clock init/crt1.S init/main.c ${INCLUDES} ${SOURCES})
 
 set(LINK_SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/memmap_default.ld")
-# target_link_options(xenia_clock PRIVATE -T ${LINK_SCRIPT})
+
+## Note: uncomment this flag to avoid WARNING: LOAD segment with RWX permissions
+## because it's a feature since binutils 2.39 and we don't need it.
+# target_link_options(xenia_clock PRIVATE -Wl,--no-warn-rwx-segments)
 pico_set_linker_script(xenia_clock ${LINK_SCRIPT})
 
 target_include_directories(xenia_clock PUBLIC . "include" "lvgl")
