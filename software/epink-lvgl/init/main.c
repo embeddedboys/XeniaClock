@@ -512,6 +512,7 @@ static portTASK_FUNCTION(xc_main_logic, pvParameters)
 
     pr_debug("going into main logic loop\n");
     while (true) {
+        pr_debug("... main logic alive ... \n");
         flashfs_test();
 
     //     flashfs_traverse_directory("/", NULL);

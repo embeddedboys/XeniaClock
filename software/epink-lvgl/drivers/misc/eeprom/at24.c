@@ -3,7 +3,7 @@
  * @author IotaHydrae (writeforever@foxmail.com)
  * @brief 
  * @version 0.1
- * @date 2023-03-07
+ * @date 2023-03-21
  * 
  * MIT License
  * 
@@ -27,3 +27,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * 
  */
+
+#include <linux/init.h>
+#include <linux/module.h>
+
+
+
+static int __init at24_drv_init(void)
+{
+
+}
+
+static void __exit at24_drv_exit(void)
+{
+
+}
+
+module_init(at24_drv_init);
+module_exit(at24_drv_exit);

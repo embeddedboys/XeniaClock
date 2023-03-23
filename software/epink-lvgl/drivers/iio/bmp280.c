@@ -157,6 +157,7 @@ int bmp280_read_id(void)
     return id;
 }
 
+/* TODO: Not finished. */
 int bmp280_read_press(void)
 {
     u8 msb, lsb, xlsb;
@@ -234,10 +235,13 @@ static int __init bmp280_drv_init(void)
 
     bmp280_hw_init();
 }
-module_init(bmp280_drv_init);
 
 static void __exit bmp280_drv_exit(void)
 {
     pr_debug("bmp280 exiting ...\n");
+    if (g_bmp280)
+        free(g_bmp280);
 }
+
+module_init(bmp280_drv_init);
 module_exit(bmp280_drv_exit);
