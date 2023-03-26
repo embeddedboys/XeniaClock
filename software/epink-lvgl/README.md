@@ -111,6 +111,20 @@ fs                     lvgl       references
 
 Flashing
 --------------------------------------
+
+### Requirements
+```shell
+sudo apt install automake autoconf build-essential texinfo libtool libftdi-dev libusb-1.0-0-dev pkg-config libhidapi-dev -y
+
+git clone https://github.com/raspberrypi/openocd.git --recursive --branch rp2040 --depth=1
+
+cd openocd
+./bootstrap
+./configure --enable-cmsis-dap
+make -j12
+sudo make install
+```
+
 ### Though debugger
 if you are using a CMSIS-DAP and openocd installed on your computer, just type like
 ```
