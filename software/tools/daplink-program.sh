@@ -4,25 +4,29 @@ INTERFACE=cmsis-dap.cfg
 TARGET=rp2040.cfg
 ADAPTER_SPEED=100000
 
-if [ `which lolcat` ]; then
-    echo "Found lolcat" | lolcat
-    TO_LOLCAT=lolcat
+WORKDIR=$(pwd)
+
+if [ `command -v echo_debug > /dev/null` ]; then
+    echo_debug "setting up openocd ..."
 else
-    echo "lolcat not found, installing..."
-    sudo apt install -y lolcat
-    if [ $? -ne 0 ]; then
-        echo "Failed to install lolcat, will not use it."
-        TO_LOLCAT="tee"
-    fi
+    cd .. && source tools/envsetup.sh
+    cd - >> /dev/null
+    echo_debug "setting up openocd ..."
 fi
+
 # If openocd is not found, we don't need go further.
 if [ ${#OPENOCD_DIR} -ne 0 ]; then
-    echo "Setting openocd to $OPENOCD_DIR/src/openocd" | lolcat
+    echo_debug "Setting openocd to $OPENOCD_DIR/src/openocd"
     OPENOCD_BIN=$OPENOCD_DIR/src/openocd
 else
     # Use system default openocd.
-    echo "Will use system default openocd." | lolcat
+    echo_debug "Will use system default openocd."
     OPENOCD_BIN=openocd
+fi
+
+if [ -z "$1" ]; then
+    echo_error "Usage: $0 xxx.elf"
+    exit
 fi
 
 # Call the openocd script to reset the target.
@@ -50,4 +54,6 @@ sudo ${OPENOCD_BIN} \
 "
 fi
 
-echo "Done." | lolcat
+echo "Done."
+
+cd ${WORKDIR} > /dev/null

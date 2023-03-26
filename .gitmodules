@@ -8,3 +8,10 @@
 [submodule "software/power_mcu/tools/stc8prog"]
 	path = software/power_mcu/tools/stc8prog
 	url = https://github.com/IOsetting/stc8prog
+[submodule "software/openocd"]
+	path = software/openocd
+	url = https://github.com/raspberrypi/openocd.git
+	branch = rp2040
+[submodule "software/picotool"]
+	path = software/picotool
+	url = https://github.com/raspberrypi/picotool.git
