@@ -131,7 +131,7 @@ void epink_write_data(uint8_t data)
  *
  * @param timeout
  */
-void epink_wait_busy_timeout(uint32_t timeout_ms)
+int epink_wait_busy_timeout(uint32_t timeout_ms)
 {
     while (gpio_get(EPINK_BUSY_PIN)) {
         if (timeout_ms-- == 0) {
@@ -141,6 +141,7 @@ void epink_wait_busy_timeout(uint32_t timeout_ms)
             busy_wait_ms(1);
         }
     }
+    return timeout_ms;
     // EPINK_DEBUG("epink_wait_busy_timeout ok\n");
 }
 

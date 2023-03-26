@@ -266,7 +266,7 @@ void xc_post_timers_init(void)
     pr_debug("registering temperture and humidity timer ...\n");
     lv_timer_t *timer_temp_humid = lv_timer_create_basic();
     timer_temp_humid->timer_cb = xc_timer_temp_humid_cb;
-    timer_temp_humid->period = REFRESH_SPEED_FAST * 9;
+    timer_temp_humid->period = REFRESH_SPEED_FAST * 9 + REFRESH_SPEED_FAST;
     // lv_timer_pause(timer_temp_humid);
 }
 

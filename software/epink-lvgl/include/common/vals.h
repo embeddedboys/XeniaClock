@@ -56,12 +56,12 @@
 
 #define REFRESH_SPEED_FAST      (2000)
 #define REFRESH_SPEED_NORMAL    (5000)
-#define REFRESH_SPEED_SLOW      (9000)
+#define REFRESH_SPEED_SLOW      (10000)
 #define REFRESH_SPEED_USER      (0x4)
 
 /* time in millisecond to call a sync clock, make it default to 10 minutes */
 #define TIME_SYNC_PERIOD        (10 * 60 * 1000) /* in ms */
-#define GLOBAL_REFRESH_PERIOD   (60) /* in frame count */
+#define GLOBAL_REFRESH_PERIOD   (10) /* in frame count */
 #define FULL_REFRESH_FACTOR     (5)
 
 #endif

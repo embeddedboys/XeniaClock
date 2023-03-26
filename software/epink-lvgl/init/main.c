@@ -512,17 +512,23 @@ static portTASK_FUNCTION(xc_main_logic, pvParameters)
 
     pr_debug("going into main logic loop\n");
     while (true) {
-        pr_debug("... main logic alive ... \n");
-        flashfs_test();
+        // pr_debug("... main logic alive ... \n");
+        // flashfs_test();
 
     //     flashfs_traverse_directory("/", NULL);
     //     flashfs_find_file("/", NULL, "boot_count", path);
     //     printf("find result : %s\n", path);
-        bmp280_read_temp();
+        // bmp280_read_temp();
         tight_loop_contents();
         vTaskDelay(2000);
     }
 }
+
+// static portTASK_FUNCTION(scheduler, pvParameters)
+// {
+//     vTaskStartScheduler();
+//     while (1) { };
+// }
 
 int start_kernel(void)
 {
@@ -536,13 +542,13 @@ int start_kernel(void)
     // struct repeating_timer lvgl_clock_timer;
     lv_init();
     lv_port_disp_init();
-    // lv_port_indev_init();
+    lv_port_indev_init();
 
     /* start a native timer for lvgl clock */
     // add_repeating_timer_us(MICROSECOND(5000), lvgl_clock_cb, NULL, &lvgl_clock_timer);
     xGuiSemaphore = xSemaphoreCreateMutex();
     xTaskCreate(xc_main_logic, "xc_main_logic", 512, NULL, 3, NULL);
-    xTaskCreate(lvgl_task_handler, "lvgl_task_handler", 512, NULL, 4, NULL);
+    xTaskCreate(lvgl_task_handler, "lvgl_task_handler", 1024, NULL, 4, NULL);
     // xTaskCreate(led_task_handler, "led_task_handler", 32, NULL, 5, NULL);
 
     vTaskStartScheduler();

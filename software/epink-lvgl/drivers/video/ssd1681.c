@@ -1323,10 +1323,14 @@ static void ssd1681_update_fast()
 
 void ssd1681_update_part_timeout()
 {
+    int rc;
     epink_write_command(0x22);
     epink_write_data(0xff);
     epink_write_command(0x20);
-    epink_wait_busy_timeout(LV_DISP_DEF_REFR_PERIOD);
+    rc = epink_wait_busy_timeout(LV_DISP_DEF_REFR_PERIOD);
+    if (rc < 0) {
+        epink_write_command(0x7f);
+    }
 }
 
 void ssd1681_update_part()
@@ -1406,7 +1410,6 @@ static bool ssd1681_get_pixel(uint16_t x, uint16_t y)
 
 static int ssd1681_flush_part(uint16_t xs, uint16_t ys, uint16_t xe, uint16_t ye, void *colorp)
 {
-    pr_debug("\n");
     uint8_t *pen = epink_disp_buffer;
 
     epink_reset();
@@ -1433,8 +1436,6 @@ static int ssd1681_flush_part(uint16_t xs, uint16_t ys, uint16_t xe, uint16_t ye
 
 static int ssd1681_flush_full(void)
 {
-    pr_debug("\n");
-
     /* Note: this function is only called when lvgl have
      * a real area update, but this function cost too much time
      * because the `ssd1681_update` function using a while(gpio_get(n))
@@ -1480,12 +1481,6 @@ static int ssd1681_flush_full(void)
     //     return;
     // }
 
-    /* every `period` frame, make a global refresh */
-    if ((++flush_count % GLOBAL_REFRESH_PERIOD) == 0) {
-        update_method = ssd1681_update_full;
-        pr_debug("a full update will be called\n");
-    }
-
     /* if there pixels doesn't updated too much,
      * invoke a timeouted update job, maybe caused
      * some error pixels keeping on the screen */
@@ -1494,9 +1489,14 @@ static int ssd1681_flush_full(void)
     } else {
         update_method = ssd1681_update_part;
     }
-    
-    /* invoke target update method */
 
+    /* every `period` frame, make a global refresh */
+    // if ((++flush_count % GLOBAL_REFRESH_PERIOD) == 0) {
+    //     update_method = ssd1681_update_full;
+    //     pr_debug("a full update will be called\n");
+    // }    
+
+    /* invoke target update method */
     update_method();
 
     memcpy(epink_disp_buffer_old, epink_disp_buffer, EPINK_DISP_BUFFER_SIZE);
