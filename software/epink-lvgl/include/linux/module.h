@@ -1,15 +1,42 @@
-/* SPDX-License-Identifier: GPL-2.0-only */
-/*
- * Dynamic loading of modules into the kernel.
- *
- * Rewritten by Richard Henderson <rth@tamu.edu> Dec 1996
- * Rewritten again by Rusty Russell, 2002
+/**
+ * @file module.h
+ * @author IotaHydrae (writeforever@foxmail.com)
+ * @brief 
+ * @version 0.1
+ * @date 2023-01-11
+ * 
+ * MIT License
+ * 
+ * Copyright 2022 IotaHydrae(writeforever@foxmail.com)
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * 
  */
 
-#ifndef _LINUX_MODULE_H
-#define _LINUX_MODULE_H
+#pragma once
+
+#ifndef __MODULE_H
+#define __MODULE_H
 
 #include <linux/init.h>
+#include <linux/compiler.h>
+#include <linux/stringify.h>
+#include <linux/mod_devicetable.h>
 
 /**
  * module_init() - driver initialization entry point
