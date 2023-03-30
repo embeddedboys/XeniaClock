@@ -16,3 +16,6 @@
  * Copyright (c) 2007-2009 Novell Inc.
  */
 
+#include <linux/device.h>
+#include <linux/init.h>
+#include <linux/module.h>
