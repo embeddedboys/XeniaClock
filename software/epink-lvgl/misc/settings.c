@@ -30,7 +30,7 @@
 
 // #include "common/init.h"
 #include <linux/init.h>
-#include "common/module.h"
+#include <linux/module.h>
 
 #include "common/tools.h"
 #include "common/settings.h"
