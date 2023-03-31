@@ -1,7 +1,7 @@
 #ifndef     __STC8G_H__
 #define     __STC8G_H__
 
-/////////////////////////////////////////////////
+#include "common.h"
 
 __sfr __at(0x80) P0;
 __sbit __at(0x80) P00;
@@ -227,8 +227,8 @@ __sfr __at(0xFC) CCAP2H;
 __sfr __at(0xFE) PWMCFG45;
 __sfr __at(0xFF) RSTCFG;
 
-//如下特殊功能寄存器位于扩展RAM区域
-//访问这些寄存器,需先将P_SW2的BIT7设置为1,才可正常读写
+//The following special function registers are located in the extended RAM areaial function registers are located in the extended RAM areacial function registers are located in the expansion RAM area
+// Visit these registers, you need to set the BIT7 of P_SW2 to 1 before you can read and write normally
 
 /////////////////////////////////////////////////
 //FF00H-FFFFH
@@ -927,7 +927,10 @@ __sfr __at(0xFF) RSTCFG;
 
 /////////////////////////////////////////////////
 
- #define NOP() __asm NOP __endasm
+#define NOP() __asm NOP __endasm
+
+#define XFR_ON()  P_SW2 |= 0x80
+#define XFR_OFF()  P_SW2 &= ~0x80
 
 #endif
 

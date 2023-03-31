@@ -28,10 +28,22 @@
  *
  */
 
-#include "stc8_sdcc.h"
+#include "stc8g.h"
+#include "uart.h"
+#include "i2c.h"
 
-void system_init()
+void interface_init(void)
 {
+    P_SW2 = 0;
+
+    /* P32 P33 as i2c */
+    P_SW2 = 0x80 | 0x30;
+}
+
+void system_init(void)
+{
+    MCLKOCR |= 0x80;
+
     P0M0 = 0x00;
     P0M1 = 0x00;
     P1M0 = 0x00;
@@ -45,6 +57,10 @@ void system_init()
     P5M0 = 0x00;
     P5M1 = 0x00;
 
+    interface_init();
+
+    uart_init();
+    i2c_init();
     ES = 1;
     EA = 1;
 }
@@ -209,10 +225,26 @@ int main(int argc, char **argv)
     (void)argv;
 
     system_init();
-
-    power_on_off_test();
+    P5PU &= ~(0x1 << 4);
+    // power_on_off_test();
+    power_on_once();
     // usb_state_test();
 
-    while (1) {};
+    while (1) {
+        // uart_send('a');
+        // uart_send_str("Hello, world!\n");
+        // i2c_start();
+        // i2c_test();
+        // delay_50ms();
+        // delay_50ms();
+        // delay_50ms();
+        // delay_50ms();
+        if (P54) {
+            uart_send('1');
+        } else {
+            uart_send('0');
+        }
+    };
+
     return 0;
 }
