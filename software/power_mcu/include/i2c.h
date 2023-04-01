@@ -31,8 +31,9 @@
 #ifndef __POWER_MCU_I2C_H
 #define __POWER_MCU_I2C_H
 
-#include "stc8g.h"
-#include "common.h"
+// #include "stc8g.h"
+// #include "common.h"
+#include "types.h"
 
 /**********************
 * GLOBAL PROTOTYPES
@@ -102,9 +103,9 @@ void i2c_stop();
  * 写此命令后，I2C总线控制器会在SCL管脚上产生8个时钟，
  * 并将从SDA端口上读取的数据依次左移到I2CRXD寄存器（先接收高位数据)。接
  * 
- * @return uint8_t 返回I2CRXD寄存器中的内容
+ * @return u8 返回I2CRXD寄存器中的内容
  */
-uint8_t i2c_readbyte();
+u8 i2c_readbyte();
 
 /**
  * @brief i2c_sendbyte I2C总线发送数据命令
@@ -114,7 +115,7 @@ uint8_t i2c_readbyte();
  *
  * @param byte 要发送的数据
  */
-void i2c_sendbyte( uint8_t byte );
+void i2c_sendbyte( u8 byte );
 
 void i2c_test(void);
 

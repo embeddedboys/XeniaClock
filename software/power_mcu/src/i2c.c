@@ -30,6 +30,7 @@
 
 #include "stc8g.h"
 
+#include "common.h"
 #include "i2c.h"
 
 interrupt_declear(i2c_isr, 24)
@@ -48,7 +49,12 @@ interrupt_declear(i2c_isr, 24)
 void i2c_init()
 {
     P_SW2 = 0x80;
-    I2CCFG = 0xe0; /* FOSC 11.0592MHz  I2C 100KHz */
+    // I2CCFG = 0xe0; /* FOSC 11.0592MHz  I2C 100KHz */
+    // I2CCFG = 0xd0; /* FOSC 11.0592MHz  I2C 200KHz */
+    // I2CCFG = 0xc8; /* FOSC 11.0592MHz  I2C 400KHz */
+    // I2CCFG = 0xc4; /* FOSC 11.0592MHz  I2C 400KHz */
+    // I2CCFG = 0xc2; /* FOSC 11.0592MHz  I2C 400KHz */
+    I2CCFG = 0xc0; /* FOSC 11.0592MHz  I2C 400KHz */
     I2CMSST = 0x00; /* 清空主机状态寄存器 */
 
     I2CMSAUX &= ~(1 << 0); /* 禁用自动发送功能 */
@@ -92,7 +98,7 @@ void i2c_start()
  *
  * @param byte 要发送的数据
  */
-void i2c_sendbyte( uint8_t byte )
+void i2c_sendbyte( u8 byte )
 {
     I2CTXD = byte;
     I2CMSCR = 0x02;
@@ -177,7 +183,7 @@ void i2c_stop()
  * 
  * @param byte 要发送的数据
  */
-void i2c_start_sendbyte_revack(uint8_t byte)
+void i2c_start_sendbyte_revack(u8 byte)
 {
     I2CTXD = byte;
     I2CMSCR = 0x09;
@@ -192,7 +198,7 @@ void i2c_start_sendbyte_revack(uint8_t byte)
  * 
  * @param byte 要发送的数据
  */
-void i2c_sendbyte_revack(uint8_t byte)
+void i2c_sendbyte_revack(u8 byte)
 {
     I2CTXD = byte;
     I2CMSCR = 0x0A;
@@ -206,7 +212,7 @@ void i2c_sendbyte_revack(uint8_t byte)
  * 
  * @return uint8_t 返回I2CRXD中的内容
  */
-uint8_t i2c_readbyte_sendack()
+u8 i2c_readbyte_sendack()
 {
     I2CMSCR = 0x0B;
     __i2c_wait();
@@ -221,7 +227,7 @@ uint8_t i2c_readbyte_sendack()
  * 
  * @return uint8_t 
  */
-uint8_t i2c_readbyte_sendnack()
+u8 i2c_readbyte_sendnack()
 {
     I2CMSCR = 0x0C;
     __i2c_wait();

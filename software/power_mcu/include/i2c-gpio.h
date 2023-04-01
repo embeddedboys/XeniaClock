@@ -31,7 +31,8 @@
 #ifndef __I2C_GPIO_H
 #define __I2C_GPIO_H
 
-#include "common.h"
+// #include "common.h"
+#include "types.h"
 
 #define GPIO_I2C_SCL    P32
 #define GPIO_I2C_SDA    P33

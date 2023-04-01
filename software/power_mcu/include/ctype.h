@@ -1,5 +1,5 @@
 /**
- * @file pm.c
+ * @file ctype.h
  * @author IotaHydrae (writeforever@foxmail.com)
  * @brief 
  * @version 0.1
@@ -28,22 +28,15 @@
  * 
  */
 
-#include "common.h"
+#ifndef __CTYPE_H
+#define __CTYPE_H
 
-// void *(*pm_list)(void) = {
-//     NULL,
-// };
+#define _S      0x20    /* white space (space/lf/tab) */
 
-// void pm_suspend(void)
-// {
-//     void (*fn)(void) = *pm_list;
+static inline int isdigit(int c)
+{
+    return '0' <= c && c <= '9';
+}
 
-//     for (;fn != NULL; fn++) {
-//         fn();
-//     }
-// }
 
-// void pm_resume(void)
-// {
-
-// }
+#endif

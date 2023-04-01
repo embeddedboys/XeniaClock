@@ -1,5 +1,5 @@
 /**
- * @file pm.c
+ * @file types.h
  * @author IotaHydrae (writeforever@foxmail.com)
  * @brief 
  * @version 0.1
@@ -28,22 +28,23 @@
  * 
  */
 
-#include "common.h"
+#ifndef __TYPES_H
+#define __TYPES_H
 
-// void *(*pm_list)(void) = {
-//     NULL,
-// };
+typedef unsigned char uint8_t;
+typedef unsigned char uchar;
+typedef unsigned char u8;
 
-// void pm_suspend(void)
-// {
-//     void (*fn)(void) = *pm_list;
+typedef unsigned short uint16_t;
+typedef unsigned short ushort;
+typedef unsigned short u16;
 
-//     for (;fn != NULL; fn++) {
-//         fn();
-//     }
-// }
+// typedef unsigned int uint32_t;
+typedef unsigned int uint;
+typedef unsigned int u32;
 
-// void pm_resume(void)
-// {
+typedef unsigned long long uint64_t;
+// typedef unsigned long long ull;
+typedef unsigned long long u64;
 
-// }
+#endif

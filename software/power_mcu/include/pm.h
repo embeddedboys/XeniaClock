@@ -1,5 +1,5 @@
 /**
- * @file pm.c
+ * @file pm.h
  * @author IotaHydrae (writeforever@foxmail.com)
  * @brief 
  * @version 0.1
@@ -28,22 +28,7 @@
  * 
  */
 
-#include "common.h"
+#ifndef __PM_H
+#define __PM_H
 
-// void *(*pm_list)(void) = {
-//     NULL,
-// };
-
-// void pm_suspend(void)
-// {
-//     void (*fn)(void) = *pm_list;
-
-//     for (;fn != NULL; fn++) {
-//         fn();
-//     }
-// }
-
-// void pm_resume(void)
-// {
-
-// }
+#endif

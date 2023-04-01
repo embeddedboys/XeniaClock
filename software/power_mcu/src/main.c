@@ -230,7 +230,7 @@ static void usb_state_test(void)
     };
 }
 
-int main(int argc, char **argv)
+void main(int argc, char **argv)
 {
     (void)argc;
     (void)argv;
@@ -263,6 +263,4 @@ int main(int argc, char **argv)
         //     uart_send('0');
         // }
     };
-
-    return 0;
 }

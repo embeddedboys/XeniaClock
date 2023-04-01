@@ -33,39 +33,39 @@
 
 #include "stc8g.h"
 
+#define NULL ((void *)0)
+#define ARRAY_SIZE(arr) (sizeof(arr)/sizeof(arr[0]))
+
+// #define typeof_member(T, m)	typeof(((T*)0)->m)
+// #ifndef typeof
+// #warning "typeof is not defined!"
+// #define typeof(x) __typeof__(x)
+// #endif
+
+#ifndef offsetof
+#define offsetof(type,member) ((unsigned long)((type *)0) - (unsigned long)&(((type *)0)->member))
+#endif
+/*
+#define container_of(ptr, type, member)   ({                \
+        const typeof(((type *)0)->member) * __mptr = (ptr); \
+        (type *)((char *)__mptr - offsetof(type, member));})
+*/
+
 #define FOSC    11059200UL
-
-/* for sdcc compiler */
-// #define sfr __sfr
-// #define sbit __sbit
-
 #define nop() __asm NOP __endasm
 
 #define xfr_on()  {P_SW2 |= 0x80;}
 #define xfr_off()  {P_SW2 &= ~0x80;}
+
+/* for sdcc compiler */
+// #define sfr __sfr
+// #define sbit __sbit
 
 // #define writel(v,r) { xfr_on(); r=v; xfr_off(); }
 // #define readl(r) { xfr_on(); v; xfr_off(); }
 
 /* `fn` -> function name, `v` -> the vector */
 #define interrupt_declear(fn, v) void fn(void) __interrupt(v)
-
-
-typedef unsigned char uint8_t;
-typedef unsigned char uchar;
-typedef unsigned char u8;
-
-typedef unsigned short uint16_t;
-typedef unsigned short ushort;
-typedef unsigned short u16;
-
-typedef unsigned int uint32_t;
-typedef unsigned int uint;
-typedef unsigned int u32;
-
-typedef unsigned long long uint64_t;
-// typedef unsigned long long ull;
-typedef unsigned long long u64;
 
 // inline void write_xfr(u16 xfr, u8 val)
 // {

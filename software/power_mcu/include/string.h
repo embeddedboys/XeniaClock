@@ -1,5 +1,5 @@
 /**
- * @file pm.c
+ * @file string.h
  * @author IotaHydrae (writeforever@foxmail.com)
  * @brief 
  * @version 0.1
@@ -28,22 +28,19 @@
  * 
  */
 
+#ifndef __STRING_H
+#define __STRING_H
+
 #include "common.h"
 
-// void *(*pm_list)(void) = {
-//     NULL,
-// };
+u8 is_digit(char c)
+{
+    unsigned long d = c - '0';
 
-// void pm_suspend(void)
-// {
-//     void (*fn)(void) = *pm_list;
+    if (d > 9)
+        return -1;
 
-//     for (;fn != NULL; fn++) {
-//         fn();
-//     }
-// }
+    return 0;
+}
 
-// void pm_resume(void)
-// {
-
-// }
+#endif

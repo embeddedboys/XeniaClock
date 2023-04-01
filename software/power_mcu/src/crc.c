@@ -27,7 +27,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * 
  */
-#include "common.h"
+// #include "common.h"
+#include "types.h"
 
 /******************************************************************************
  * Name:    CRC-8               x8+x2+x+1
