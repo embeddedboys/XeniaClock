@@ -31,8 +31,20 @@
 #ifndef __I2C_GPIO_H
 #define __I2C_GPIO_H
 
+#include "common.h"
+
 #define GPIO_I2C_SCL    P32
 #define GPIO_I2C_SDA    P33
+
+volatile void gpio_i2c_init();
+volatile void gpio_i2c_start();
+volatile u8 gpio_i2c_revack();
+volatile void gpio_i2c_sndack();
+volatile void gpio_i2c_sndnack();
+volatile void gpio_i2c_stop();
+volatile u8 gpio_i2c_readbyte();
+volatile void gpio_i2c_sendbyte( u8 byte_in );
+
 
 #endif
 

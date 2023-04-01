@@ -32,6 +32,11 @@
 
 #include "i2c.h"
 
+interrupt_declear(i2c_isr, 24)
+{
+
+}
+
 /**
  * @brief 初始化I2C控制器
  *
@@ -42,10 +47,11 @@
  */
 void i2c_init()
 {
-    I2CCFG = 0x1a; /* FOSC 11.0592MHz  I2C 100KHz */
+    P_SW2 = 0x80;
+    I2CCFG = 0xe0; /* FOSC 11.0592MHz  I2C 100KHz */
     I2CMSST = 0x00; /* 清空主机状态寄存器 */
 
-    // I2CMSAUX &= ~(1 << 0); /* 禁用自动发送功能 */
+    I2CMSAUX &= ~(1 << 0); /* 禁用自动发送功能 */
 }
 
 /**
@@ -226,7 +232,7 @@ uint8_t i2c_readbyte_sendnack()
 void i2c_test(void)
 {
     i2c_start();
-    i2c_sendbyte(0x3a);
+    i2c_sendbyte(0x78);
     i2c_sndack();
     i2c_sendbyte(0x88);
     i2c_sndack();

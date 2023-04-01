@@ -1,9 +1,9 @@
 /**
- * @file common.h
+ * @file clk.c
  * @author IotaHydrae (writeforever@foxmail.com)
  * @brief 
  * @version 0.1
- * @date 2023-03-08
+ * @date 2023-03-31
  * 
  * MIT License
  * 
@@ -28,61 +28,31 @@
  * 
  */
 
-#ifndef __POWER_MCU_COMMON_H
-#define __POWER_MCU_COMMON_H
-
 #include "stc8g.h"
+#include "common.h"
 
-#define FOSC    11059200UL
+// #define XFR_CLKSEL      0xfe00
+// #define XFR_CLKDIV      0xfe01
+// #define XFR_HIRCCR      0xfe02
+// #define XFR_XOSCCR      0xfe03
+// #define XFR_IRC32KCR    0xfe04
 
-/* for sdcc compiler */
-// #define sfr __sfr
-// #define sbit __sbit
+__code __at(0xfb) unsigned char IRC24M;
 
-#define nop() __asm NOP __endasm
+void clk_init(void)
+{
+    /* choose the src of PLL */
+    //选择 24MHz
+    P_SW2 = 0x80;
+    CLKDIV = 0x04;
+    IRTRIM = T24M_ROMADDR;
+    VRTRIM = VRT20M_ROMADDR;
+    IRCBAND = 0x00;
+    CLKDIV = 0x00;
 
-#define xfr_on()  {P_SW2 |= 0x80;}
-#define xfr_off()  {P_SW2 &= ~0x80;}
+    // IRC24M = (char __idata *)0xfb;
+    // IRTRIM = IRC24M;
 
-// #define writel(v,r) { xfr_on(); r=v; xfr_off(); }
-// #define readl(r) { xfr_on(); v; xfr_off(); }
-
-/* `fn` -> function name, `v` -> the vector */
-#define interrupt_declear(fn, v) void fn(void) __interrupt(v)
-
-
-typedef unsigned char uint8_t;
-typedef unsigned char uchar;
-typedef unsigned char u8;
-
-typedef unsigned short uint16_t;
-typedef unsigned short ushort;
-typedef unsigned short u16;
-
-typedef unsigned int uint32_t;
-typedef unsigned int uint;
-typedef unsigned int u32;
-
-typedef unsigned long long uint64_t;
-// typedef unsigned long long ull;
-typedef unsigned long long u64;
-
-// inline void write_xfr(u16 xfr, u8 val)
-// {
-//     volatile u8 *p = (u8 *)xfr;
-//     xfr_on();
-//     *p = val;
-//     xfr_off();
-// }
-
-// inline u8 read_xfr(volatile u32 xfr)
-// {
-//     xfr_on();
-//     u8 tmp = *xfr;
-//     xfr_off();
-
-//     return tmp;
-// }
-
-
-#endif
+    // P_SW2 = 0x80;
+    // CLKDIV = 0;
+}

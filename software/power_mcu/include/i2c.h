@@ -32,6 +32,7 @@
 #define __POWER_MCU_I2C_H
 
 #include "stc8g.h"
+#include "common.h"
 
 /**********************
 * GLOBAL PROTOTYPES

@@ -1,8 +1,6 @@
 #ifndef     __STC8G_H__
 #define     __STC8G_H__
 
-#include "common.h"
-
 __sfr __at(0x80) P0;
 __sbit __at(0x80) P00;
 __sbit __at(0x81) P01;
@@ -64,6 +62,7 @@ __sfr __at(0x9B) S2BUF;
 __sfr __at(0x9D) IRCBAND;
 __sfr __at(0x9E) LIRTRIM;
 __sfr __at(0x9F) IRTRIM;
+__sfr __at(0xa6) VRTRIM;
 __sfr __at(0xA0) P2;
 __sbit __at(0xa0) P20;
 __sbit __at(0xa1) P21;
@@ -927,10 +926,22 @@ __sfr __at(0xFF) RSTCFG;
 
 /////////////////////////////////////////////////
 
-#define NOP() __asm NOP __endasm
+__code __at(0x1ff3) unsigned char T24M_ROMADDR;
+__code __at(0x1fea) unsigned char VRT20M_ROMADDR;
 
-#define XFR_ON()  P_SW2 |= 0x80
-#define XFR_OFF()  P_SW2 &= ~0x80
+#define ID_ROMADDR ((unsigned char __code *)0x1ff9)
+#define VREF_ROMADDR (*(unsigned int __code *)0x1ff7)
+#define F32K_ROMADDR (*(unsigned int __code *)0x1ff5)
+#define T22M_ROMADDR (*(unsigned char __code *)0x1ff4) //22.1184MHz
+// #define T24M_ROMADDR (*(unsigned char __code *)0x1ff3) //24MHz
+#define T20M_ROMADDR (*(unsigned char __code *)0x1ff2) //20MHz
+#define T27M_ROMADDR (*(unsigned char __code *)0x1ff1) //27MHz
+#define T30M_ROMADDR (*(unsigned char __code *)0x1ff0) //30MHz
+#define T33M_ROMADDR (*(unsigned char __code *)0x1fef) //33.1776MHz
+#define T35M_ROMADDR (*(unsigned char __code *)0x1fee) //35MHz
+#define T36M_ROMADDR (*(unsigned char __code *)0x1fed) //36.864MHz
+// #define VRT20M_ROMADDR (*(unsigned char __code *)0x1fea) //VRTRIM_20M
+#define VRT35M_ROMADDR (*(unsigned char __code *)0x1fe9) //VRTRIM_35M
 
 #endif
 

@@ -1,9 +1,9 @@
 /**
- * @file common.h
+ * @file protocol.c
  * @author IotaHydrae (writeforever@foxmail.com)
  * @brief 
  * @version 0.1
- * @date 2023-03-08
+ * @date 2023-04-01
  * 
  * MIT License
  * 
@@ -27,62 +27,3 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * 
  */
-
-#ifndef __POWER_MCU_COMMON_H
-#define __POWER_MCU_COMMON_H
-
-#include "stc8g.h"
-
-#define FOSC    11059200UL
-
-/* for sdcc compiler */
-// #define sfr __sfr
-// #define sbit __sbit
-
-#define nop() __asm NOP __endasm
-
-#define xfr_on()  {P_SW2 |= 0x80;}
-#define xfr_off()  {P_SW2 &= ~0x80;}
-
-// #define writel(v,r) { xfr_on(); r=v; xfr_off(); }
-// #define readl(r) { xfr_on(); v; xfr_off(); }
-
-/* `fn` -> function name, `v` -> the vector */
-#define interrupt_declear(fn, v) void fn(void) __interrupt(v)
-
-
-typedef unsigned char uint8_t;
-typedef unsigned char uchar;
-typedef unsigned char u8;
-
-typedef unsigned short uint16_t;
-typedef unsigned short ushort;
-typedef unsigned short u16;
-
-typedef unsigned int uint32_t;
-typedef unsigned int uint;
-typedef unsigned int u32;
-
-typedef unsigned long long uint64_t;
-// typedef unsigned long long ull;
-typedef unsigned long long u64;
-
-// inline void write_xfr(u16 xfr, u8 val)
-// {
-//     volatile u8 *p = (u8 *)xfr;
-//     xfr_on();
-//     *p = val;
-//     xfr_off();
-// }
-
-// inline u8 read_xfr(volatile u32 xfr)
-// {
-//     xfr_on();
-//     u8 tmp = *xfr;
-//     xfr_off();
-
-//     return tmp;
-// }
-
-
-#endif

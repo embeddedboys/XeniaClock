@@ -29,8 +29,12 @@
  */
 
 #include "stc8g.h"
+#include "common.h"
+
+#include "clk.h"
 #include "uart.h"
 #include "i2c.h"
+#include "oled.h"
 
 void interface_init(void)
 {
@@ -42,8 +46,6 @@ void interface_init(void)
 
 void system_init(void)
 {
-    MCLKOCR |= 0x80;
-
     P0M0 = 0x00;
     P0M1 = 0x00;
     P1M0 = 0x00;
@@ -57,7 +59,10 @@ void system_init(void)
     P5M0 = 0x00;
     P5M1 = 0x00;
 
-    interface_init();
+    // P5PU |= (1 << 5);
+    // clk_init();
+
+    // interface_init();
 
     uart_init();
     i2c_init();
@@ -131,9 +136,15 @@ static void power_off(void)
 
 static void blink(void)
 {
-    P32 = 1;
+    P33 = 1;
+    if (P33) {
+        uart_send('1');
+    }
     delay_50ms();
-    P32 = 0;
+    P33 = 0;
+    if (!P33) {
+        uart_send('0');
+    }
     delay_50ms();
 }
 
@@ -224,26 +235,33 @@ int main(int argc, char **argv)
     (void)argc;
     (void)argv;
 
+    char i =0 ;
     system_init();
-    P5PU &= ~(0x1 << 4);
     // power_on_off_test();
-    power_on_once();
+    // power_on_once();
     // usb_state_test();
-
+    
+    oled_init();
     while (1) {
-        // uart_send('a');
-        // uart_send_str("Hello, world!\n");
-        // i2c_start();
+        uart_send(i+'0');
+        uart_send_str("Hello, world!\n");
         // i2c_test();
-        // delay_50ms();
-        // delay_50ms();
-        // delay_50ms();
-        // delay_50ms();
-        if (P54) {
-            uart_send('1');
-        } else {
-            uart_send('0');
-        }
+        // i2c_start(); 
+        // i2c_test();
+        oled_test();
+        // blink();
+        // i++;
+        // if (i == 10)
+            // i=0;
+        delay_50ms();
+        delay_50ms();
+        delay_50ms();
+        delay_50ms();
+        // if (P54) {
+        //     uart_send('1');
+        // } else {
+        //     uart_send('0');
+        // }
     };
 
     return 0;
