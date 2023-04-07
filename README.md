@@ -27,9 +27,12 @@ Table of Contents
 
 [Gallery](gallery.md)
 ------------------
-（这里放一张最终成品图）
 
-<h2 align="center">Introduction</h2>
+![Xenia Clock](assets/index.jpg)
+
+<h2 align="center">
+    <span>Introduction</span>
+</h2>
 
 ![lvgl](assets/logo_lvgl.png) ![FreeRTOS](assets/logo_freertos.jpg) ![littleFS](assets/logo_littlefs.jpg) ![JLC](assets/logo_jlc.png)
 
@@ -46,8 +49,9 @@ Table of Contents
 
 
 
-<h2 align="center">Design</h2>
-------------------
+<h2 align="center">
+    <span>Design</span>
+</h2>
 
 (这里放一张完整结构3D模型渲染图)
 
@@ -55,13 +59,12 @@ Xenia Clock的外形设计，很大程度上的参考了如下建筑
 
 ![Xenia Clock, Ohio, USA](assets/Greene_County_Courthouse_Xenia.jpg) ![Erbil Clock Tower](assets/360px-Clock_of_Erbil.jpeg)
 
-> left : Xenia Clock, Ohio, USA 
+> left : Xenia Clock, Ohio, USA
 > right : Erbil Clock Tower
 
-嗯，**Xenia Clock** 由三部分组成，即**屋顶**、**中间**、**电源**，每个部分都有不同的工作要做。
+Huh，**Xenia Clock** 由三部分组成，**楼顶**、**中间**、**电源**，每个部分都有不同的工作要做。
 
-很难用语言来解释，让我们看看这张设计结构的图片
-
+<p align="center">对设计框图感兴趣吗？</p>
 ![DesignStructure](assets/XeniaClock.png)
 
 -----------------------
@@ -75,8 +78,10 @@ Xenia Clock的外形设计，很大程度上的参考了如下建筑
 
 ![power supply board](assets/power_supply_board.jpg)
 
-Inside
-------------------
+<h2 align="center">
+    <span>Inside</span>
+</h2>
+
 | 零件 | 型号 |
 | ---- | ----- |
 | `主 MCU`      | RaspberryPi RP2040 双核 `133MHz` `288K SRAM`|
@@ -92,8 +97,7 @@ Inside
 | `电池`         |  `400mAh` 锂电 |
 有关这部分的详细信息，可以到官网硬件文档查看
 
-LICENSE
-------------------
+<h2 align="center">LICENSE</h2>
 
 此项目是在MIT许可证下发布的，有关详细信息，请查看`关于->许可证`。
 
