@@ -1,10 +1,19 @@
 Thanks
 =============================
 
-**Special thanks for these projects who made really much help**
+**Special thanks for those people or organazation who made much help**
+
+People
+-----------------------------
+
+- [`byelizabethhope`](https://art.byelizabethhope.com/about-me/) - A wonderful artist
+
+- [`iotah`](https://github.com/IotaHydrae) - may be anthor me
 
 Third Party
 -----------------------------
+
+- [`linux`](https://github.com/torlvads/linux) - The great operating system
 
 - [`lvgl`]() - Really a powerful graphics library for embedded system
 
@@ -13,6 +22,7 @@ Third Party
 - [`littlefs`](https://github.com/littlefs-project/littlefs) - A high-integrity embedded file system
 
 - [`FreeRTOS kernel`](https://github.com/FreeRTOS/FreeRTOS-Kernel) - A great Real-Time Operating System
+
 
 Tools Software
 -----------------------------
