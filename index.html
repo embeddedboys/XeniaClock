@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="offical site of project Xenia Clock">
+    <meta name="author" content="nothing yet">
+    <link rel="canonical" href="https://embeddedboys.github.io/XeniaClock/">
+    <link rel="shortcut icon" href="img/favicon.ico">
+
+    
+    <title>Home - Xenia Clock</title>
+    
+
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.12.0/css/all.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.12.0/css/v4-shims.css">
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/hack-font@3.3.0/build/web/hack.min.css">
+    <link href='//rsms.me/inter/inter.css' rel='stylesheet' type='text/css'>
+    <link href='//fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,700italic,400,300,600,700&subset=latin-ext,latin' rel='stylesheet' type='text/css'>
+    <link href="css/bootstrap-custom.min.css" rel="stylesheet">
+    <link href="css/base.min.css" rel="stylesheet">
+    <link href="css/cinder.min.css" rel="stylesheet">
+
+    
+        
+        <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.18.0/build/styles/github.min.css">
+        
+    
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+            <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+        <![endif]-->
+
+    
+
+     
+</head>
+
+<body class="homepage" >
+
+    <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+    <div class="container">
+
+        <!-- Collapsed navigation -->
+        <div class="navbar-header">
+            <!-- Expander button -->
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            
+
+            <!-- Main title -->
+
+            
+              <a class="navbar-brand" href=".">Xenia Clock</a>
+            
+        </div>
+
+        <!-- Expanded navigation -->
+        <div class="navbar-collapse collapse">
+                <!-- Main navigation -->
+                <ul class="nav navbar-nav">
+                
+                
+                    <li class="active">
+                        <a href=".">Home</a>
+                    </li>
+                
+                
+                
+                    <li >
+                        <a href="getstarted/">Get Started</a>
+                    </li>
+                
+                
+                
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Documentations <b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                        
+                            
+<li >
+    <a href="hardware/">hardware</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="software/">software</a>
+</li>
+
+                        
+                        </ul>
+                    </li>
+                
+                
+                
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">About <b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                        
+                            
+<li >
+    <a href="credits/">Credits</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="license/">License</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="releasenote/">Release Notes</a>
+</li>
+
+                        
+                            
+<li >
+    <a href="FAQs/">FAQs</a>
+</li>
+
+                        
+                        </ul>
+                    </li>
+                
+                
+                
+                    <li >
+                        <a href="thanks/">Thanks</a>
+                    </li>
+                
+                
+                </ul>
+
+            <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        <a href="#" data-toggle="modal" data-target="#mkdocs_search_modal">
+                            <i class="fas fa-search"></i> Search
+                        </a>
+                    </li>
+                    <li class="disabled">
+                        <a rel="prev" >
+                            <i class="fas fa-arrow-left"></i> Previous
+                        </a>
+                    </li>
+                    <li >
+                        <a rel="next" href="getstarted/">
+                            Next <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://github.com/embeddedboys/XeniaClock/edit/master/docs/README.md"><i class="fab fa-github"></i> Edit on GitHub</a>
+                    </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+    <div class="container">
+        
+        
+        <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
+    <ul class="nav bs-sidenav">
+        <li class="first-level active"><a href="#table-of-contents">Table of Contents</a></li>
+        <li class="first-level "><a href="#_1">画廊</a></li>
+        <li class="first-level "><a href="#design">Design</a></li>
+            <li class="second-level"><a href="#_2">硬件</a></li>
+                
+            <li class="second-level"><a href="#_3">软件</a></li>
+                
+            <li class="second-level"><a href="#_4">结构</a></li>
+                
+        <li class="first-level "><a href="#inside">Inside</a></li>
+    </ul>
+</div></div>
+        <div class="col-md-9" role="main">
+
+<h1 align="center">
+    <span>Xenia Clock</span>
+</h1>
+
+<!-- <div style="text-align: center;">
+
+<a href="https://iotahydrae.github.io/XeniaClock/">![Docs](https://img.shields.io/badge/docs-iotahydrae.github.io%2FXeniaClock%2F-green)</a> <a>![](https://img.shields.io/github/license/iotahydrae/xeniaclock)</a> <a>![](https://img.shields.io/github/forks/IotaHydrae/XeniaClock)</a> <a>![](https://img.shields.io/github/stars/iotahydrae/XeniaClock)</a> <a>![](https://img.shields.io/github/last-commit/iotahydrae/XeniaClock)</a> <a>  [![HitCount](https://hits.dwyl.com/IotaHydrae/XeniaClock.svg?style=flat-square)](http://hits.dwyl.com/IotaHydrae/XeniaClock)</a>
+
+</div> -->
+
+<p><img alt="Docs" src="https://img.shields.io/badge/docs-iotahydrae.github.io%2FXeniaClock%2F-green" /> <img alt="" src="https://img.shields.io/github/license/iotahydrae/xeniaclock" /> <img alt="" src="https://img.shields.io/github/forks/IotaHydrae/XeniaClock" /> <img alt="" src="https://img.shields.io/github/stars/iotahydrae/XeniaClock" /> <img alt="" src="https://img.shields.io/github/last-commit/iotahydrae/XeniaClock" /> <a href="http://hits.dwyl.com/IotaHydrae/XeniaClock"><img alt="HitCount" src="https://hits.dwyl.com/IotaHydrae/XeniaClock.svg?style=flat-square" /></a></p>
+<p><img alt="Xenia Clock Tower" src="assets/Clock-Tower.jpg" /></p>
+<p><a href="./">[中文]</a> <a href="README.en/">[English]</a></p>
+<h2 id="table-of-contents">Table of Contents</h2>
+<ul>
+<li><a href="#Introduction">介绍</a></li>
+<li><a href="#Design">设计</a></li>
+<li><a href="#Inside">内部</a></li>
+<li><a href="#License">许可证</a></li>
+</ul>
+<h2 id="_1"><a href="gallery/">画廊</a></h2>
+<p><img alt="Xenia Clock" src="assets/index.jpg" /></p>
+<h2 align="center">
+    <span>Introduction</span>
+</h2>
+
+<p><img alt="lvgl" src="assets/logo_lvgl.png" /> <img alt="FreeRTOS" src="assets/logo_freertos.jpg" /> <img alt="littleFS" src="assets/logo_littlefs.jpg" /> <img alt="JLC" src="assets/logo_jlc.png" /></p>
+<p><img alt="squareline studio" src="assets/logo_squareline.png" />  <img alt="GooDisplay" src="assets/logo_goodisplay.jpg" /></p>
+<p><strong>Xenia Clock</strong> 是一个基于墨水屏的电子时钟</p>
+<p>顺便说一句，这是一个完全开源的项目，意味着你可以得到任何关于本项目的资料。</p>
+<p>官方网站 : <a href="https://embeddedboys.github.io/XeniaClock"><code>https://embeddedboys.github.io/XeniaClock</code></a></p>
+<p>仓库位于 : <a href="https://github.com/embeddedboys/XeniaClock"><code>https://github.com/embeddedboys/XeniaClock</code></a></p>
+<h2 id="design">Design</h2>
+<p>从零开始制作一个桌面时钟小工具，听起来不错，而且应该也不太难，应该几天就能搞定，
+我这么告诉我自己，进展很顺利，一开始也确实如此。很快，项目的原型都已经做出来了。</p>
+<p>但是随着项目的进展，我在想，这样是不是有点太随便了。我做这些项目，很大程度上是为了
+锻炼自己的能力。我说，做一个项目，要像读一本书一样，如果不能消除自己的无知，
+那就没有必要做下去了。后来我打算把这个项目当产品来做，其实也有其他原因，因为这个
+项目的很多东西，都可以复用到其他项目上。</p>
+<p>从来没有以产品级的标准去做一个项目，随着研究调查的进行，我才发现，需要做的东西太
+多了，而且以前从来都没有考虑过，因为做一个demo，不需要考虑任何不利因素，只需实现
+功能。我开始意识到问题的严重性，比如充放电管理，照明驱动电路，电源设计等，这些都是我
+从未涉足的领域。幸亏这是一个基于MCU的项目，要不然这个项目真的没法进行下去了。</p>
+<p>就跟开头说的那样，项目又逐渐恢复了进度，我一边设计硬件，一边设计软件。。。。</p>
+<h3 id="_2">硬件</h3>
+<p>最先下手的，当然是主板了</p>
+<p>（图）</p>
+<p>其次是供电板</p>
+<p><strong><code>Evaluation Board</code> 供电板</strong></p>
+<p><img alt="power supply board" src="assets/power_supply_board.jpg" /></p>
+<p>然后是灯板</p>
+<p>（图）</p>
+<p>设计过程中，主板又做了核心板+底板的设计</p>
+<p>（图）</p>
+<h3 id="_3">软件</h3>
+<p>软件项目是基于pico-sdk开发的，但因为个人习惯，引入了很多linux的设计原则。
+这部分虽然不算枯燥乏味，但比起其他部分，不能够引人注目，所以这里简单带过。
+更详细的说明可以到官网文档中查看。</p>
+<p>前期主要就是开发显示的驱动，并且把lvgl移植到了上面。</p>
+<p>编写rtc功能。</p>
+<p>为aht10这些传感器编写接口</p>
+<p>用esp-01s AT写了配网过程，又做了个个小型web服务器，用来跟设备交互。</p>
+<p>后来因为复杂度的上升，又引入了FreeRTOS</p>
+<p>后来又引入了littlefs文件系统，在华邦的spiflash上</p>
+<h3 id="_4">结构</h3>
+<p>其实我在设计软硬件的过程中，就已经在对项目的结构，作出了种种幻想。火柴盒，还有
+屏占比高的设计都想过，但是都不符合我对这个项目的定义。后来，我就在想为什么不把这个
+做成一座像建筑一样的东西呢？这正是我所期待的，神秘感。这样看来，似乎钟楼这种建筑最适合了。
+很好，接下来就是选些参照物作原型设计了。</p>
+<p><img alt="Xenia Clock, Ohio, USA" src="assets/Greene_County_Courthouse_Xenia.jpg" /> <img alt="Erbil Clock Tower" src="assets/360px-Clock_of_Erbil.jpeg" /></p>
+<blockquote>
+<p>左 : Xenia Clock, Ohio, USA  右 : Erbil Clock Tower</p>
+</blockquote>
+<p>Xenia Clock（这里说的是建筑），非常符合我对功能的要求，比如楼顶的开窗可以做照明，
+中间其实都差不多，拿来放显示屏和主板，一些重要部件，但是它的底部不是很好，太单一。
+所以我又参考了Erbil Clock Tower的底部，因为要放供电部分，以及副屏之类的，底部的
+拱门设计也很好。</p>
+<p><strong>Xenia Clock屋顶的预览设计</strong></p>
+<p><img alt="roof" src="assets/roof.jpg" /></p>
+<p>最后，结构的效果如下：</p>
+<p>(这里放一张完整结构3D模型渲染图)</p>
+<hr />
+<h2 id="inside">Inside</h2>
+<table>
+<thead>
+<tr>
+<th>零件</th>
+<th>型号</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>主 MCU</code></td>
+<td>RaspberryPi RP2040 双核 <code>133MHz</code> <code>288K SRAM</code></td>
+</tr>
+<tr>
+<td><code>闪存</code></td>
+<td><code>4MB</code> 2x W25Q16</td>
+</tr>
+<tr>
+<td><code>Power MCU</code></td>
+<td>STC8G1K08A</td>
+</tr>
+<tr>
+<td><code>主屏幕</code></td>
+<td><code>1.54</code>寸墨水屏</td>
+</tr>
+<tr>
+<td><code>副屏幕</code></td>
+<td><code>0.91</code>寸OLED</td>
+</tr>
+<tr>
+<td><code>网络</code></td>
+<td>esp-01s AT</td>
+</tr>
+<tr>
+<td><code>传感器</code></td>
+<td>AHT10</td>
+</tr>
+<tr>
+<td><code>实时钟</code></td>
+<td>DS1307 / DS3231</td>
+</tr>
+<tr>
+<td><code>充放电管理</code></td>
+<td>IP5306</td>
+</tr>
+<tr>
+<td><code>照明</code></td>
+<td>1x <code>1W</code> LED灯珠 或 4x <code>0.3W</code> 陶瓷灯丝</td>
+</tr>
+<tr>
+<td><code>电池</code></td>
+<td><code>400mAh</code> 锂电</td>
+</tr>
+<tr>
+<td>有关这部分的详细信息，可以到官网硬件文档查看</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h2 align="center">LICENSE</h2>
+
+<p>此项目是在<code>MIT</code>许可证下发布的，有关详细信息，请查看<code>关于-&gt;许可证</code>。</p>
+<p>玩得开心！</p>
+<p>Cheers, iotah</p></div>
+        
+        
+    </div>
+
+    
+      <footer class="col-md-12 text-center">
+          
+          
+            <hr>
+            <p>
+            <small>Documentation built with <a href="http://www.mkdocs.org/">MkDocs</a>.</small>
+            </p>
+          
+
+          
+          
+      </footer>
+    
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="js/bootstrap-3.0.3.min.js"></script>
+
+    
+    <script src="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.18.0/build/highlight.min.js"></script>
+        
+    <script>hljs.initHighlightingOnLoad();</script>
+    
+
+    <script>var base_url = "."</script>
+    
+    <script src="js/base.js"></script>
+    <script src="search/main.js"></script>
+
+    <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="searchModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">
+                    <span aria-hidden="true">&times;</span>
+                    <span class="sr-only">Close</span>
+                </button>
+                <h4 class="modal-title" id="searchModalLabel">Search</h4>
+            </div>
+            <div class="modal-body">
+                <p>
+                    From here you can search these documents. Enter
+                    your search terms below.
+                </p>
+                <form>
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
+                    </div>
+                </form>
+                <div id="mkdocs-search-results"></div>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div><div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="keyboardModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="keyboardModalLabel">Keyboard Shortcuts</h4>
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            </div>
+            <div class="modal-body">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th style="width: 20%;">Keys</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="help shortcut"><kbd>?</kbd></td>
+                    <td>Open this help</td>
+                  </tr>
+                  <tr>
+                    <td class="next shortcut"><kbd>n</kbd></td>
+                    <td>Next page</td>
+                  </tr>
+                  <tr>
+                    <td class="prev shortcut"><kbd>p</kbd></td>
+                    <td>Previous page</td>
+                  </tr>
+                  <tr>
+                    <td class="search shortcut"><kbd>s</kbd></td>
+                    <td>Search</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+    </body>
+
+</html>
+
+<!--
+MkDocs version : 1.5.2
+Build Date UTC : 2023-08-31 03:49:25.191556+00:00
+-->
