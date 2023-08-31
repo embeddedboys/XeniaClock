@@ -7,6 +7,7 @@ echo "working dir is ${WORKDIR}"
 BUILDDIR=${WORKDIR}/dir_build
 
 BIN="xenia_clock.elf"
+UF2="xenia_clock.uf2"
 
 function do_banner() {
 cat << "EOF" >> /dev/tty
@@ -74,7 +75,12 @@ function do_install() {
 
 function do_flash() {
     echo_debug "do flashning ..."
-    ${WORKDIR}/../tools/dapp ./${BIN}
+    time ${WORKDIR}/../tools/dapp ${WORKDIR}/${BIN}
+}
+
+function do_flash_uf2() {
+    echo_debug "do uf2 flashning ..."
+    sudo cp ${BUILDDIR}/${UF2} /media/$USER/RPI-RP2/
 }
 
 function do_clean() {
@@ -99,6 +105,13 @@ case $1 in
         do_flash
         exit 0
         ;;
+
+    "-u")
+	echo_debug "will do a uf2 flash job"
+	do_banner
+	do_flash_uf2
+	exit 0
+	;;
 
     "-c")
         echo_debug "do a clean job"
