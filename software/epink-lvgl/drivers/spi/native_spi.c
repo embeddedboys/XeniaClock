@@ -70,12 +70,26 @@ void spi_write16(uint16_t val, uint8_t cs_pin)
     cs_deselect(cs_pin);
 }
 
+u8 spi_r8w8(uint8_t val, uint8_t cs_pin)
+{
+    u8 read;
+    cs_select(cs_pin);
+
+    spi_write_blocking(spi_default, &val, 1);
+    spi_read_blocking(spi_default, 0xff, &read, 1);
+
+    cs_deselect(cs_pin);
+
+    return read;
+}
+
 void spi_transfer(uint8_t *buf, int size, uint8_t cs_pin)
 {
     cs_select(cs_pin);
     spi_write_blocking(spi_default, buf, size);
     cs_deselect(cs_pin);
 }
+
 
 // __deprecated_subsys_initcall(native_spi_init);
 static int native_spi_init(void)

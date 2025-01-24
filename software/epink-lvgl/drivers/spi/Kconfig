@@ -1,7 +1,10 @@
 
 menu "SPI support"
 
-
+config SPI_NRF24L01
+    bool "Enable support for nrf24l01 2.4GHz receiver & transmitter"
+    help
+      If unsure, say Y.
 
 endmenu
 
